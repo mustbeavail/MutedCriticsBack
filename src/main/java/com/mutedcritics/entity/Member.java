@@ -23,6 +23,9 @@ public class Member {
     @Column(name = "member_pw", length = 255)
     private String memberPw;
 
+    @Column(name = "member_name", length = 50)
+    private String memberName;
+
     @Column(name = "member_gender", length = 10)
     private String memberGender;
 
