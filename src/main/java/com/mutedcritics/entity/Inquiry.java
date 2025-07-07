@@ -37,6 +37,9 @@ public class Inquiry {
     @JoinColumn(name = "reported_id")
     private User reportedUser;
 
+    @Column(name = "type")
+    private String type;
+
     @Column(name = "category", length = 50)
     private String category;
 

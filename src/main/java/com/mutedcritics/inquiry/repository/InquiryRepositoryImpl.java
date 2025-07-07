@@ -30,6 +30,9 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         BooleanBuilder builder = new BooleanBuilder();
 
+        // type 이 '문의'인 것만 조회
+        builder.and(inquiry.type.eq("문의"));
+
         // 유저 id 검색
         if (userId != null && !userId.isEmpty()) {
             builder.and(inquiry.user.userId.eq(userId));
@@ -62,7 +65,8 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 전체 개수 조회
-        long totalCount = query.fetchCount();
+        long totalCount = factory.select(inquiry.count())
+                .from(inquiry).where(builder).fetchOne();
 
         // 페이징 적용
         List<Inquiry> content = query.offset(pageable.getOffset())
@@ -70,5 +74,56 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
                 .fetch();
 
         return new PageImpl<>(content, pageable, totalCount);
+    }
+
+    @Override
+    public Page<Inquiry> findByReportsWithConditions(String userId, String status, String sortBy, String sortOrder,
+            Pageable pageable) {
+
+        QInquiry inquiry = QInquiry.inquiry;
+        QUser user = QUser.user;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        // type 이 '신고'인 것만 조회
+        builder.and(inquiry.type.eq("신고"));
+
+        // 유저 id 검색
+        if (userId != null && !userId.isEmpty()) {
+            builder.and(inquiry.user.userId.eq(userId));
+        }
+
+        // 상태 검색
+        if (status != null && !status.isEmpty()) {
+            builder.and(inquiry.status.eq(status));
+        }
+
+        // 정렬 처리
+        var query = factory.selectFrom(inquiry)
+                .leftJoin(inquiry.user, user).fetchJoin().where(builder);
+
+        // 날짜 정렬
+        if ("createdAt".equals(sortBy)) {
+            if ("desc".equals(sortOrder)) {
+                query.orderBy(inquiry.createdAt.desc());
+            } else {
+                query.orderBy(inquiry.createdAt.asc());
+            }
+        } else {
+            // 기본 정렬 : 최신순
+            query.orderBy(inquiry.createdAt.desc());
+        }
+
+        // 전체 개수 조회
+        long totalCount = factory.select(inquiry.count())
+                .from(inquiry).where(builder).fetchOne();
+
+        // 페이징 적용
+        List<Inquiry> content = query.offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        return new PageImpl<>(content, pageable, totalCount);
+
     }
 }

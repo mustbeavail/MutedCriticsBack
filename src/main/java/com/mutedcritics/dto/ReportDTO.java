@@ -1,18 +1,19 @@
 package com.mutedcritics.dto;
 
+import java.time.LocalDateTime;
+
 import com.mutedcritics.entity.Inquiry;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InquiryDTO {
+public class ReportDTO {
 
     private int inquiryIdx;
     private String userId;
@@ -27,7 +28,7 @@ public class InquiryDTO {
     private LocalDateTime createdAt;
     private boolean agentResYn;
 
-    public InquiryDTO(Inquiry inquiry) {
+    public ReportDTO(Inquiry inquiry) {
         this.inquiryIdx = inquiry.getInquiryIdx();
         this.type = inquiry.getType();
         this.category = inquiry.getCategory();
@@ -47,4 +48,5 @@ public class InquiryDTO {
             this.reportedUserNick = inquiry.getReportedUser().getUserNick();
         }
     }
+
 }
