@@ -36,13 +36,13 @@
 	<!-- 실행되는 쿼리문을 로그로 남김 -->
 	<logger name="jdbc.sqlonly" level="OFF"/>
 	<!-- 쿼리문 + 걸린 시간 -->
-	<logger name="jdbc.sqltiming" level="INFO"/>
+	<logger name="jdbc.sqltiming" level="OFF"/>
 	<!-- 쿼리를 수행하기 까지의 상세한 내용 하나하나 다 남김(로그가 많이 길어진다.) -->
 	<logger name="jdbc.audit" level="OFF"/>
 	<!-- select 수행시 결과인 resultSet 을 보여준다. -->
 	<logger name="jdbc.resultset" level="OFF"/>
 	<!-- 결과값을 테이블(표) 형식으로 보여준다. -->
-	<logger name="jdbc.resultsettable" level="INFO"/>	
+	<logger name="jdbc.resultsettable" level="OFF"/>
 
    	<!-- Root Logger -->
    	<!-- TRACE > DEBUG > INFO > WARN > FATAL -->
