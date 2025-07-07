@@ -2,12 +2,12 @@ package com.mutedcritics.utils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import lombok.extern.slf4j.Slf4j;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -17,19 +17,30 @@ public class LoginChecker implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 
-		boolean pass = true;
 		log.info("Inter Ceptor : {}", request.getRequestURI());
-		HttpSession session = request.getSession();
-		String loginId = (String) session.getAttribute("loginId");
 
-		if (loginId == null || loginId.equals("")) {
-			pass = false;
-			String ctx = request.getContextPath();
-			log.info("context path : " + ctx);
-			response.sendRedirect(ctx); // context 경로도 같이 줘야 한다.
+		boolean login = false;
+		try {
+			String token = request.getHeader("authorization");
+			Map<String, Object> payload = JwtUtil.readToken(token);
+			log.info("token : {}", token);
+			String loginId = (String) payload.get("id");
+			log.info("loginId : {}", loginId);
+
+			if (loginId != null && !loginId.isEmpty()) {
+				login = true;
+			}
+		} catch (Exception e) {
+			log.warn("토큰이 없거나 유효하지 않습니다: {}", e.getMessage());
 		}
 
-		return pass;
+		if (!login) {
+			String ctx = request.getContextPath();
+			log.info("context path : " + ctx);
+			response.sendRedirect(ctx);
+		}
+
+		return login;
 	}
 
 }

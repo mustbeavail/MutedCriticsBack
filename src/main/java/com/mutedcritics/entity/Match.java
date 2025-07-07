@@ -22,11 +22,11 @@ public class Match {
     @Column(name = "match_idx")
     private int matchIdx;
 
-    @Column(name = "match_start_date")
-    private LocalDateTime matchStartDate;
+    @Column(name = "match_start_time")
+    private LocalDateTime matchStartTime;
 
-    @Column(name = "match_end_date")
-    private LocalDateTime matchEndDate;
+    @Column(name = "match_end_time")
+    private LocalDateTime matchEndTime;
 
     @Column(name = "match_date")
     private LocalDate matchDate;

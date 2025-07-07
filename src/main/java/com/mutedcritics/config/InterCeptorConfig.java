@@ -17,9 +17,9 @@ public class InterCeptorConfig implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 
-		// list 로 시작되는 url 에 대해서만 인터셉터로 잡는다.
 		registry.addInterceptor(checker)
-				.addPathPatterns("/list*");
+				.addPathPatterns("/**")
+				.excludePathPatterns("/login*", "/join*", "/error*");
 
 	}
 
