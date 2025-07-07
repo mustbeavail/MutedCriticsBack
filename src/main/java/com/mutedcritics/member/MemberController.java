@@ -1,15 +1,11 @@
 package com.mutedcritics.member;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mutedcritics.entity.Member;
@@ -97,23 +93,6 @@ public class MemberController {
         boolean success = service.changePassword(member_id, new_password);
         result.put("success", success);
         return result;
-    }
-
-    // 회원 리스트 보기 (정렬, 검색 기능 필요)
-    @GetMapping("/member_list/{page}")
-    public Map<String, Object> memberList(
-            @PathVariable(required = false) Integer page,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "memberId") String sortField,
-            @RequestParam(defaultValue = "asc") String sortDirection) {
-        
-        int pageNumber = page;
-        int size = 10;
-        
-        log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}", 
-                pageNumber, keyword, sortField, sortDirection);
-        
-        return service.memberList(pageNumber, size, keyword, sortField, sortDirection);
     }
 
 }
