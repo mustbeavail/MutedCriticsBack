@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import lombok.Data;
 
 @Entity
@@ -18,7 +20,7 @@ public class Member {
     @Column(name = "member_id", length = 50)
     private String memberId;
 
-    @Column(name = "member_pw", length = 50)
+    @Column(name = "member_pw", length = 255)
     private String memberPw;
 
     @Column(name = "member_nick", length = 50)
@@ -42,6 +44,7 @@ public class Member {
     @Column(name = "dept_name", length = 20)
     private String deptName;
 
+    @CreationTimestamp
     @Column(name = "join_date")
     private LocalDate joinDate;
 
@@ -50,5 +53,4 @@ public class Member {
 
     @Column(name = "admin_yn")
     private boolean adminYn;
-
 }
