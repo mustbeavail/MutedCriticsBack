@@ -191,5 +191,22 @@ public class MemberService {
             return false;
         }
     }
+
+    // 관리자 권한 부여
+    public boolean grant_admin(String member_id) {
+        Member member = repo.findById(member_id).orElse(null);
+        if (member == null) {return false;}
+        member.setAdminYn(true);
+        repo.save(member);
+        return true;
+    }
     
+    // 관리자 권한 확인
+    public boolean isAdmin(String member_id) {
+        Member member = repo.findById(member_id).orElse(null);
+        if (member == null) {
+            return false;
+        }
+        return member.isAdminYn();
+    }
 }

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +15,7 @@ import com.mutedcritics.utils.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import javax.servlet.http.HttpServletRequest;
 
 @CrossOrigin
 @RestController
@@ -93,6 +96,49 @@ public class MemberController {
         boolean success = service.changePassword(member_id, new_password);
         result.put("success", success);
         return result;
+    }
+
+    // 관리자 권한 부여
+    @GetMapping("/grant_admin/{member_id}")
+    public Map<String, Object> grant_admin(@PathVariable String member_id, HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        
+        // 토큰 검증
+        String token = request.getHeader("authorization");
+        if (token == null || token.isEmpty()) {
+            result.put("success", false);
+            return result;
+        }
+        
+        try {
+            // 토큰 검증
+            Map<String, Object> payload = JwtUtil.readToken(token);
+            String requesterId = (String) payload.get("member_id");
+            
+            if (requesterId == null || requesterId.isEmpty()) {
+                result.put("success", false);
+                return result;
+            }
+            
+            // 관리자 권한 확인 - 요청자가 관리자인지 체크
+            if (!service.isAdmin(requesterId)) {
+                log.info("관리자 권한 부여 실패: 요청자({})가 관리자가 아닙니다", requesterId);
+                result.put("success", false);
+                return result;
+            }
+            
+            // 관리자 권한 부여
+            boolean success = service.grant_admin(member_id);
+            result.put("success", success);
+            if (!success) {
+                result.put("message", "관리자 권한 부여 실패");
+            }
+            
+            return result;
+        } catch (Exception e) {
+            result.put("success", false);
+            return result;
+        }
     }
 
 }
