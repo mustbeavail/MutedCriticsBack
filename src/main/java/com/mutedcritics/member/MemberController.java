@@ -64,5 +64,22 @@ public class MemberController {
         result.put("success", success);
         return result;
     }
+
+    // 비밀번호 찾기 - 이메일 인증 코드 발송
+    @PostMapping("/find_pw/send_code")
+    public Map<String, Object> emailcode(@RequestBody Map<String, String> params) {
+        log.info("비밀번호 찾기 요청 파라미터: {}", params);
+        
+        String member_id = params.get("memberId");
+        String email = params.get("email");
+        
+        log.info("비밀번호 찾기 요청: {}, {}", member_id, email);
+        Map<String, Object> result = new HashMap<String, Object>();
+        
+        boolean success = service.emailcode(member_id, email);
+        result.put("success", success);
+        
+        return result;
+    }
     
 }
