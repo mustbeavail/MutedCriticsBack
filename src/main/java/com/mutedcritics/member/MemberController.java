@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mutedcritics.entity.Member;
+import com.mutedcritics.utils.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,19 +24,45 @@ public class MemberController {
 
     // 로그인
     @PostMapping("/login")
-    public Map<String, Object> login(String member_id, String member_pw) {
+    public Map<String, Object> login(@RequestBody Map<String, String> params) {
+        String member_id = params.get("member_id");
+        String member_pw = params.get("member_pw");
+        
+        log.info("로그인 요청: {}", member_id);
         Map<String, Object> result = new HashMap<String, Object>();
         boolean success = service.login(member_id, member_pw);
         result.put("success", success);
+        
+        // 로그인 성공 시 JWT 토큰 생성
+        if (success) {
+            // JWT 토큰에 저장할 정보
+            Map<String, Object> tokenData = new HashMap<>();
+            tokenData.put("member_id", member_id);
+            
+            // JWT 키가 없으면 생성
+            if (JwtUtil.getPri_key() == null) {
+                JwtUtil.setPri_key();
+            }
+            
+            // 토큰 생성
+            String token = JwtUtil.getToken(tokenData);
+            
+            // 응답에 토큰 추가
+            result.put("token", token);
+        }
+        
         return result;
     }
 
     // 회원가입
     @PostMapping("/join")
-    public Map<String, Object> join(Member params) {
+    public Map<String, Object> join(@RequestBody Member params) {
+        log.info("회원가입 요청: {}", params.getMemberId());
         Map<String, Object> result = new HashMap<String, Object>();
+        
         boolean success = service.join(params);
         result.put("success", success);
         return result;
     }
+    
 }

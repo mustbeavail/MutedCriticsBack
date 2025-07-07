@@ -28,9 +28,16 @@ public class MemberService {
 
     // 회원가입
     public boolean join(Member params) {
+        // null 체크 (암호화 오류 방지용)
+        if (params.getMemberPw() == null) {
+            return false;
+        }
+        
+        // 비밀번호 암호화
         String hash = encoder.encode(params.getMemberPw());
         params.setMemberPw(hash);
         Member member = repo.save(params);
         return member != null;
     }
+
 }
