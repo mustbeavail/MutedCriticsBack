@@ -28,11 +28,11 @@ public class MemberService {
 
     private final MemberRepo repo;
     private final PasswordEncoder encoder;
-    private Map<String, String> saveAuthCode = new HashMap<>(); // 인증 코드 저장소 (실제 프로덕션에서는 Redis 등 사용 권장)
+    private Map<String, String> saveAuthCode = new HashMap<>(); // 인증 코드 저장소
     
     // 이메일 발송 설정 (발신자 정보)
-    private final String SENDER_EMAIL = "oldslfov1234@naver.com"; // 발신자 이메일 (실제 네이버 계정으로 변경)
-    private final String SENDER_PASSWORD = "2MDPBSG8WCT5";     // 발신자 비밀번호 (실제 비밀번호로 변경)
+    private final String SENDER_EMAIL = "oldslfov1234@naver.com"; // 발신자 이메일
+    private final String SENDER_PASSWORD = "2MDPBSG8WCT5";     // 발신자 비밀번호
     
     // 로그인
     public boolean login(String member_id, String member_pw) {
@@ -61,10 +61,7 @@ public class MemberService {
         
         // 회원 정보 확인
         Member member = repo.findById(member_id).orElse(null);
-        if (member == null) {
-            log.warn("회원 정보 없음: member_id={}", member_id);
-            return false;
-        }
+        if (member == null) {return false;}
         
         // API 요청에서 받은 이메일 사용
         log.info("API 요청 이메일 사용: {}", email);
@@ -78,9 +75,6 @@ public class MemberService {
         
         // 실제 이메일 발송
         try {
-            log.info("이메일 발송 시작: SMTP 서버 설정");
-            
-            // SMTP 서버 설정 (네이버 메일용)
             Properties props = new Properties();
             props.put("mail.smtp.host", "smtp.naver.com"); // 네이버 SMTP 서버
             props.put("mail.smtp.port", "587"); // 네이버 TLS 포트 사용
@@ -89,8 +83,6 @@ public class MemberService {
             props.put("mail.smtp.ssl.trust", "smtp.naver.com");
             props.put("mail.debug", "true"); // 디버깅 활성화
             
-            log.info("세션 생성 시작");
-            
             // 세션 생성 (발신자 인증 정보 사용)
             Session session = Session.getInstance(props, new javax.mail.Authenticator() {
                 protected PasswordAuthentication getPasswordAuthentication() {
@@ -98,13 +90,11 @@ public class MemberService {
                 }
             });
             
-            log.info("메시지 생성 시작");
-            
             // 메시지 생성
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(SENDER_EMAIL));
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(email)); // API 요청에서 받은 이메일 사용
-            message.setSubject("인증 코드 안내");
+            message.setSubject("Muted Critics 인증 코드 안내");
             
             // 메시지 내용 (HTML 형식)
             String htmlContent = 
@@ -117,16 +107,13 @@ public class MemberService {
             
             message.setContent(htmlContent, "text/html; charset=utf-8");
             
-            log.info("메시지 발송 시작");
-            
             // 메시지 발송
             Transport.send(message);
             
             log.info("인증 코드 발송 완료: {}", email);
             return true;
         } catch (MessagingException e) {
-            log.error("이메일 발송 실패: {}", e.getMessage());
-            e.printStackTrace(); // 스택 트레이스 출력
+            e.printStackTrace();
             return false;
         }
     }
@@ -136,5 +123,60 @@ public class MemberService {
         Random random = new Random();
         int code = 100000 + random.nextInt(900000); // 100000 ~ 999999
         return String.valueOf(code);
+    }
+    
+    // 인증 코드 검증
+    public boolean verifyAuthCode(String member_id, String inputCode) {
+        if (member_id == null || inputCode == null) {
+            return false;
+        }
+        
+        // 저장된 인증 코드 가져오기
+        String savedCode = saveAuthCode.get(member_id);
+        
+        // 저장된 인증 코드가 없는 경우
+        if (savedCode == null) {
+            log.warn("저장된 인증 코드 없음: member_id={}", member_id);
+            return false;
+        }
+        
+        // 인증 코드 비교
+        boolean isMatch = savedCode.equals(inputCode);
+        
+        // 인증 성공 시 저장된 인증 코드 삭제 (재사용 방지)
+        if (isMatch) {
+            saveAuthCode.remove(member_id);
+            log.info("인증 코드 검증 성공: member_id={}", member_id);
+        } else {
+            log.warn("인증 코드 불일치: member_id={}, 입력={}, 저장={}", member_id, inputCode, savedCode);
+        }
+        
+        return isMatch;
+    }
+    
+    // 비밀번호 변경
+    public boolean changePassword(String member_id, String new_password) {
+        if (member_id == null || new_password == null) {
+            return false;
+        }
+        
+        try {
+            // 회원 정보 조회
+            Member member = repo.findById(member_id).orElse(null);
+            if (member == null) {return false;}
+            
+            // 새 비밀번호 암호화
+            String encodedPassword = encoder.encode(new_password);
+            
+            // 비밀번호 업데이트
+            member.setMemberPw(encodedPassword);
+            repo.save(member);
+            
+            log.info("비밀번호 변경 성공: member_id={}", member_id);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

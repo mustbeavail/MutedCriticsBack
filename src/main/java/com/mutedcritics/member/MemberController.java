@@ -65,18 +65,49 @@ public class MemberController {
         return result;
     }
 
-    // 비밀번호 찾기 - 이메일 인증 코드 발송
+    // 이메일 인증 코드 발송
     @PostMapping("/find_pw/send_code")
     public Map<String, Object> emailcode(@RequestBody Map<String, String> params) {
         log.info("비밀번호 찾기 요청 파라미터: {}", params);
         
         String member_id = params.get("memberId");
         String email = params.get("email");
-        
-        log.info("비밀번호 찾기 요청: {}, {}", member_id, email);
+
         Map<String, Object> result = new HashMap<String, Object>();
         
         boolean success = service.emailcode(member_id, email);
+        result.put("success", success);
+        
+        return result;
+    }
+    
+    // 인증 코드 검증
+    @PostMapping("/find_pw/verify_code")
+    public Map<String, Object> verifyCode(@RequestBody Map<String, String> params) {
+        log.info("인증 코드 검증 요청 파라미터: {}", params);
+        
+        String member_id = params.get("memberId");
+        String authCode = params.get("authCode");
+
+        Map<String, Object> result = new HashMap<String, Object>();
+        
+        boolean success = service.verifyAuthCode(member_id, authCode);
+        result.put("success", success);
+        
+        return result;
+    }
+    
+    // 비밀번호 변경
+    @PostMapping("/find_pw/change_password")
+    public Map<String, Object> changePassword(@RequestBody Map<String, String> params) {
+        log.info("비밀번호 변경 요청 파라미터: {}", params);
+        
+        String member_id = params.get("memberId");
+        String new_password = params.get("member_pw");
+        
+        Map<String, Object> result = new HashMap<String, Object>();
+        
+        boolean success = service.changePassword(member_id, new_password);
         result.put("success", success);
         
         return result;
