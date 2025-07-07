@@ -16,20 +16,20 @@ public class LoginChecker implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-		
+
 		boolean pass = true;
-		log.info("Inter Ceptor : {}",request.getRequestURI());
+		log.info("Inter Ceptor : {}", request.getRequestURI());
 		HttpSession session = request.getSession();
 		String loginId = (String) session.getAttribute("loginId");
-		
-		if(loginId == null || loginId.equals("")) {
+
+		if (loginId == null || loginId.equals("")) {
 			pass = false;
 			String ctx = request.getContextPath();
-			log.info("context path : "+ctx);
+			log.info("context path : " + ctx);
 			response.sendRedirect(ctx); // context 경로도 같이 줘야 한다.
 		}
-			
+
 		return pass;
 	}
-	
+
 }
