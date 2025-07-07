@@ -24,7 +24,7 @@ public class LoginChecker implements HandlerInterceptor {
 			String token = request.getHeader("authorization");
 			Map<String, Object> payload = JwtUtil.readToken(token);
 			log.info("token : {}", token);
-			String loginId = (String) payload.get("id");
+			String loginId = (String) payload.get("member_id");
 			log.info("loginId : {}", loginId);
 
 			if (loginId != null && !loginId.isEmpty()) {
