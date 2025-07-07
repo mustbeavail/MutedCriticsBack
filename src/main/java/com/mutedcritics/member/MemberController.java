@@ -1,11 +1,15 @@
 package com.mutedcritics.member;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mutedcritics.entity.Member;
@@ -35,20 +39,11 @@ public class MemberController {
         
         // 로그인 성공 시 JWT 토큰 생성
         if (success) {
-            // JWT 토큰에 저장할 정보
             Map<String, Object> tokenData = new HashMap<>();
-            tokenData.put("member_id", member_id);
-            
-            // JWT 키가 없으면 생성
-            if (JwtUtil.getPri_key() == null) {
-                JwtUtil.setPri_key();
-            }
-            
-            // 토큰 생성
-            String token = JwtUtil.getToken(tokenData);
-            
-            // 응답에 토큰 추가
-            result.put("token", token);
+            tokenData.put("member_id", member_id); // JWT 토큰에 저장할 정보
+            if (JwtUtil.getPri_key() == null) {JwtUtil.setPri_key();} // JWT 키가 없으면 생성
+            String token = JwtUtil.getToken(tokenData); // 토큰 생성
+            result.put("token", token); // 응답에 토큰 추가
         }
         
         return result;
@@ -69,15 +64,12 @@ public class MemberController {
     @PostMapping("/find_pw/send_code")
     public Map<String, Object> emailcode(@RequestBody Map<String, String> params) {
         log.info("비밀번호 찾기 요청 파라미터: {}", params);
-        
         String member_id = params.get("memberId");
         String email = params.get("email");
 
         Map<String, Object> result = new HashMap<String, Object>();
-        
         boolean success = service.emailcode(member_id, email);
         result.put("success", success);
-        
         return result;
     }
     
@@ -85,15 +77,12 @@ public class MemberController {
     @PostMapping("/find_pw/verify_code")
     public Map<String, Object> verifyCode(@RequestBody Map<String, String> params) {
         log.info("인증 코드 검증 요청 파라미터: {}", params);
-        
         String member_id = params.get("memberId");
         String authCode = params.get("authCode");
 
         Map<String, Object> result = new HashMap<String, Object>();
-        
         boolean success = service.verifyAuthCode(member_id, authCode);
         result.put("success", success);
-        
         return result;
     }
     
@@ -101,16 +90,30 @@ public class MemberController {
     @PostMapping("/find_pw/change_password")
     public Map<String, Object> changePassword(@RequestBody Map<String, String> params) {
         log.info("비밀번호 변경 요청 파라미터: {}", params);
-        
         String member_id = params.get("memberId");
         String new_password = params.get("member_pw");
         
         Map<String, Object> result = new HashMap<String, Object>();
-        
         boolean success = service.changePassword(member_id, new_password);
         result.put("success", success);
-        
         return result;
     }
-    
+
+    // 회원 리스트 보기 (정렬, 검색 기능 필요)
+    @GetMapping("/member_list/{page}")
+    public Map<String, Object> memberList(
+            @PathVariable(required = false) Integer page,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "memberId") String sortField,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        
+        int pageNumber = page;
+        int size = 10;
+        
+        log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}", 
+                pageNumber, keyword, sortField, sortDirection);
+        
+        return service.memberList(pageNumber, size, keyword, sortField, sortDirection);
+    }
+
 }
