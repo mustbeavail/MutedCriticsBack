@@ -38,3 +38,4 @@ mvnw.cmd
 .mvn/
 src/test/java/com/mutedcritics/MutedCriticsApplicationTests.java
 src/main/resources/application.properties
+bin/
