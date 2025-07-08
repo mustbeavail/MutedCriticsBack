@@ -24,6 +24,7 @@ public class AiController {
 
     private final AiService service;
 
+    // AI 자동 답변 처리
     @PostMapping("/process-unanswered")
     public Map<String, Object> processUnansweredInquiries() {
         Map<String, Object> result = new HashMap<>();
