@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MemberService {
 
-    private final MemberRepo repo;
+    private final MemberRepository repo;
     private final PasswordEncoder encoder;
     private Map<String, String> saveAuthCode = new HashMap<>(); // 인증 코드 저장소
 

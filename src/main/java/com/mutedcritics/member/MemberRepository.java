@@ -4,4 +4,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.mutedcritics.entity.Member;
 
-public interface MemberRepo extends JpaRepository<Member, String> {}
+public interface MemberRepository extends JpaRepository<Member, String> {}

@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.mutedcritics.entity.Member;
 
-public interface MemberInfoRepo extends JpaRepository<Member, String> {
+public interface MemberInfoRepository extends JpaRepository<Member, String> {
 
     // 전체 회원 수 조회
     @Query("SELECT COUNT(m) FROM Member m")
