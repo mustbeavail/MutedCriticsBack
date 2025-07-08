@@ -26,7 +26,7 @@ public class InquiryController {
     private final InquiryService service;
 
     // 문의 리스트 조회(페이징, 정렬, 검색)
-    @GetMapping("/list/inquiry")
+    @GetMapping("/inquiry/list")
     public Page<InquiryDTO> getInquiryList(
             @RequestParam(required = false) String userId,
             @RequestParam(required = false) String category,
@@ -44,7 +44,7 @@ public class InquiryController {
     }
 
     // 신고 리스트 조회(페이징, 정렬, 검색)
-    @GetMapping("/list/report")
+    @GetMapping("/report/list")
     public Page<ReportDTO> getReportList(
             @RequestParam(required = false) String userId,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -61,7 +61,7 @@ public class InquiryController {
     }
 
     // 문의 상세 조회
-    @GetMapping("/inquiry/{inquiryIdx}")
+    @GetMapping("/inquiry/detail/{inquiryIdx}")
     public InquiryReportDetailDTO getInquiryDetail(@PathVariable int inquiryIdx) {
 
         log.info("문의 상세 조회 : {}", inquiryIdx);
@@ -69,7 +69,7 @@ public class InquiryController {
     }
 
     // 신고 상세 조회
-    @GetMapping("report/{inquiryIdx}")
+    @GetMapping("/report/detail/{inquiryIdx}")
     public InquiryReportDetailDTO getReportDetail(@PathVariable int inquiryIdx) {
 
         log.info("신고 상세 조회 : {}", inquiryIdx);

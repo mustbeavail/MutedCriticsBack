@@ -32,6 +32,11 @@ public class UserMemo {
     @JoinColumn(name = "user_id")
     private User user;
 
+    // 외래키(member 테이블의 member_id)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
+
     @Column(name = "content", length = 1000)
     private String content;
 

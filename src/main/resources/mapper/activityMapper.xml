@@ -3,4 +3,33 @@
 
 <mapper namespace="com.mutedcritics.activity.ActivityDAO">
 
+    <!-- 총 접속자 수 -->
+    <select id="total_user" resultType="map">
+        select COUNT(DISTINCT user_id) AS user_count from access_stats
+    </select>
+
+    <!-- 오늘 날짜 기준 총 일일 접속자 수 -->
+    <select id="today_daily_user" resultType="map">
+        SELECT COUNT(DISTINCT user_id) AS user_count
+        FROM access_stats
+        WHERE access_time &gt;= CURDATE() - INTERVAL 1 DAY
+        AND access_time &lt; CURDATE()
+    </select>
+
+    <!-- 오늘 날짜 기준 총 주간 접속자 수 -->
+    <select id="today_weekly_user" resultType="map">
+        SELECT COUNT(DISTINCT user_id) AS user_count
+        FROM access_stats
+        WHERE access_time &gt;= CURDATE() - INTERVAL 7 DAY
+        AND access_time &lt; CURDATE()
+    </select>
+
+    <!-- 오늘 날짜 기준 총 월간 접속자 수 -->
+    <select id="today_monthly_user" resultType="map">
+        SELECT COUNT(DISTINCT user_id) AS user_count
+        FROM access_stats
+        WHERE access_time &gt;= DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH, '%Y-%m-01')
+        AND access_time &lt; DATE_FORMAT(CURDATE(), '%Y-%m-01')
+    </select>
+
 </mapper>

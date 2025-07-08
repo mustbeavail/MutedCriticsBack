@@ -20,7 +20,8 @@ public class InterCeptorConfig implements WebMvcConfigurer {
 
 		registry.addInterceptor(checker)
 				.addPathPatterns("/**")
-				.excludePathPatterns("/login*", "/join*", "/error*", "/find*", "/find_pw*", "/find_pw/send_code*");
+				.excludePathPatterns("/login*", "/join*", "/error*", "/member/**",
+						"/ai/**");
 
 	}
 

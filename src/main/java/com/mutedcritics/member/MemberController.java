@@ -26,7 +26,7 @@ public class MemberController {
     private final MemberService service;
 
     // 로그인
-    @PostMapping("/login")
+    @PostMapping("/member/login")
     public Map<String, Object> login(@RequestBody Map<String, String> params) {
         String member_id = params.get("member_id");
         String member_pw = params.get("member_pw");
@@ -51,7 +51,7 @@ public class MemberController {
     }
 
     // 회원가입
-    @PostMapping("/join")
+    @PostMapping("/member/join")
     public Map<String, Object> join(@RequestBody Member params) {
         log.info("회원가입 요청: {}", params.getMemberId());
         Map<String, Object> result = new HashMap<String, Object>();
@@ -62,7 +62,7 @@ public class MemberController {
     }
 
     // 이메일 인증 코드 발송
-    @PostMapping("/find_pw/send_code")
+    @PostMapping("/member/send_code")
     public Map<String, Object> emailcode(@RequestBody Map<String, String> params) {
         log.info("비밀번호 찾기 요청 파라미터: {}", params);
         String member_id = params.get("memberId");
@@ -75,7 +75,7 @@ public class MemberController {
     }
 
     // 인증 코드 검증
-    @PostMapping("/find_pw/verify_code")
+    @PostMapping("/member/verify_code")
     public Map<String, Object> verifyCode(@RequestBody Map<String, String> params) {
         log.info("인증 코드 검증 요청 파라미터: {}", params);
         String member_id = params.get("memberId");
@@ -88,7 +88,7 @@ public class MemberController {
     }
 
     // 비밀번호 변경
-    @PostMapping("/find_pw/change_password")
+    @PostMapping("/member/change_password")
     public Map<String, Object> changePassword(@RequestBody Map<String, String> params) {
         log.info("비밀번호 변경 요청 파라미터: {}", params);
         String member_id = params.get("memberId");
@@ -101,7 +101,7 @@ public class MemberController {
     }
 
     // 관리자 권한 부여
-    @GetMapping("/grant_admin/{member_id}")
+    @GetMapping("/admin/{member_id}")
     public Map<String, Object> grant_admin(@PathVariable String member_id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<String, Object>();
 
