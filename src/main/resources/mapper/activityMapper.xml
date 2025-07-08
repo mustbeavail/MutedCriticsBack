@@ -32,4 +32,20 @@
         AND access_time &lt; DATE_FORMAT(CURDATE(), '%Y-%m-01')
     </select>
 
+    <!-- 기간별 일일 활성 이용자 수 -->
+    <select id="period_daily_user" resultType="map">
+        SELECT COUNT(DISTINCT user_id) AS user_count
+        FROM access_stats
+        WHERE access_time &gt;= #{start_date}
+        AND access_time &lt; #{end_date}
+    </select>
+
+    <!-- 기간별 주간 활성 이용자 수 -->
+    <select id="period_weekly_user" resultType="map">
+        SELECT COUNT(DISTINCT user_id) AS user_count
+        FROM access_stats
+        WHERE access_time &gt;= #{fromDate}
+        AND access_time &lt;= #{toDate}
+    </select>
+
 </mapper>
