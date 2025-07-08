@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC   "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mutedcritics.user.UserDAO">
+<mapper namespace="com.mutedcritics.user.dao.UserDAO">
+
+    <select id="userDetail" resultType="com.mutedcritics.dto.UserDTO">
+        SELECT *
+        FROM user
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="userTierStats" resultType="com.mutedcritics.dto.UserTierDTO">
+        SELECT tier_name, tier_date, season_idx
+        FROM tier
+        WHERE user_id = #{userId} AND season_idx = #{season}
+    </select>
 
 </mapper>
