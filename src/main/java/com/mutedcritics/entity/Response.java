@@ -35,7 +35,7 @@ public class Response {
     private Inquiry inquiry;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "agent_id")
+    @JoinColumn(name = "agent_id", nullable = true)
     private Member agent;
 
     @Column(name = "res_type", length = 10)

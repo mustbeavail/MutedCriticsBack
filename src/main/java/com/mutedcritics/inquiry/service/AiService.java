@@ -63,7 +63,7 @@ public class AiService {
                 log.info("문의/신고 {} AI 자동 답변 완료 - 제목 : {}",
                         inquiry.getInquiryIdx(), inquiry.getTitle());
 
-                Thread.sleep(1000);
+                Thread.sleep(5000);
             } catch (Exception e) {
                 failCount++;
                 log.error("문의/신고 {} AI 답변 처리 중 오류 발생 - 제목: {}, 오류: {}",
@@ -109,6 +109,7 @@ public class AiService {
         prompt.append("1. 한국어로 답변할 것.\n");
         prompt.append("2. 친절하고 전문적으로 답변할 것.\n");
         prompt.append("3. 500자 이내로 답변할 것.\n");
+        prompt.append("4. 이모지나 특수문자는 사용하지 말 것.\n");
 
         if ("신고".equals(inquiry.getType())) {
             prompt.append("- 신고 접수 확인 및 검토 과정 안내\n");
