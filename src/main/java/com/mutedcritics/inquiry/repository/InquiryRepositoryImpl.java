@@ -12,6 +12,7 @@ import com.mutedcritics.entity.QInquiry;
 import com.mutedcritics.entity.QResponse;
 import com.mutedcritics.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,8 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
     private final JPAQueryFactory factory;
 
     @Override
-    public Page<Inquiry> findInquiriesWithConditions(String userId, String category, String status, String sortBy,
-            String sortOrder, Pageable pageable) {
+    public Page<Inquiry> findInquiriesWithConditions(String userId, String category, String status, boolean isVip,
+            String sortBy, String sortOrder, Pageable pageable) {
 
         QInquiry inquiry = QInquiry.inquiry;
         QUser user = QUser.user;
@@ -49,8 +50,13 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
             builder.and(inquiry.status.eq(status));
         }
 
+        // VIP 유저 필터링 (true 인 경우)
+        if (isVip) {
+            builder.and(inquiry.user.vipYn.eq(true));
+        }
+
         // 정렬 처리
-        var query = factory.selectFrom(inquiry)
+        JPAQuery<Inquiry> query = factory.selectFrom(inquiry)
                 .leftJoin(inquiry.user, user).fetchJoin().where(builder);
 
         // 날짜 정렬
@@ -100,7 +106,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         }
 
         // 정렬 처리
-        var query = factory.selectFrom(inquiry)
+        JPAQuery<Inquiry> query = factory.selectFrom(inquiry)
                 .leftJoin(inquiry.user, user).fetchJoin().where(builder);
 
         // 날짜 정렬
@@ -138,6 +144,17 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
                 .leftJoin(response).on(response.inquiry.eq(inquiry))
                 .where(response.inquiry.isNull()) // response 테이블에 레코드가 없는 경우
                 .orderBy(inquiry.createdAt.asc()) // 오래된 순서대로 처리
+                .fetch();
+    }
+
+    @Override
+    public List<Inquiry> findUnsatisfactoryInquiries() {
+        QInquiry inquiry = QInquiry.inquiry;
+
+        // 불만족인 문의/신고 조회
+        return factory.selectFrom(inquiry)
+                .where(inquiry.status.eq("F"))
+                .orderBy(inquiry.createdAt.desc())
                 .fetch();
     }
 }

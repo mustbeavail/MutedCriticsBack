@@ -1,4 +1,4 @@
-package com.mutedcritics.user;
+package com.mutedcritics.user.controller;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,6 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-public class UserController {
+public class UserGroupController {
 
 }

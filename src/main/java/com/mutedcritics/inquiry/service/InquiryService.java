@@ -27,11 +27,11 @@ public class InquiryService {
 
 	// 문의 리스트 조회
 	@Transactional(readOnly = true)
-	public Page<InquiryDTO> getInquiriesWithConditions(String userId, String category, String status, String sortBy,
+	public Page<InquiryDTO> getInquiriesWithConditions(String userId, String category, String status, boolean isVip,
+			String sortBy,
 			String sortOrder, Pageable pageable) {
-		Page<Inquiry> inquiryPage = repository.findInquiriesWithConditions(userId, category, status, sortBy,
-				sortOrder,
-				pageable);
+		Page<Inquiry> inquiryPage = repository.findInquiriesWithConditions(userId, category, status, isVip, sortBy,
+				sortOrder, pageable);
 
 		List<Inquiry> inquiryList = inquiryPage.getContent();
 		List<InquiryDTO> dtoList = new ArrayList<>();
@@ -107,6 +107,19 @@ public class InquiryService {
 				.status(inquiry.getStatus())
 				.responses(responseDTOs)
 				.build();
+	}
+
+	// 미해결(불만족) 문의/신고 목록
+	public List<InquiryDTO> getUnsatisfactoryInquiries() {
+		List<Inquiry> inquiries = repository.findUnsatisfactoryInquiries();
+		List<InquiryDTO> dtoList = new ArrayList<>();
+
+		for (Inquiry inquiry : inquiries) {
+			InquiryDTO dto = new InquiryDTO(inquiry);
+			dtoList.add(dto);
+		}
+
+		return dtoList;
 	}
 
 }

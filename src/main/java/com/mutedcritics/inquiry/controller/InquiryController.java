@@ -1,5 +1,7 @@
 package com.mutedcritics.inquiry.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,21 +28,23 @@ public class InquiryController {
     private final InquiryService service;
 
     // 문의 리스트 조회(페이징, 정렬, 검색)
+    // VIP 유저가 문의한 것만 조회할 수도 있어야...
     @GetMapping("/inquiry/list")
     public Page<InquiryDTO> getInquiryList(
             @RequestParam(required = false) String userId,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false, defaultValue = "false") boolean isVip,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortOrder,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         log.info("문의 리스트 불러오기 - userId: {}, category: {}, status: {}, sortBy: {}, sortOrder: {}, page: {}, size: {}",
-                userId, category, status, sortBy, sortOrder, page, size);
+                userId, category, status, isVip, sortBy, sortOrder, page, size);
 
         Pageable pageable = PageRequest.of(page, size);
 
-        return service.getInquiriesWithConditions(userId, category, status, sortBy, sortOrder, pageable);
+        return service.getInquiriesWithConditions(userId, category, status, isVip, sortBy, sortOrder, pageable);
     }
 
     // 신고 리스트 조회(페이징, 정렬, 검색)
@@ -74,6 +78,13 @@ public class InquiryController {
 
         log.info("신고 상세 조회 : {}", inquiryIdx);
         return service.getReportDetail(inquiryIdx);
+    }
+
+    // 미해결(불만족) 문의/신고 목록
+    @GetMapping("/inquiry/unsatisfactory")
+    public List<InquiryDTO> getUnsatisfactoryInquiries() {
+        log.info("미해결(불만족) 문의/신고 목록 조회");
+        return service.getUnsatisfactoryInquiries();
     }
 
 }
