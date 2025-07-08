@@ -16,9 +16,7 @@ public class InquiryDTO {
 
     private int inquiryIdx;
     private String userId;
-    private String userNick;
     private String reportedUserId;
-    private String reportedUserNick;
     private String type;
     private String category;
     private String title;
@@ -39,12 +37,10 @@ public class InquiryDTO {
 
         if (inquiry.getUser() != null) {
             this.userId = inquiry.getUser().getUserId();
-            this.userNick = inquiry.getUser().getUserNick();
         }
 
         if (inquiry.getReportedUser() != null) {
             this.reportedUserId = inquiry.getReportedUser().getUserId();
-            this.reportedUserNick = inquiry.getReportedUser().getUserNick();
         }
     }
 }

@@ -16,6 +16,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -30,6 +31,7 @@ public class Response {
     // 외래키(inquiry 테이블의 inquiry_idx)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inquiry_idx")
+    @ToString.Exclude
     private Inquiry inquiry;
 
     @ManyToOne(fetch = FetchType.LAZY)

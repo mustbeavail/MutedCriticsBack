@@ -32,9 +32,9 @@ public class MemberService {
     private Map<String, String> saveAuthCode = new HashMap<>(); // 인증 코드 저장소
 
     // 이메일 발송 설정 (발신자 정보)
-    @Value("${sender_email}")
+    @Value("${sender.email}")
     private String SENDER_EMAIL;
-    @Value("${sender_password}")
+    @Value("${sender.password}")
     private String SENDER_PASSWORD;
 
     // 로그인
@@ -195,12 +195,14 @@ public class MemberService {
     // 관리자 권한 부여
     public boolean grant_admin(String member_id) {
         Member member = repo.findById(member_id).orElse(null);
-        if (member == null) {return false;}
+        if (member == null) {
+            return false;
+        }
         member.setAdminYn(true);
         repo.save(member);
         return true;
     }
-    
+
     // 관리자 권한 확인
     public boolean isAdmin(String member_id) {
         Member member = repo.findById(member_id).orElse(null);

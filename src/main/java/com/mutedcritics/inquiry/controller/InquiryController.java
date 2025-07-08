@@ -5,10 +5,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mutedcritics.dto.InquiryDTO;
+import com.mutedcritics.dto.InquiryReportDetailDTO;
 import com.mutedcritics.dto.ReportDTO;
 import com.mutedcritics.inquiry.service.InquiryService;
 
@@ -56,6 +58,22 @@ public class InquiryController {
         Pageable pageable = PageRequest.of(page, size);
 
         return service.getReportsWithConditions(userId, status, sortBy, sortOrder, pageable);
+    }
+
+    // 문의 상세 조회
+    @GetMapping("/inquiry/{inquiryIdx}")
+    public InquiryReportDetailDTO getInquiryDetail(@PathVariable int inquiryIdx) {
+
+        log.info("문의 상세 조회 : {}", inquiryIdx);
+        return service.getInquiryDetail(inquiryIdx);
+    }
+
+    // 신고 상세 조회
+    @GetMapping("report/{inquiryIdx}")
+    public InquiryReportDetailDTO getReportDetail(@PathVariable int inquiryIdx) {
+
+        log.info("신고 상세 조회 : {}", inquiryIdx);
+        return service.getReportDetail(inquiryIdx);
     }
 
 }

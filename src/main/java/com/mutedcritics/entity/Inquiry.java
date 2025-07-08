@@ -1,7 +1,10 @@
 package com.mutedcritics.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -11,11 +14,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -59,4 +64,10 @@ public class Inquiry {
 
     @Column(name = "agent_res_yn")
     private boolean agentResYn;
+
+    // 응답 목록
+    @OneToMany(mappedBy = "inquiry", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ToString.Exclude // 롬복 @Data 사용시, 양방향 매핑 시 무한 루프 방지
+    private List<Response> responses = new ArrayList<>();
+
 }
