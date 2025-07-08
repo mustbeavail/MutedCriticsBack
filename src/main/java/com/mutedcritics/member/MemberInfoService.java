@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MemberInfoService {
 
-    private final MemberInfoRepo repo;
+    private final MemberInfoRepository repo;
 
     // 회원 리스트 조회 (페이징, 검색, 정렬)
     public Map<String, Object> memberList(int page, int size, String keyword, String sortField, String sortDirection) {

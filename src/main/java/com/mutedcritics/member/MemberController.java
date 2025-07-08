@@ -101,7 +101,7 @@ public class MemberController {
     }
 
     // 관리자 권한 부여
-    @GetMapping("/member/grant_admin/{member_id}")
+    @GetMapping("/admin/{member_id}")
     public Map<String, Object> grant_admin(@PathVariable String member_id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<String, Object>();
 
