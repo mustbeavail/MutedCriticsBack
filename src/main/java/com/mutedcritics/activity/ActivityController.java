@@ -12,4 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ActivityController {
 
+    // 오늘 날짜 기준 총 일일 접속자 수
+
 }

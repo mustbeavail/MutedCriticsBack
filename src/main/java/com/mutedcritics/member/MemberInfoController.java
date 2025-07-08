@@ -25,7 +25,7 @@ public class MemberInfoController {
     private final MemberInfoService service;
 
     // 회원 리스트 보기 (정렬, 검색 기능 필요)
-    @GetMapping("/member_list/{page}")
+    @GetMapping("/memberInfo/list/{page}")
     public Map<String, Object> memberList(
             @PathVariable(required = false) Integer page,
             @RequestParam(required = false) String keyword,
