@@ -55,5 +55,5 @@ public class Member {
     private boolean adminYn;
 
     @Column(name = "accept_yn")
-    private boolean acceptYn;
+    private boolean acceptYn = false;
 }
