@@ -3,8 +3,51 @@
 
 <mapper namespace="com.mutedcritics.inquirystat.dao.InquiryStatDAO">
 
-    <!-- 특정 날짜의 일일 통계 데이터 업데이트 -->
-    <insert id="updateDailyStats">
+    <!-- 문의/신고 상태 변경 시 미처리 건수 업데이트 (효율적인 실시간 업데이트) -->
+    <update id="updateUnresolvedCount">
+        UPDATE stats_inquiry_daily 
+        SET unresolved_total = unresolved_total - 1
+        WHERE stats_date = #{statsDate}
+          AND ticket_type = #{ticketType}
+          AND category = #{category}
+          AND unresolved_total > 0
+    </update>
+
+    <!-- 특정 날짜의 일일 통계 데이터 전체 재계산 (수동 업데이트용) -->
+    <update id="updateDailyStats">
+        UPDATE stats_inquiry_daily 
+        SET 
+            daily_ticket_count = (
+                SELECT COUNT(*) 
+                FROM inquiry i 
+                JOIN user u ON i.user_id = u.user_id 
+                WHERE DATE(i.created_at) = #{targetDate} 
+                  AND i.type = stats_inquiry_daily.ticket_type 
+                  AND i.category = stats_inquiry_daily.category
+            ),
+            unresolved_total = (
+                SELECT COUNT(*) 
+                FROM inquiry i 
+                JOIN user u ON i.user_id = u.user_id 
+                WHERE DATE(i.created_at) = #{targetDate} 
+                  AND i.type = stats_inquiry_daily.ticket_type 
+                  AND i.category = stats_inquiry_daily.category
+                  AND i.status = '미처리'
+            ),
+            vip_ticket_count = (
+                SELECT COUNT(*) 
+                FROM inquiry i 
+                JOIN user u ON i.user_id = u.user_id 
+                WHERE DATE(i.created_at) = #{targetDate} 
+                  AND i.type = stats_inquiry_daily.ticket_type 
+                  AND i.category = stats_inquiry_daily.category
+                  AND u.vip_yn = 1
+            )
+        WHERE stats_date = #{targetDate}
+    </update>
+
+    <!-- 특정 날짜의 새로운 통계 데이터 삽입 (존재하지 않는 경우만) -->
+    <insert id="insertNewDailyStats">
         INSERT INTO stats_inquiry_daily (stats_date, ticket_type, category, daily_ticket_count, unresolved_total, vip_ticket_count)
         SELECT
             DATE(i.created_at) AS stats_date,
@@ -16,11 +59,13 @@
         FROM inquiry i
         JOIN user u ON i.user_id = u.user_id
         WHERE DATE(i.created_at) = #{targetDate}
+          AND NOT EXISTS (
+              SELECT 1 FROM stats_inquiry_daily s 
+              WHERE s.stats_date = DATE(i.created_at) 
+                AND s.ticket_type = i.type 
+                AND s.category = i.category
+          )
         GROUP BY i.type, i.category
-        ON DUPLICATE KEY UPDATE
-            daily_ticket_count = VALUES(daily_ticket_count),
-            unresolved_total = VALUES(unresolved_total),
-            vip_ticket_count = VALUES(vip_ticket_count)
     </insert>
 
     <!-- 기간별 일일 통계 데이터 일괄 삽입 -->
@@ -42,5 +87,25 @@
             unresolved_total = VALUES(unresolved_total),
             vip_ticket_count = VALUES(vip_ticket_count)
     </insert>
+
+    <!-- 특정 날짜의 통계 데이터 존재 여부 확인 -->
+    <select id="checkStatsExists" resultType="int">
+        SELECT COUNT(*) 
+        FROM stats_inquiry_daily 
+        WHERE stats_date = #{targetDate}
+    </select>
+
+    <!-- 기간별 일별 신고/문의 건수 조회 (그래프용) -->
+    <select id="getTicketCountsByPeriod" resultType="map">
+        SELECT 
+            stats_date,
+            SUM(CASE WHEN ticket_type = '문의' THEN daily_ticket_count ELSE 0 END) as inquiry_count,
+            SUM(CASE WHEN ticket_type = '신고' THEN daily_ticket_count ELSE 0 END) as report_count,
+            SUM(daily_ticket_count) as total_count
+        FROM stats_inquiry_daily
+        WHERE stats_date BETWEEN #{startDate} AND #{endDate}
+        GROUP BY stats_date
+        ORDER BY stats_date ASC
+    </select>
 
 </mapper>

@@ -1,6 +1,7 @@
 package com.mutedcritics.inquirystat.controller;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @CrossOrigin
@@ -56,7 +58,7 @@ public class InquiryStatController {
 
         try {
             LocalDate date = LocalDate.parse(targetDate);
-            service.updateDailyStatsAuto(date);
+            service.updateDailyStatsManual(date);
 
             result.put("success", true);
             result.put("message", "일일 통계 데이터가 성공적으로 업데이트되었습니다.");
@@ -66,6 +68,36 @@ public class InquiryStatController {
             log.error("일일 통계 업데이트 실패: {}", targetDate, e);
             result.put("success", false);
             result.put("message", "일일 통계 업데이트 중 오류가 발생했습니다: " + e.getMessage());
+        }
+
+        return result;
+    }
+
+    // === 조회 API ===
+
+    // 기간별 일별 신고/문의 건수 조회 (그래프용)
+    @GetMapping("/inquiry/stats")
+    public Map<String, Object> getTicketStats(
+            @RequestParam String startDate,
+            @RequestParam String endDate) {
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+
+            List<Map<String, Object>> stats = service.getTicketCountsByPeriod(start, end);
+
+            result.put("success", true);
+            result.put("data", stats);
+            result.put("startDate", startDate);
+            result.put("endDate", endDate);
+            result.put("message", "기간별 신고/문의 건수 조회가 완료되었습니다.");
+
+        } catch (Exception e) {
+            log.error("기간별 신고/문의 건수 조회 실패: {} ~ {}", startDate, endDate, e);
+            result.put("success", false);
+            result.put("message", "기간별 신고/문의 건수 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
 
         return result;

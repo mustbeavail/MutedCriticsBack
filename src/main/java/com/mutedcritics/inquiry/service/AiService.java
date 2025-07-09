@@ -80,14 +80,25 @@ public class AiService {
 
         inquiryRepository.save(inquiry);
 
-        // 상태가 변경된 경우 통계 업데이트
+        // 상태가 변경된 경우 통계 업데이트 (미처리 → 완료)
         if (!"완료".equals(previousStatus)) {
             log.info("문의/신고 상태 변경 감지 - ID: {}, 이전 상태: {}, 현재 상태: 완료",
                     inquiry.getInquiryIdx(), previousStatus);
 
-            // 해당 문의/신고가 생성된 날짜의 통계 업데이트
+            // 해당 문의/신고의 미처리 건수만 효율적으로 업데이트
             LocalDate createdDate = inquiry.getCreatedAt().toLocalDate();
-            inquiryStatService.updateDailyStatsAuto(createdDate);
+            String ticketType = inquiry.getType();
+            String category = inquiry.getCategory();
+
+            try {
+                inquiryStatService.updateUnresolvedCountAuto(createdDate, ticketType, category);
+                log.info("미처리 건수 자동 업데이트 성공 - 문의/신고 ID: {}, 날짜: {}, 타입: {}, 카테고리: {}",
+                        inquiry.getInquiryIdx(), createdDate, ticketType, category);
+            } catch (Exception e) {
+                log.error("미처리 건수 자동 업데이트 실패 - 문의/신고 ID: {}, 날짜: {}, 타입: {}, 카테고리: {}",
+                        inquiry.getInquiryIdx(), createdDate, ticketType, category, e);
+                // 통계 업데이트 실패가 메인 비즈니스 로직에 영향을 주지 않도록 예외를 다시 던지지 않음
+            }
         }
 
         return responseDTO.getContent();
