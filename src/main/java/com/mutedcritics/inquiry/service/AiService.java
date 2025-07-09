@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.jayway.jsonpath.JsonPath;
+import com.mutedcritics.dto.InquiryDTO;
 import com.mutedcritics.entity.Inquiry;
 import com.mutedcritics.entity.Response;
 import com.mutedcritics.inquiry.repository.InquiryRepository;
@@ -35,44 +36,30 @@ public class AiService {
     @Value("${gemini.api.url}")
     private String geminiApiUrl;
 
-    // 답변이 없는 모든 문의/신고를 배치 처리
+    // 상담사 지원용 AI 답변 생성
+    public String generateAiResponseForAgent(Integer inquiryId) {
+        log.info("AI 답변 생성 요청 (상담사 지원) - Inquiry ID: {}", inquiryId);
+
+        Inquiry inquiry = repository.findById(inquiryId)
+                .orElseThrow(() -> new RuntimeException("Inquiry not found with id: " + inquiryId));
+
+        return generateAiResponse(inquiry);
+    }
+
+    // 상담사 답변 생성 및 저장
     @Transactional
-    public void processUnansweredInquiries() {
+    public String saveAgentResponse(InquiryDTO inquiryDTO) {
+        Inquiry inquiry = repository.findById(inquiryDTO.getInquiryIdx())
+                .orElseThrow(() -> new RuntimeException("Inquiry not found with id: " + inquiryDTO.getInquiryIdx()));
 
-        log.info("답변이 없는 문의/신고 AI 자동 처리 시작");
+        Response response = new Response();
+        response.setInquiry(inquiry);
+        response.setContent(inquiryDTO.getContent());
 
-        // 답변이 없는 문의/신고 조회
-        List<Inquiry> unansweredInquiries = repository.findUnansweredInquiries();
+        inquiry.getResponses().add(response);
+        repository.save(inquiry);
 
-        if (unansweredInquiries.isEmpty()) {
-            log.info("처리할 답변 없는 문의/신고가 없습니다.");
-            return;
-        }
-
-        log.info("처리할 답변 없는 문의/신고 개수 : {}", unansweredInquiries.size());
-
-        int successCount = 0;
-        int failCount = 0;
-
-        for (Inquiry inquiry : unansweredInquiries) {
-            try {
-                String aiResponse = generateAiResponse(inquiry);
-                createAiResponse(inquiry, aiResponse);
-
-                successCount++;
-                log.info("문의/신고 {} AI 자동 답변 완료 - 제목 : {}",
-                        inquiry.getInquiryIdx(), inquiry.getTitle());
-
-                Thread.sleep(5000);
-            } catch (Exception e) {
-                failCount++;
-                log.error("문의/신고 {} AI 답변 처리 중 오류 발생 - 제목: {}, 오류: {}",
-                        inquiry.getInquiryIdx(), inquiry.getTitle(), e.getMessage());
-            }
-        }
-
-        log.info("AI 자동 답변 처리 완료 - 성공: {}, 실패: {}", successCount, failCount);
-
+        return inquiryDTO.getContent();
     }
 
     // 특정 문의/신고에 대한 AI 답변 생성
@@ -180,32 +167,11 @@ public class AiService {
         }
     }
 
-    // AI 답변을 Response 엔티티로 생성 및 저장
-    private void createAiResponse(Inquiry inquiry, String content) {
-        Response response = new Response();
-        response.setInquiry(inquiry);
-        response.setContent(content);
-
-        // response 를 inquiry 의 responses 리스트에 추가
-        inquiry.getResponses().add(response);
-
-        // 저장
-        repository.save(inquiry);
-    }
-
     // API 호출 실패 시 기본 응답
     private String getDefaultResponse() {
         return "안녕하세요. 문의해 주셔서 감사합니다. " +
                 "관련 부서에서 검토 후 빠른 시일 내에 상세한 답변을 드리겠습니다. " +
                 "추가 문의사항이 있으시면 언제든지 연락 주세요.";
-    }
-
-    // findUnansweredInquiries 메서드 테스트용
-    public List<Inquiry> testFindUnansweredInquiries() {
-        log.info("답변이 없는 문의/신고 조회 테스트 시작");
-        List<Inquiry> result = repository.findUnansweredInquiries();
-        log.info("답변이 없는 문의/신고 조회 결과 - 총 {}건", result.size());
-        return result;
     }
 
 }

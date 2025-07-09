@@ -1,7 +1,5 @@
 package com.mutedcritics.inquiry.controller;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -78,13 +76,6 @@ public class InquiryController {
 
         log.info("신고 상세 조회 : {}", inquiryIdx);
         return service.getReportDetail(inquiryIdx);
-    }
-
-    // 미해결(불만족) 문의/신고 목록
-    @GetMapping("/inquiry/unsatisfactory")
-    public List<InquiryDTO> getUnsatisfactoryInquiries() {
-        log.info("미해결(불만족) 문의/신고 목록 조회");
-        return service.getUnsatisfactoryInquiries();
     }
 
 }
