@@ -11,6 +11,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -29,7 +30,7 @@ public class Response {
     private int responseIdx;
 
     // 외래키(inquiry 테이블의 inquiry_idx)
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inquiry_idx")
     @ToString.Exclude
     private Inquiry inquiry;

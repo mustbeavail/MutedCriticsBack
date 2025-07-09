@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import com.mutedcritics.entity.Inquiry;
 import com.mutedcritics.entity.QInquiry;
-import com.mutedcritics.entity.QResponse;
 import com.mutedcritics.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -137,12 +136,10 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
     @Override
     public List<Inquiry> findUnansweredInquiries() {
         QInquiry inquiry = QInquiry.inquiry;
-        QResponse response = QResponse.response;
 
-        // 답변이 없는 문의/신고 조회(response 테이블이 null 인 경우)
+        // 답변이 없는 문의/신고 조회(response 필드가 null인 경우)
         return factory.selectFrom(inquiry)
-                .leftJoin(response).on(response.inquiry.eq(inquiry))
-                .where(response.inquiry.isNull()) // response 테이블에 레코드가 없는 경우
+                .where(inquiry.response.isNull()) // response 필드가 null인 경우
                 .orderBy(inquiry.createdAt.asc()) // 오래된 순서대로 처리
                 .fetch();
     }
