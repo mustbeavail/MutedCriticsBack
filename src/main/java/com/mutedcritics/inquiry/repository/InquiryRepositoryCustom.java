@@ -20,7 +20,4 @@ public interface InquiryRepositoryCustom {
         // 답변이 없는 문의/신고 조회
         List<Inquiry> findUnansweredInquiries();
 
-        // 미해결(불만족) 문의/신고 조회
-        List<Inquiry> findUnsatisfactoryInquiries();
-
 }

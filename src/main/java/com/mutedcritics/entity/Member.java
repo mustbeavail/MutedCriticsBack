@@ -53,4 +53,7 @@ public class Member {
 
     @Column(name = "admin_yn")
     private boolean adminYn;
+
+    @Column(name = "accept_yn")
+    private boolean acceptYn;
 }

@@ -107,17 +107,4 @@ public class InquiryService {
 				.build();
 	}
 
-	// 미해결(불만족) 문의/신고 목록
-	public List<InquiryDTO> getUnsatisfactoryInquiries() {
-		List<Inquiry> inquiries = repository.findUnsatisfactoryInquiries();
-		List<InquiryDTO> dtoList = new ArrayList<>();
-
-		for (Inquiry inquiry : inquiries) {
-			InquiryDTO dto = new InquiryDTO(inquiry);
-			dtoList.add(dto);
-		}
-
-		return dtoList;
-	}
-
 }

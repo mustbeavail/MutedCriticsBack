@@ -146,15 +146,4 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
                 .orderBy(inquiry.createdAt.asc()) // 오래된 순서대로 처리
                 .fetch();
     }
-
-    @Override
-    public List<Inquiry> findUnsatisfactoryInquiries() {
-        QInquiry inquiry = QInquiry.inquiry;
-
-        // 불만족인 문의/신고 조회
-        return factory.selectFrom(inquiry)
-                .where(inquiry.status.eq("F"))
-                .orderBy(inquiry.createdAt.desc())
-                .fetch();
-    }
 }

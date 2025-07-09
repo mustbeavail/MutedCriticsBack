@@ -1,15 +1,19 @@
 package com.mutedcritics.inquiry.controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import com.mutedcritics.entity.Inquiry;
+import com.mutedcritics.dto.InquiryDTO;
 import com.mutedcritics.inquiry.service.AiService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,46 +23,42 @@ import lombok.extern.slf4j.Slf4j;
 @CrossOrigin
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/ai")
 public class AiController {
 
     private final AiService service;
 
-    // AI 자동 답변 처리
-    @PostMapping("/process-unanswered")
-    public Map<String, Object> processUnansweredInquiries() {
+    // 상담사 지원용 AI 답변 생성
+    @GetMapping("/inquiry/{inquiryId}/ai-response")
+    public ResponseEntity<?> generateAiResponse(@PathVariable Integer inquiryId) {
         Map<String, Object> result = new HashMap<>();
-
         try {
-            service.processUnansweredInquiries();
+            String aiResponse = service.generateAiResponseForAgent(inquiryId);
             result.put("success", true);
-            result.put("msg", "답변이 없는 문의/신고 AI 자동 답변 완료");
+            result.put("response", aiResponse);
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            log.error("AI 자동 답변 처리 중 오류 발생", e);
+            log.error("AI 답변 생성 중 오류 발생 inquiryId={}", inquiryId, e);
             result.put("success", false);
-            result.put("msg", "처리 중 오류가 발생했습니다." + e.getMessage());
+            result.put("msg", "AI 답변 생성 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         }
-
-        return result;
     }
 
-    // findUnansweredInquiries 메서드 테스트용 엔드포인트
-    @PostMapping("/test-unanswered")
-    public Map<String, Object> testUnansweredInquiries() {
+    // 상담사가 문의/신고에 대한 답변 작성(아까 받아온 ai 답변을 수정하여 답변 작성 후 저장)
+    @PostMapping("/inquiry/agent-response")
+    public ResponseEntity<?> saveAgentResponse(@RequestBody InquiryDTO inquiryDTO) {
         Map<String, Object> result = new HashMap<>();
-
         try {
-            List<Inquiry> unansweredList = service.testFindUnansweredInquiries();
+            String agentResponse = service.saveAgentResponse(inquiryDTO);
             result.put("success", true);
-            result.put("count", unansweredList.size());
-            result.put("msg", "답변이 없는 문의/신고 조회 완료 - 총 " + unansweredList.size() + "건");
+            result.put("response", agentResponse);
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            log.error("답변이 없는 문의/신고 조회 테스트 중 오류 발생", e);
+            log.error("상담사 답변 생성 중 오류 발생 inquiryId={}", inquiryDTO.getInquiryIdx(), e);
             result.put("success", false);
-            result.put("msg", "조회 중 오류가 발생했습니다: " + e.getMessage());
+            result.put("msg", "상담사 답변 생성 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         }
-
-        return result;
     }
 
 }
