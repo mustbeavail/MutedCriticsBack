@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mutedcritics.dto.UserStatsSeasonDTO;
 import com.mutedcritics.dto.UserStatsDTO;
 import com.mutedcritics.user.service.UserService;
 
@@ -37,15 +38,27 @@ public class UserController {
     // 유저 통계
     @GetMapping("/user/stats")
     public Map<String, Object> userStats(
-        @RequestParam String userId,
-        @RequestParam int season) {
+        @RequestParam String userId) {
 
         resp = new HashMap<String, Object>();
-        UserStatsDTO userStats = service.userStats(userId, season);
+        UserStatsDTO userStats = service.userStats(userId);
 
         resp.put("userStats", userStats);
 
         return resp;
     }
     
+    // 유저 시즌별 통계
+    @GetMapping("/user/stats/season")
+    public Map<String, Object> userStatsSeason(
+        @RequestParam String userId,
+        @RequestParam int season) {
+        resp = new HashMap<String, Object>();
+        UserStatsSeasonDTO userStatsSeason = service.userStatsSeason(userId, season);
+
+        resp.put("userStatsSeason", userStatsSeason);
+
+        return resp;
+    }
+
 }

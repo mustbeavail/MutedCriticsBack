@@ -59,5 +59,9 @@ public interface MemberInfoRepository extends JpaRepository<Member, String> {
         
         return sort;
     }
+    
+    // 승인 여부에 따른 회원 조회
+    @Query("SELECT m FROM Member m WHERE m.acceptYn = :acceptYn")
+    List<Member> findAllByAcceptYn(@Param("acceptYn") boolean acceptYn);
 
 }

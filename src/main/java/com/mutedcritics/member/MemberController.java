@@ -71,6 +71,16 @@ public class MemberController {
         return result;
     }
 
+    // 중복 확인
+    @PostMapping("/member/overlay_id")
+    public Map<String, Object> overlayId(@RequestBody Map<String, String> params) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        String member_id = params.get("member_id");
+        boolean used = service.overlayId(member_id);
+        result.put("used", used);
+        return result;
+    }
+
     // 회원가입
     @PostMapping("/member/join")
     public Map<String, Object> join(@RequestBody Member params) {
@@ -81,7 +91,7 @@ public class MemberController {
         result.put("success", success);
         
         if (success) {
-            result.put("message", "회원가입 요청을 성공적으로 접수했습니다. 관리자 승인 후 이용 가능합니다.");
+            result.put("message", "회원가입 요청을 성공적으로 접수했습니다. 관리자 승인 후 서비스 이용이 가능합니다.");
         } else {
             result.put("message", "회원가입에 실패했습니다.");
         }
@@ -188,7 +198,7 @@ public class MemberController {
     }
     
     // 계정 승인
-    @GetMapping("/member/accept/{member_id}")
+    @GetMapping("/admin/accept/{member_id}")
     public Map<String, Object> acceptMember(@PathVariable String member_id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<String, Object>();
         
@@ -199,6 +209,7 @@ public class MemberController {
             result.put("message", "인증 토큰이 필요합니다.");
             return result;
         }
+        
         Map<String, Object> payload = JwtUtil.readToken(token);
         String requesterId = (String) payload.get("member_id");
         if (requesterId == null || requesterId.isEmpty()) {
@@ -230,6 +241,47 @@ public class MemberController {
             result.put("message", "계정이 승인되었습니다.");
         } else {
             result.put("message", "계정 승인에 실패했습니다.");
+        }
+        return result;
+    }
+    
+    // 계정 승인 거절
+    @GetMapping("/admin/reject/{member_id}")
+    public Map<String, Object> rejectMember(@PathVariable String member_id, HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        
+        // 토큰 검증
+        String token = request.getHeader("authorization");
+        if (token == null || token.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "인증 토큰이 필요합니다.");
+            return result;
+        }
+        
+        Map<String, Object> payload = JwtUtil.readToken(token);
+        String requesterId = (String) payload.get("member_id");
+        if (requesterId == null || requesterId.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "유효하지 않은 토큰입니다.");
+            return result;
+        }
+
+        if (!service.isAdmin(requesterId)) {
+            result.put("success", false);
+            result.put("message", "관리자 권한이 필요합니다.");
+            return result;
+        }
+
+        // 계정 승인 거절 처리
+        boolean success = service.rejectMember(member_id);
+        
+        result.put("success", success);
+        if (success) {
+            result.put("message", "계정 승인이 거절되었습니다.");
+            log.info("계정 승인 거절 처리 완료: {}, 처리자: {}", member_id, requesterId);
+        } else {
+            result.put("message", "계정 승인 거절에 실패했습니다.");
+            log.warn("계정 승인 거절 실패: {}, 처리자: {}", member_id, requesterId);
         }
         return result;
     }

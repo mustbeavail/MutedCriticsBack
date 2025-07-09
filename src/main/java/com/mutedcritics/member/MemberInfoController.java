@@ -1,16 +1,20 @@
 package com.mutedcritics.member;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mutedcritics.entity.Member;
 import com.mutedcritics.utils.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -33,37 +37,118 @@ public class MemberInfoController {
             @RequestParam(defaultValue = "asc") String sortDirection,
             HttpServletRequest request) {
         
+        // 토큰 검증
         String token = request.getHeader("authorization");
         if (token == null || token.isEmpty()) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            return errorResponse;
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", false);
+            result.put("message", "인증 토큰이 필요합니다.");
+            return result;
+        }
+        Map<String, Object> payload = JwtUtil.readToken(token);
+        String memberId = (String) payload.get("member_id");
+        
+        if (memberId == null || memberId.isEmpty()) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", false);
+            result.put("message", "유효하지 않은 토큰입니다.");
+            return result;
         }
         
-        try {
-            Map<String, Object> payload = JwtUtil.readToken(token);
-            String memberId = (String) payload.get("member_id");
-            
-            if (memberId == null || memberId.isEmpty()) {
-                Map<String, Object> errorResponse = new HashMap<>();
-                errorResponse.put("success", false);
-                return errorResponse;
-            }
-            
-            int pageNumber = page;
-            int size = 10;
-            
-            log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}", 
-                    pageNumber, keyword, sortField, sortDirection);
-            return service.memberList(pageNumber, size, keyword, sortField, sortDirection); // 회원 리스트 조회
-            
-        } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            return errorResponse;
-        }
+        int pageNumber = page;
+        int size = 10;
+        
+        log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}", 
+                pageNumber, keyword, sortField, sortDirection);
+        return service.memberList(pageNumber, size, keyword, sortField, sortDirection);
     }
 
-    // 회원 정보 수정
+    // 회원 정보 수정 (관리자만 가능)
+    @PostMapping("/memberInfo/update/{member_id}")
+    public Map<String, Object> updateMember(@PathVariable String member_id, @RequestBody Map<String, String> params, HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        
+        // 토큰 검증
+        String token = request.getHeader("authorization");
+        if (token == null || token.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "인증 토큰이 필요합니다.");
+            return result;
+        }
+        Map<String, Object> payload = JwtUtil.readToken(token);
+        String requesterId = (String) payload.get("member_id");
+        if (requesterId == null || requesterId.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "유효하지 않은 토큰입니다.");
+            return result;
+        }
+        
+        // 관리자 권한 확인
+        if (!service.isAdmin(requesterId)) {
+            log.warn("회원 정보 수정 실패: 요청자({})가 관리자가 아닙니다", requesterId);
+            result.put("success", false);
+            result.put("message", "관리자 권한이 필요합니다.");
+            return result;
+        }
+        
+        log.info("회원 정보 수정 요청 파라미터: {}", params);
+        String email = params.get("email");
+        String member_name = params.get("member_name");
+        String office_phone = params.get("office_phone");
+        String mobile_phone = params.get("mobile_phone");
+        String position = params.get("position");
+        String dept_name = params.get("dept_name");
+
+        boolean success = service.updateMember(member_id, email, member_name, office_phone, mobile_phone, position, dept_name, requesterId);
+        result.put("success", success);
+        
+        if (success) {
+            result.put("message", "회원 정보가 수정되었습니다.");
+        } else {
+            result.put("message", "회원 정보 수정에 실패했습니다.");
+        }
+        return result;
+    }
+
+    // 가입 대기 인원 리스트
+    @GetMapping("/memberInfo/waitingList")
+    public Map<String, Object> waitingList(HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        // 토큰 검증
+        String token = request.getHeader("authorization");
+        if (token == null || token.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "인증 토큰이 필요합니다.");
+            return result;
+        }
+        
+        Map<String, Object> payload = JwtUtil.readToken(token);
+        String memberId = (String) payload.get("member_id");
+        if (memberId == null || memberId.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "유효하지 않은 토큰입니다.");
+            return result;
+        }
+
+        // 관리자 권한 확인
+        if (!service.isAdmin(memberId)) {
+            log.warn("가입 대기 인원 조회 실패: 요청자({})가 관리자가 아닙니다", memberId);
+            result.put("success", false);
+            result.put("message", "관리자 권한이 필요합니다.");
+            return result;
+        }
+
+        // 가입 대기 인원 조회
+        List<Member> waitingMembers = service.waitingList();
+        
+        result.put("success", true);
+        result.put("waitingList", waitingMembers);
+        result.put("count", waitingMembers.size());
+        
+        log.info("가입 대기 인원 조회 성공: {}명", waitingMembers.size());
+        return result;
+    }
+
 
 }

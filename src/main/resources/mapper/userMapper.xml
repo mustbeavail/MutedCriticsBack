@@ -3,16 +3,214 @@
 
 <mapper namespace="com.mutedcritics.user.dao.UserDAO">
 
+    <!-- 유저 상세 정보 -->
     <select id="userDetail" resultType="com.mutedcritics.dto.UserDTO">
         SELECT *
         FROM user
         WHERE user_id = #{userId}
     </select>
 
-    <select id="userTierStats" resultType="com.mutedcritics.dto.UserTierDTO">
-        SELECT tier_name, tier_date, season_idx
-        FROM tier
-        WHERE user_id = #{userId} AND season_idx = #{season}
+    <!-- 유저 통계 -->
+    <select id="userStats" resultType="com.mutedcritics.dto.UserStatsDTO">
+        WITH
+        last_access AS (
+                SELECT COALESCE(CAST(MAX(access_time) AS DATETIME), '9999-12-31 23:59:59') AS last_access
+                FROM access_stats
+                WHERE user_id = #{userId}
+        ),
+        total_spending AS (
+                SELECT COALESCE(
+                        SUM(
+                        CASE ol.item_cate
+                                WHEN 'item'   THEN il.item_price
+                                WHEN 'bundle' THEN bi.bundle_price
+                        END
+                        ), 0
+                    ) AS total_spending
+                FROM   order_list ol
+                LEFT   JOIN item_list   il ON il.item_idx   = ol.item_idx  AND ol.item_cate = 'item'
+                LEFT   JOIN bundle_item bi ON bi.bundle_idx = ol.item_idx  AND ol.item_cate = 'bundle'
+                WHERE ol.user_id = #{userId}
+        ),
+        play_stats AS (
+            SELECT
+                COALESCE(SUM(mr.match_play_time), 0)                                                       AS total_play_time,
+                COALESCE(SUM(CASE WHEN h.role = '돌격' THEN mr.match_play_time END), 0)                    AS total_play_time_돌격,
+                COALESCE(SUM(CASE WHEN h.role = '공격' THEN mr.match_play_time END), 0)                    AS total_play_time_공격,
+                COALESCE(SUM(CASE WHEN h.role = '수비' THEN mr.match_play_time END), 0)                    AS total_play_time_수비,
+                COALESCE(SUM(CASE WHEN mt.match_mode = '빠른대전' THEN mr.match_play_time END), 0)         AS total_play_time_빠른대전,
+                COALESCE(SUM(CASE WHEN mt.match_mode = '경쟁전' THEN mr.match_play_time END), 0)           AS total_play_time_경쟁전,
+                COALESCE(SUM(CASE WHEN h.heroes_name = 'DVa'          THEN mr.match_play_time END), 0)     AS total_play_time_DVa,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '둠피스트'      THEN mr.match_play_time END), 0)     AS total_play_time_둠피스트,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '라마트라'      THEN mr.match_play_time END), 0)     AS total_play_time_라마트라,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '라인하르트'    THEN mr.match_play_time END), 0)     AS total_play_time_라인하르트,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '레킹볼'        THEN mr.match_play_time END), 0)     AS total_play_time_레킹볼,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '로드호그'      THEN mr.match_play_time END), 0)     AS total_play_time_로드호그,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '마우가'        THEN mr.match_play_time END), 0)     AS total_play_time_마우가,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '시그마'        THEN mr.match_play_time END), 0)     AS total_play_time_시그마,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '오리사'        THEN mr.match_play_time END), 0)     AS total_play_time_오리사,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '윈스턴'        THEN mr.match_play_time END), 0)     AS total_play_time_윈스턴,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '자리야'        THEN mr.match_play_time END), 0)     AS total_play_time_자리야,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '정커퀸'        THEN mr.match_play_time END), 0)     AS total_play_time_정커퀸,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '해저드'        THEN mr.match_play_time END), 0)     AS total_play_time_해저드,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '겐지'          THEN mr.match_play_time END), 0)     AS total_play_time_겐지,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '리퍼'          THEN mr.match_play_time END), 0)     AS total_play_time_리퍼,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '메이'          THEN mr.match_play_time END), 0)     AS total_play_time_메이,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '바스티온'      THEN mr.match_play_time END), 0)     AS total_play_time_바스티온,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '벤처'          THEN mr.match_play_time END), 0)     AS total_play_time_벤처,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '소전'          THEN mr.match_play_time END), 0)     AS total_play_time_소전,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '솔저'          THEN mr.match_play_time END), 0)     AS total_play_time_솔저,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '솜브라'        THEN mr.match_play_time END), 0)     AS total_play_time_솜브라,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '시메트라'      THEN mr.match_play_time END), 0)     AS total_play_time_시메트라,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '애쉬'          THEN mr.match_play_time END), 0)     AS total_play_time_애쉬,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '에코'          THEN mr.match_play_time END), 0)     AS total_play_time_에코,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '위도우메이커'  THEN mr.match_play_time END), 0)     AS total_play_time_위도우메이커,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '정크랫'        THEN mr.match_play_time END), 0)     AS total_play_time_정크랫,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '캐서디'        THEN mr.match_play_time END), 0)     AS total_play_time_캐서디,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '토르비욘'      THEN mr.match_play_time END), 0)     AS total_play_time_토르비욘,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '트레이서'      THEN mr.match_play_time END), 0)     AS total_play_time_트레이서,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '파라'          THEN mr.match_play_time END), 0)     AS total_play_time_파라,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '프레야'        THEN mr.match_play_time END), 0)     AS total_play_time_프레야,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '한조'          THEN mr.match_play_time END), 0)     AS total_play_time_한조,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '라이프위버'    THEN mr.match_play_time END), 0)     AS total_play_time_라이프위버,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '루시우'        THEN mr.match_play_time END), 0)     AS total_play_time_루시우,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '메르시'        THEN mr.match_play_time END), 0)     AS total_play_time_메르시,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '모이라'        THEN mr.match_play_time END), 0)     AS total_play_time_모이라,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '바티스트'      THEN mr.match_play_time END), 0)     AS total_play_time_바티스트,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '브리기테'      THEN mr.match_play_time END), 0)     AS total_play_time_브리기테,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '아나'          THEN mr.match_play_time END), 0)     AS total_play_time_아나,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '일리아리'      THEN mr.match_play_time END), 0)     AS total_play_time_일리아리,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '젠야타'        THEN mr.match_play_time END), 0)     AS total_play_time_젠야타,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '주노'          THEN mr.match_play_time END), 0)     AS total_play_time_주노,
+                COALESCE(SUM(CASE WHEN h.heroes_name = '키리코'        THEN mr.match_play_time END), 0)     AS total_play_time_키리코
+            FROM   match_result mr
+            JOIN   heroes      h  ON mr.heroes_idx = h.heroes_idx
+            JOIN   match_table mt ON mr.match_idx  = mt.match_idx
+            WHERE mr.user_id = #{userId}
+        )
+        SELECT  la.last_access,
+                ps.total_play_time,
+                ts.total_spending,
+                ps.total_play_time_돌격,
+                ps.total_play_time_공격,
+                ps.total_play_time_수비,
+                ps.total_play_time_빠른대전,
+                ps.total_play_time_경쟁전,
+                ps.total_play_time_DVa,
+                ps.total_play_time_둠피스트,
+                ps.total_play_time_라마트라,
+                ps.total_play_time_라인하르트,
+                ps.total_play_time_레킹볼,
+                ps.total_play_time_로드호그,
+                ps.total_play_time_마우가,
+                ps.total_play_time_시그마,
+                ps.total_play_time_오리사,
+                ps.total_play_time_윈스턴,
+                ps.total_play_time_자리야,
+                ps.total_play_time_정커퀸,
+                ps.total_play_time_해저드,
+                ps.total_play_time_겐지,
+                ps.total_play_time_리퍼,
+                ps.total_play_time_메이,
+                ps.total_play_time_바스티온,
+                ps.total_play_time_벤처,
+                ps.total_play_time_소전,
+                ps.total_play_time_솔저,
+                ps.total_play_time_솜브라,
+                ps.total_play_time_시메트라,
+                ps.total_play_time_애쉬,
+                ps.total_play_time_에코,
+                ps.total_play_time_위도우메이커,
+                ps.total_play_time_정크랫,
+                ps.total_play_time_캐서디,
+                ps.total_play_time_토르비욘,
+                ps.total_play_time_트레이서,
+                ps.total_play_time_파라,
+                ps.total_play_time_프레야,
+                ps.total_play_time_한조,
+                ps.total_play_time_라이프위버,
+                ps.total_play_time_루시우,
+                ps.total_play_time_메르시,
+                ps.total_play_time_모이라,
+                ps.total_play_time_바티스트,
+                ps.total_play_time_브리기테,
+                ps.total_play_time_아나,
+                ps.total_play_time_일리아리,
+                ps.total_play_time_젠야타,
+                ps.total_play_time_주노,
+                ps.total_play_time_키리코
+        FROM    last_access   la
+        CROSS   JOIN play_stats     ps
+        CROSS   JOIN total_spending ts
     </select>
+
+    <!-- 유저 시즌별 통계 -->
+    <select id="userStatsSeason" resultType="com.mutedcritics.dto.UserStatsSeasonDTO">
+        WITH
+        season_dates AS (
+            SELECT start_date, end_date
+            FROM   season
+            WHERE  season_idx = #{season}
+        ),
+        total_play_time_season AS (
+            SELECT COALESCE(SUM(mr.match_play_time), 0) AS total_play_time_season
+            FROM   match_result  mr
+            JOIN   match_table   mt ON mr.match_idx = mt.match_idx
+            JOIN   season_dates  sd ON mt.match_date BETWEEN sd.start_date AND sd.end_date
+            WHERE  mr.user_id = #{userId}
+        ),
+        user_orders_season AS (
+            SELECT ol.item_idx, ol.item_cate
+            FROM   order_list  ol
+            JOIN   season_dates sd
+                ON ol.order_date BETWEEN sd.start_date AND sd.end_date
+            WHERE  ol.user_id = #{userId}
+        ),
+        total_item_price AS (
+            SELECT COALESCE(SUM(il.item_price), 0) AS total_item_price
+            FROM   item_list il
+            JOIN   user_orders_season uos
+                ON  uos.item_idx  = il.item_idx
+                AND uos.item_cate = 'item'
+        ),
+        total_bundle_price AS (
+            SELECT COALESCE(SUM(bi.bundle_price), 0) AS total_bundle_price
+            FROM   bundle_item bi
+            JOIN   user_orders_season uos
+                ON  uos.item_idx  = bi.bundle_idx
+                AND uos.item_cate = 'bundle'
+        ),
+        total_spending_season AS (
+            SELECT COALESCE(
+                    SUM(
+                    CASE uos.item_cate
+                            WHEN 'item'   THEN il.item_price
+                            WHEN 'bundle' THEN bi.bundle_price
+                    END
+                    ), 0
+                ) AS total_spending_season
+            FROM   user_orders_season uos
+            LEFT   JOIN item_list   il ON il.item_idx   = uos.item_idx  AND uos.item_cate = 'item'
+            LEFT   JOIN bundle_item bi ON bi.bundle_idx = uos.item_idx  AND uos.item_cate = 'bundle'
+        ),
+        tier_season AS (
+                SELECT COALESCE( MAX(t.tier_name), '티어정보 없음') AS tier_season
+                FROM tier t
+                JOIN season_dates  sd ON t.tier_date BETWEEN sd.start_date AND sd.end_date
+                WHERE t.user_id = #{userId}
+        )
+        SELECT  tp.total_play_time_season,
+                ip.total_item_price,
+                bp.total_bundle_price,
+                sp.total_spending_season,
+                ts.tier_season
+        FROM    total_play_time_season        tp
+        CROSS   JOIN total_item_price      ip
+        CROSS   JOIN total_bundle_price    bp
+        CROSS   JOIN total_spending_season sp
+        CROSS   JOIN tier_season ts
+    </select>
+
+    
 
 </mapper>

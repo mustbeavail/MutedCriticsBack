@@ -43,16 +43,21 @@ public class MemberService {
         if (member == null) {
             return false;
         }
-        
+
         // 계정 승인 여부 확인 - 미승인 계정은 로그인 불가
         if (!member.isAcceptYn()) {
             return false;
         }
-        
+
         String hash = member.getMemberPw();
         return encoder.matches(member_pw, hash);
     }
-    
+
+    // 중복 확인
+    public boolean overlayId(String member_id) {
+        return repo.existsById(member_id);
+    }
+
     // 회원 정보 조회
     public Member getMemberById(String member_id) {
         return repo.findById(member_id).orElse(null);
@@ -233,5 +238,24 @@ public class MemberService {
         }
         return member.isAdminYn();
     }
-
+    
+    // 계정 승인 거절
+    public boolean rejectMember(String member_id) {
+        try {
+            // 회원 정보 조회
+            if (!repo.existsById(member_id)) {
+                log.warn("회원 삭제 실패: 존재하지 않는 계정 - {}", member_id);
+                return false;
+            }
+            
+            // 회원 삭제
+            repo.deleteById(member_id);
+            log.info("회원 삭제 성공: {}", member_id);
+            return true;
+        } catch (Exception e) {
+            log.error("회원 삭제 중 오류 발생: {}", e.getMessage(), e);
+            return false;
+        }
+    }
+    
 }
