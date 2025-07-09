@@ -3,6 +3,7 @@
 
 <mapper namespace="com.mutedcritics.user.dao.UserDAO">
 
+
     <!-- 유저 상세 정보 -->
     <select id="userDetail" resultType="com.mutedcritics.dto.UserDTO">
         SELECT *
