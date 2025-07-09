@@ -38,7 +38,7 @@ public class ActivityController {
 
     // 오늘 날짜 기준 총 주간 접속자 수
     @GetMapping("/activity/today_weekly_user")
-    public Map<String, Object> weekly_user() {
+    public Map<String, Object> today_weekly_user() {
         Map<String, Object> result = new HashMap<String, Object>();
         result = service.today_weekly_user();
         return result;
@@ -70,9 +70,20 @@ public class ActivityController {
             @RequestParam int toMonth,
             @RequestParam int toWeek) {
 
+        log.info("{}년 {}월 {}주 부터 {}년 {}월 {}주 까지", fromYear, fromMonth, fromWeek, toYear, toMonth, toWeek);
         return service.period_weekly_user(fromYear, fromMonth, fromWeek, toYear, toMonth, toWeek);
     }
 
     // 기간별 월간 활성 이용자 수
+    @GetMapping("/activity/period_monthly_user")
+    public Map<String, Object> period_monthly_user(
+            @RequestParam int fromYear,
+            @RequestParam int fromMonth,
+            @RequestParam int toYear,
+            @RequestParam int toMonth) {
+                
+        log.info("{}년 {}월 부터 {}년 {}월 까지", fromYear, fromMonth, toYear, toMonth);
+        return service.period_monthly_user(fromYear, fromMonth, toYear, toMonth);
+    }
 
 }

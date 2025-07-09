@@ -45,7 +45,15 @@
         SELECT COUNT(DISTINCT user_id) AS user_count
         FROM access_stats
         WHERE access_time &gt;= #{fromDate}
-        AND access_time &lt;= #{toDate}
+        AND access_time &lt; #{toDate}
+    </select>
+
+    <!-- 기간별 월간 활성 이용자 수 -->
+    <select id="period_monthly_user" resultType="map">
+        SELECT COUNT(DISTINCT user_id) AS user_count
+        FROM access_stats
+        WHERE access_time &gt;= #{fromDate}
+        AND access_time &lt; #{toDate}
     </select>
 
 </mapper>
