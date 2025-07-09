@@ -35,11 +35,8 @@ public class Response {
     private Inquiry inquiry;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "agent_id", nullable = true)
+    @JoinColumn(name = "agent_id")
     private Member agent;
-
-    @Column(name = "res_type", length = 10)
-    private String resType;
 
     @Lob
     @Column(name = "content", columnDefinition = "longtext")

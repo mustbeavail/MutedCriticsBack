@@ -42,7 +42,7 @@ public class Inquiry {
     @JoinColumn(name = "reported_id")
     private User reportedUser;
 
-    @Column(name = "type")
+    @Column(name = "type", columnDefinition = "char(2)")
     private String type;
 
     @Column(name = "category", length = 50)
@@ -55,15 +55,12 @@ public class Inquiry {
     @Column(name = "content", columnDefinition = "longtext")
     private String content;
 
-    @Column(name = "status", length = 10)
+    @Column(name = "status", length = 6)
     private String status;
 
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt;
-
-    @Column(name = "agent_res_yn")
-    private boolean agentResYn;
 
     // 응답 목록
     @OneToMany(mappedBy = "inquiry", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

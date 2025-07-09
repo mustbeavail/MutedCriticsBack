@@ -185,7 +185,6 @@ public class AiService {
         Response response = new Response();
         response.setInquiry(inquiry);
         response.setContent(content);
-        response.setResType("AI");
 
         // response 를 inquiry 의 responses 리스트에 추가
         inquiry.getResponses().add(response);

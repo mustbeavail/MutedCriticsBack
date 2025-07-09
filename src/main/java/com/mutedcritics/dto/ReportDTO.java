@@ -24,7 +24,6 @@ public class ReportDTO {
     private String content;
     private String status;
     private LocalDateTime createdAt;
-    private boolean agentResYn;
 
     public ReportDTO(Inquiry inquiry) {
         this.inquiryIdx = inquiry.getInquiryIdx();
@@ -34,7 +33,6 @@ public class ReportDTO {
         this.content = inquiry.getContent();
         this.status = inquiry.getStatus();
         this.createdAt = inquiry.getCreatedAt();
-        this.agentResYn = inquiry.isAgentResYn();
 
         if (inquiry.getUser() != null) {
             this.userId = inquiry.getUser().getUserId();
