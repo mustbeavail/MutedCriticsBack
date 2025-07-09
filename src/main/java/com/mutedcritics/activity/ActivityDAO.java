@@ -26,4 +26,7 @@ public interface ActivityDAO {
     // 기간별 주간 활성 이용자 수
     Map<String, Object> period_weekly_user(LocalDate fromDate, LocalDate toDate);
 
+    // 기간별 월간 활성 이용자 수
+    Map<String, Object> period_monthly_user(LocalDate fromDate, LocalDate toDate);
+
 }

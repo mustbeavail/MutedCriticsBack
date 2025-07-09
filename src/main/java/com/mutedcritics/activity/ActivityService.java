@@ -41,9 +41,23 @@ public class ActivityService {
 
     // 기간별 주간 활성 이용자 수
     public Map<String, Object> period_weekly_user(int fromYear, int fromMonth, int fromWeek, int toYear, int toMonth, int toWeek) {
-        LocalDate fromDate = WeekDateRange.getWeekRange(fromYear, fromMonth, fromWeek)[0];
-        LocalDate toDate = WeekDateRange.getWeekRange(toYear, toMonth, toWeek)[1];
+        LocalDate[] fromRange = DateRange.getWeekRange(fromYear, fromMonth, fromWeek);
+        LocalDate[] toRange = DateRange.getWeekRange(toYear, toMonth, toWeek);
+        
+        LocalDate fromDate = fromRange[0]; // 시작 주의 월요일
+        LocalDate toDate = toRange[1]; // 종료 주의 다음 월요일 (미포함)
+        
         return dao.period_weekly_user(fromDate, toDate);
+    }
+
+    // 기간별 월간 활성 이용자 수
+    public Map<String, Object> period_monthly_user(int fromYear, int fromMonth, int toYear, int toMonth) {
+        // 시작일: fromYear/fromMonth의 첫날
+        LocalDate fromDate = LocalDate.of(fromYear, fromMonth, 1);
+        // 종료일: toYear/toMonth의 다음 달 첫날 (종료일 미포함)
+        LocalDate toDate = LocalDate.of(toYear, toMonth, 1).plusMonths(1);
+        
+        return dao.period_monthly_user(fromDate, toDate);
     }
 
 }
