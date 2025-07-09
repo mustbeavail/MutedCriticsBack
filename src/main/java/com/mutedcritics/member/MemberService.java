@@ -203,6 +203,17 @@ public class MemberService {
         return true;
     }
 
+    // 관리자 권한 박탈
+    public boolean revoke_admin(String member_id) {
+        Member member = repo.findById(member_id).orElse(null);
+        if (member == null) {
+            return false;
+        }
+        member.setAdminYn(false);
+        repo.save(member);
+        return true;
+    }
+
     // 관리자 권한 확인
     public boolean isAdmin(String member_id) {
         Member member = repo.findById(member_id).orElse(null);
@@ -211,4 +222,5 @@ public class MemberService {
         }
         return member.isAdminYn();
     }
+
 }
