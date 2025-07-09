@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.dto.UserDTO;
+import com.mutedcritics.dto.UserStatsSeasonDTO;
 import com.mutedcritics.dto.UserStatsDTO;
 import com.mutedcritics.dto.UserTierDTO;
 import com.mutedcritics.user.dao.UserDAO;
@@ -36,17 +37,22 @@ public class UserService {
     }
 
     // 유저 통계
-    public UserStatsDTO userStats(String userId, int season) {
+    public UserStatsDTO userStats(String userId) {
 
-        UserStatsDTO resp = new UserStatsDTO();
-        resp.setUser_id(userId);
-        resp.setSeason(season);
+        UserStatsDTO userStats = dao.userStats(userId);
+        userStats.setUser_id(userId);
 
-        // 유저 티어 통계
-        UserTierDTO tierStats = dao.userTierStats(userId, season);
-        resp.setTier(tierStats);
+        return userStats;
+    }
 
-        return resp;
+    // 유저 시즌별 통계
+    public UserStatsSeasonDTO userStatsSeason(String userId, int season) {
+
+        UserStatsSeasonDTO userStatsSeason = dao.userStatsSeason(userId, season);
+        userStatsSeason.setUser_id(userId);
+        userStatsSeason.setSeason(season);
+
+        return userStatsSeason;
     }
 
 }
