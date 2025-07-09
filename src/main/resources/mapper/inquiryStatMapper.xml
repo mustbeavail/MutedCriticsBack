@@ -1,6 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC   "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mutedcritics.inquirystat.InquiryStatDAO">
+<mapper namespace="com.mutedcritics.inquirystat.dao.InquiryStatDAO">
+
+    <!-- 특정 날짜의 일일 통계 데이터 업데이트 -->
+    <insert id="updateDailyStats">
+        INSERT INTO stats_inquiry_daily (stats_date, ticket_type, category, daily_ticket_count, unresolved_total, vip_ticket_count)
+        SELECT
+            DATE(i.created_at) AS stats_date,
+            i.type AS ticket_type,
+            i.category AS category,
+            COUNT(*) AS daily_ticket_count,
+            SUM(CASE WHEN i.status = '미처리' THEN 1 ELSE 0 END) AS unresolved_total,
+            SUM(CASE WHEN u.vip_yn = 1 THEN 1 ELSE 0 END) AS vip_ticket_count
+        FROM inquiry i
+        JOIN user u ON i.user_id = u.user_id
+        WHERE DATE(i.created_at) = #{targetDate}
+        GROUP BY i.type, i.category
+        ON DUPLICATE KEY UPDATE
+            daily_ticket_count = VALUES(daily_ticket_count),
+            unresolved_total = VALUES(unresolved_total),
+            vip_ticket_count = VALUES(vip_ticket_count)
+    </insert>
+
+    <!-- 기간별 일일 통계 데이터 일괄 삽입 -->
+    <insert id="insertDailyStatsBatch">
+        INSERT INTO stats_inquiry_daily (stats_date, ticket_type, category, daily_ticket_count, unresolved_total, vip_ticket_count)
+        SELECT
+            DATE(i.created_at) AS stats_date,
+            i.type AS ticket_type,
+            i.category AS category,
+            COUNT(*) AS daily_ticket_count,
+            SUM(CASE WHEN i.status = '미처리' THEN 1 ELSE 0 END) AS unresolved_total,
+            SUM(CASE WHEN u.vip_yn = 1 THEN 1 ELSE 0 END) AS vip_ticket_count
+        FROM inquiry i
+        JOIN user u ON i.user_id = u.user_id
+        WHERE DATE(i.created_at) BETWEEN #{startDate} AND #{endDate}
+        GROUP BY DATE(i.created_at), i.type, i.category
+        ON DUPLICATE KEY UPDATE
+            daily_ticket_count = VALUES(daily_ticket_count),
+            unresolved_total = VALUES(unresolved_total),
+            vip_ticket_count = VALUES(vip_ticket_count)
+    </insert>
 
 </mapper>

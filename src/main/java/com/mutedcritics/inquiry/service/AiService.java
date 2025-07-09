@@ -17,11 +17,14 @@ import com.mutedcritics.entity.Inquiry;
 import com.mutedcritics.entity.Member;
 import com.mutedcritics.entity.Response;
 import com.mutedcritics.inquiry.repository.InquiryRepository;
+import com.mutedcritics.inquirystat.service.InquiryStatService;
 import com.mutedcritics.member.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
 
 @Service
 @Slf4j
@@ -30,6 +33,7 @@ public class AiService {
 
     private final InquiryRepository inquiryRepository;
     private final MemberRepository memberRepository;
+    private final InquiryStatService inquiryStatService;
 
     private final WebClient webClient;
 
@@ -58,6 +62,9 @@ public class AiService {
         Member agent = memberRepository.findById(responseDTO.getAgentId())
                 .orElseThrow(() -> new RuntimeException("Agent not found with id: " + responseDTO.getAgentId()));
 
+        // 이전 상태 저장
+        String previousStatus = inquiry.getStatus();
+
         Response response = inquiry.getResponse();
         if (response == null) {
             // 새로운 응답 생성
@@ -72,6 +79,16 @@ public class AiService {
         inquiry.setStatus("완료");
 
         inquiryRepository.save(inquiry);
+
+        // 상태가 변경된 경우 통계 업데이트
+        if (!"완료".equals(previousStatus)) {
+            log.info("문의/신고 상태 변경 감지 - ID: {}, 이전 상태: {}, 현재 상태: 완료",
+                    inquiry.getInquiryIdx(), previousStatus);
+
+            // 해당 문의/신고가 생성된 날짜의 통계 업데이트
+            LocalDate createdDate = inquiry.getCreatedAt().toLocalDate();
+            inquiryStatService.updateDailyStatsAuto(createdDate);
+        }
 
         return responseDTO.getContent();
     }

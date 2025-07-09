@@ -6,20 +6,20 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "stats_support_daily", uniqueConstraints = @UniqueConstraint(columnNames = { "stats_date", "ticket_type",
+@Table(name = "stats_inquiry_daily", uniqueConstraints = @UniqueConstraint(columnNames = { "stats_date", "ticket_type",
         "category" }))
 @Data
-public class StatsSupportDaily {
+public class StatsInquiryDaily {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "support_stats_id")
-    private Long supportStatsId;
+    @Column(name = "inquiry_stats_id")
+    private Long inquiryStatsId;
 
     @Column(name = "stats_date", nullable = false)
     private LocalDate statsDate;
 
-    @Column(name = "ticket_type", length = 20)
+    @Column(name = "ticket_type", columnDefinition = "char(2)")
     private String ticketType;
 
     @Column(name = "category", length = 50)
