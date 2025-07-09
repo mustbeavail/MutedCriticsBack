@@ -1,6 +1,7 @@
 package com.mutedcritics.user.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -63,5 +64,11 @@ public class UserController {
     }
 
     // 유저 지출 상세내역
+    @GetMapping("/user/spending")
+    public Map<String, Object> userSpending(@RequestParam String userId) {
+        resp = new HashMap<String, Object>();
+        resp = service.userSpending(userId);
+        return resp;
+    }
 
 }

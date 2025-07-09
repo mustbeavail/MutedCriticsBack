@@ -19,5 +19,6 @@ public interface UserDAO {
 
     UserStatsDTO userStats(String userId);
 
+    List<Map<String, Object>> userSpending(String userId);
 
 }
