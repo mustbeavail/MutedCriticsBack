@@ -12,10 +12,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.jayway.jsonpath.JsonPath;
-import com.mutedcritics.dto.InquiryDTO;
+import com.mutedcritics.dto.ResponseDTO;
 import com.mutedcritics.entity.Inquiry;
+import com.mutedcritics.entity.Member;
 import com.mutedcritics.entity.Response;
 import com.mutedcritics.inquiry.repository.InquiryRepository;
+import com.mutedcritics.member.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,8 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class AiService {
 
-    private final InquiryRepository repository;
+    private final InquiryRepository inquiryRepository;
+    private final MemberRepository memberRepository;
 
     private final WebClient webClient;
 
@@ -40,7 +43,7 @@ public class AiService {
     public String generateAiResponseForAgent(Integer inquiryId) {
         log.info("AI 답변 생성 요청 (상담사 지원) - Inquiry ID: {}", inquiryId);
 
-        Inquiry inquiry = repository.findById(inquiryId)
+        Inquiry inquiry = inquiryRepository.findById(inquiryId)
                 .orElseThrow(() -> new RuntimeException("Inquiry not found with id: " + inquiryId));
 
         return generateAiResponse(inquiry);
@@ -48,18 +51,23 @@ public class AiService {
 
     // 상담사 답변 생성 및 저장
     @Transactional
-    public String saveAgentResponse(InquiryDTO inquiryDTO) {
-        Inquiry inquiry = repository.findById(inquiryDTO.getInquiryIdx())
-                .orElseThrow(() -> new RuntimeException("Inquiry not found with id: " + inquiryDTO.getInquiryIdx()));
+    public String saveAgentResponse(ResponseDTO responseDTO) {
+        Inquiry inquiry = inquiryRepository.findById(responseDTO.getInquiryIdx())
+                .orElseThrow(() -> new RuntimeException("Inquiry not found with id: " + responseDTO.getInquiryIdx()));
+
+        Member agent = memberRepository.findById(responseDTO.getAgentId())
+                .orElseThrow(() -> new RuntimeException("Agent not found with id: " + responseDTO.getAgentId()));
 
         Response response = new Response();
         response.setInquiry(inquiry);
-        response.setContent(inquiryDTO.getContent());
+        response.setAgent(agent);
+        response.setContent(responseDTO.getContent());
+        inquiry.setStatus("완료");
 
         inquiry.getResponses().add(response);
-        repository.save(inquiry);
+        inquiryRepository.save(inquiry);
 
-        return inquiryDTO.getContent();
+        return responseDTO.getContent();
     }
 
     // 특정 문의/신고에 대한 AI 답변 생성
