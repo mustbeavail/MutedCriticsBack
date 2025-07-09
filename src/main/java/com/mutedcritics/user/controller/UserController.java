@@ -25,6 +25,7 @@ public class UserController {
 
     Map<String, Object> resp = null;
 
+    
     // 유저 상세 정보
     @GetMapping("/user/detail")
     public Map<String, Object> userDetail(@RequestParam String userId) {
@@ -60,5 +61,7 @@ public class UserController {
 
         return resp;
     }
+
+    // 유저 지출 상세내역
 
 }

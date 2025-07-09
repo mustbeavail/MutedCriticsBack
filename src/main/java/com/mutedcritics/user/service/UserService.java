@@ -1,5 +1,6 @@
 package com.mutedcritics.user.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Service;
 import com.mutedcritics.dto.UserDTO;
 import com.mutedcritics.dto.UserStatsSeasonDTO;
 import com.mutedcritics.dto.UserStatsDTO;
-import com.mutedcritics.dto.UserTierDTO;
 import com.mutedcritics.user.dao.UserDAO;
 
 import lombok.RequiredArgsConstructor;
@@ -54,5 +54,7 @@ public class UserService {
 
         return userStatsSeason;
     }
+
+
 
 }
