@@ -111,27 +111,52 @@ public class MemberController {
             result.put("success", false);
             return result;
         }
-
         Map<String, Object> payload = JwtUtil.readToken(token);
         String requesterId = (String) payload.get("member_id");
-
         if (requesterId == null || requesterId.isEmpty()) {
             result.put("success", false);
             return result;
         }
 
-        // 관리자 권한 확인 - 요청자가 관리자인지 체크
         if (!service.isAdmin(requesterId)) {
             log.info("관리자 권한 부여 실패: 요청자({})가 관리자가 아닙니다", requesterId);
             result.put("success", false);
             return result;
         }
 
-        // 관리자 권한 부여
         boolean success = service.grant_admin(member_id);
         result.put("success", success);
         return result;
 
+    }
+
+    // 관리자 권한 박탈
+    @GetMapping("/admin/revoke/{member_id}")
+    public Map<String, Object> revoke_admin(@PathVariable String member_id, HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        
+        // 토큰 검증
+        String token = request.getHeader("authorization");
+        if (token == null || token.isEmpty()) {
+            result.put("success", false);
+            return result;
+        }
+        Map<String, Object> payload = JwtUtil.readToken(token);
+        String requesterId = (String) payload.get("member_id");
+        if (requesterId == null || requesterId.isEmpty()) {
+            result.put("success", false);
+            return result;
+        }
+
+        if (!service.isAdmin(requesterId)) {
+            log.info("관리자 권한 부여 실패: 요청자({})가 관리자가 아닙니다", requesterId);
+            result.put("success", false);
+            return result;
+        }
+
+        boolean success = service.revoke_admin(member_id);
+        result.put("success", success);
+        return result;
     }
 
 }
