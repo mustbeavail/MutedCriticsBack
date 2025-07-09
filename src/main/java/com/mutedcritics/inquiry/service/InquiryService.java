@@ -83,7 +83,8 @@ public class InquiryService {
 	private InquiryReportDetailDTO convertToDetailDTO(Inquiry inquiry) {
 		List<ResponseDTO> responseDTOs = new ArrayList<>();
 
-		for (Response response : inquiry.getResponses()) {
+		Response response = inquiry.getResponse();
+		if (response != null) {
 			ResponseDTO responseDTO = ResponseDTO.builder()
 					.responseIdx(response.getResponseIdx())
 					.inquiryIdx(response.getInquiry().getInquiryIdx())

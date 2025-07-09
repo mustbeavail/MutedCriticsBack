@@ -58,13 +58,19 @@ public class AiService {
         Member agent = memberRepository.findById(responseDTO.getAgentId())
                 .orElseThrow(() -> new RuntimeException("Agent not found with id: " + responseDTO.getAgentId()));
 
-        Response response = new Response();
-        response.setInquiry(inquiry);
+        Response response = inquiry.getResponse();
+        if (response == null) {
+            // 새로운 응답 생성
+            response = new Response();
+            response.setInquiry(inquiry);
+            inquiry.setResponse(response);
+        }
+
+        // 응답 내용 업데이트
         response.setAgent(agent);
         response.setContent(responseDTO.getContent());
         inquiry.setStatus("완료");
 
-        inquiry.getResponses().add(response);
         inquiryRepository.save(inquiry);
 
         return responseDTO.getContent();
