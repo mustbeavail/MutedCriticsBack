@@ -81,7 +81,7 @@ public class MemberController {
         result.put("success", success);
         
         if (success) {
-            result.put("message", "회원가입 요청을 성공적으로 접수했습니다. 관리자 승인 후 이용 가능합니다.");
+            result.put("message", "회원가입 요청을 성공적으로 접수했습니다. 관리자 승인 후 서비스 이용이 가능합니다.");
         } else {
             result.put("message", "회원가입에 실패했습니다.");
         }
@@ -199,6 +199,7 @@ public class MemberController {
             result.put("message", "인증 토큰이 필요합니다.");
             return result;
         }
+        
         Map<String, Object> payload = JwtUtil.readToken(token);
         String requesterId = (String) payload.get("member_id");
         if (requesterId == null || requesterId.isEmpty()) {
@@ -230,6 +231,54 @@ public class MemberController {
             result.put("message", "계정이 승인되었습니다.");
         } else {
             result.put("message", "계정 승인에 실패했습니다.");
+        }
+        return result;
+    }
+
+    // 회원 정보 수정 (관리자만 가능)
+    @PostMapping("/member/update/{member_id}")
+    public Map<String, Object> updateMember(@PathVariable String member_id, @RequestBody Map<String, String> params, HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        
+        // 토큰 검증
+        String token = request.getHeader("authorization");
+        if (token == null || token.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "인증 토큰이 필요합니다.");
+            return result;
+        }
+        
+        Map<String, Object> payload = JwtUtil.readToken(token);
+        String requesterId = (String) payload.get("member_id");
+        if (requesterId == null || requesterId.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "유효하지 않은 토큰입니다.");
+            return result;
+        }
+        
+        // 관리자 권한 확인
+        if (!service.isAdmin(requesterId)) {
+            log.warn("회원 정보 수정 실패: 요청자({})가 관리자가 아닙니다", requesterId);
+            result.put("success", false);
+            result.put("message", "관리자 권한이 필요합니다.");
+            return result;
+        }
+        
+        log.info("회원 정보 수정 요청 파라미터: {}", params);
+        String email = params.get("email");
+        String member_name = params.get("member_name");
+        String office_phone = params.get("office_phone");
+        String mobile_phone = params.get("mobile_phone");
+        String position = params.get("position");
+        String dept_name = params.get("dept_name");
+
+        boolean success = service.updateMember(member_id, email, member_name, office_phone, mobile_phone, position, dept_name, requesterId);
+        result.put("success", success);
+        
+        if (success) {
+            result.put("message", "회원 정보가 수정되었습니다.");
+        } else {
+            result.put("message", "회원 정보 수정에 실패했습니다.");
         }
         return result;
     }

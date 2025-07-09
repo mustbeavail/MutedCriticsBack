@@ -43,16 +43,16 @@ public class MemberService {
         if (member == null) {
             return false;
         }
-        
+
         // 계정 승인 여부 확인 - 미승인 계정은 로그인 불가
         if (!member.isAcceptYn()) {
             return false;
         }
-        
+
         String hash = member.getMemberPw();
         return encoder.matches(member_pw, hash);
     }
-    
+
     // 회원 정보 조회
     public Member getMemberById(String member_id) {
         return repo.findById(member_id).orElse(null);
@@ -234,4 +234,33 @@ public class MemberService {
         return member.isAdminYn();
     }
 
+    // 회원 정보 수정 (관리자만 가능)
+    public boolean updateMember(String member_id, String email, String member_name, String office_phone, 
+            String mobile_phone, String position, String dept_name, String requesterId) {
+        // 요청자가 관리자인지 확인
+        Member requester = repo.findById(requesterId).orElse(null);
+        if (requester == null || !requester.isAdminYn()) {
+            log.warn("회원 정보 수정 실패: 관리자 권한 없음 - requesterId={}", requesterId);
+            return false;
+        }
+        
+        // 수정할 회원 정보 조회
+        Member member = repo.findById(member_id).orElse(null);
+        if (member == null) {
+            log.warn("회원 정보 수정 실패: 존재하지 않는 계정 - {}", member_id);
+            return false;
+        }
+        
+        // 정보 수정 (null이 아닌 값만 업데이트)
+        if (email != null) member.setEmail(email);
+        if (member_name != null) member.setMemberName(member_name);
+        if (office_phone != null) member.setOfficePhone(office_phone);
+        if (mobile_phone != null) member.setMobilePhone(mobile_phone);
+        if (position != null) member.setPosition(position);
+        if (dept_name != null) member.setDeptName(dept_name);
+        
+        repo.save(member);
+        log.info("회원 정보 수정 성공: member_id={}, 요청자={}", member_id, requesterId);
+        return true;
+    }
 }
