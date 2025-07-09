@@ -71,6 +71,16 @@ public class MemberController {
         return result;
     }
 
+    // 중복 확인
+    @PostMapping("/member/overlay_id")
+    public Map<String, Object> overlayId(@RequestBody Map<String, String> params) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        String member_id = params.get("member_id");
+        boolean used = service.overlayId(member_id);
+        result.put("used", used);
+        return result;
+    }
+
     // 회원가입
     @PostMapping("/member/join")
     public Map<String, Object> join(@RequestBody Member params) {
@@ -188,7 +198,7 @@ public class MemberController {
     }
     
     // 계정 승인
-    @GetMapping("/member/accept/{member_id}")
+    @GetMapping("/admin/accept/{member_id}")
     public Map<String, Object> acceptMember(@PathVariable String member_id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<String, Object>();
         
@@ -234,10 +244,10 @@ public class MemberController {
         }
         return result;
     }
-
-    // 회원 정보 수정 (관리자만 가능)
-    @PostMapping("/member/update/{member_id}")
-    public Map<String, Object> updateMember(@PathVariable String member_id, @RequestBody Map<String, String> params, HttpServletRequest request) {
+    
+    // 계정 승인 거절
+    @GetMapping("/admin/reject/{member_id}")
+    public Map<String, Object> rejectMember(@PathVariable String member_id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<String, Object>();
         
         // 토큰 검증
@@ -255,30 +265,23 @@ public class MemberController {
             result.put("message", "유효하지 않은 토큰입니다.");
             return result;
         }
-        
-        // 관리자 권한 확인
+
         if (!service.isAdmin(requesterId)) {
-            log.warn("회원 정보 수정 실패: 요청자({})가 관리자가 아닙니다", requesterId);
             result.put("success", false);
             result.put("message", "관리자 권한이 필요합니다.");
             return result;
         }
-        
-        log.info("회원 정보 수정 요청 파라미터: {}", params);
-        String email = params.get("email");
-        String member_name = params.get("member_name");
-        String office_phone = params.get("office_phone");
-        String mobile_phone = params.get("mobile_phone");
-        String position = params.get("position");
-        String dept_name = params.get("dept_name");
 
-        boolean success = service.updateMember(member_id, email, member_name, office_phone, mobile_phone, position, dept_name, requesterId);
-        result.put("success", success);
+        // 계정 승인 거절 처리
+        boolean success = service.rejectMember(member_id);
         
+        result.put("success", success);
         if (success) {
-            result.put("message", "회원 정보가 수정되었습니다.");
+            result.put("message", "계정 승인이 거절되었습니다.");
+            log.info("계정 승인 거절 처리 완료: {}, 처리자: {}", member_id, requesterId);
         } else {
-            result.put("message", "회원 정보 수정에 실패했습니다.");
+            result.put("message", "계정 승인 거절에 실패했습니다.");
+            log.warn("계정 승인 거절 실패: {}, 처리자: {}", member_id, requesterId);
         }
         return result;
     }
