@@ -15,10 +15,8 @@ public class ResponseDTO {
 
     private int responseIdx;
     private int inquiryIdx;
-    private String userId;
-    private String content;
-    private String resType;
     private String agentId;
+    private String content;
     private LocalDateTime createdAt;
 
 }

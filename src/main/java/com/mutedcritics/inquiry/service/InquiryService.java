@@ -87,10 +87,8 @@ public class InquiryService {
 			ResponseDTO responseDTO = ResponseDTO.builder()
 					.responseIdx(response.getResponseIdx())
 					.inquiryIdx(response.getInquiry().getInquiryIdx())
-					.userId(response.getAgent() != null ? response.getAgent().getMemberId() : null)
-					.content(response.getContent())
-					.resType(response.getResType())
 					.agentId(response.getAgent() != null ? response.getAgent().getMemberId() : null)
+					.content(response.getContent())
 					.createdAt(response.getCreatedAt())
 					.build();
 			responseDTOs.add(responseDTO);
