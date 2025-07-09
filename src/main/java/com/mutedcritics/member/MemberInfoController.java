@@ -33,7 +33,6 @@ public class MemberInfoController {
             @RequestParam(defaultValue = "asc") String sortDirection,
             HttpServletRequest request) {
         
-        // 토큰 검증
         String token = request.getHeader("authorization");
         if (token == null || token.isEmpty()) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -64,5 +63,7 @@ public class MemberInfoController {
             return errorResponse;
         }
     }
+
+    // 회원 정보 수정
 
 }

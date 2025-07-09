@@ -33,8 +33,29 @@ public class MemberController {
 
         log.info("로그인 요청: {}", member_id);
         Map<String, Object> result = new HashMap<String, Object>();
+        
+        // 회원 정보 확인
+        Member member = service.getMemberById(member_id);
+        if (member == null) {
+            result.put("success", false);
+            result.put("message", "존재하지 않는 계정입니다.");
+            return result;
+        }
+
+        // 로그인 시도 (비밀번호 확인)
         boolean success = service.login(member_id, member_pw);
         result.put("success", success);
+        
+        if (!success) {
+            result.put("message", "비밀번호가 일치하지 않습니다.");
+        }
+        
+        // 계정 승인 여부 확인
+        if (!member.isAcceptYn()) {
+            result.put("success", false);
+            result.put("message", "승인되지 않은 계정입니다. 관리자 승인 후 이용 가능합니다.");
+            return result;
+        }
 
         // 로그인 성공 시 JWT 토큰 생성
         if (success) {
@@ -58,6 +79,13 @@ public class MemberController {
 
         boolean success = service.join(params);
         result.put("success", success);
+        
+        if (success) {
+            result.put("message", "회원가입 요청을 성공적으로 접수했습니다. 관리자 승인 후 이용 가능합니다.");
+        } else {
+            result.put("message", "회원가입에 실패했습니다.");
+        }
+        
         return result;
     }
 
@@ -156,6 +184,53 @@ public class MemberController {
 
         boolean success = service.revoke_admin(member_id);
         result.put("success", success);
+        return result;
+    }
+    
+    // 계정 승인
+    @GetMapping("/member/accept/{member_id}")
+    public Map<String, Object> acceptMember(@PathVariable String member_id, HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        
+        // 토큰 검증
+        String token = request.getHeader("authorization");
+        if (token == null || token.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "인증 토큰이 필요합니다.");
+            return result;
+        }
+        Map<String, Object> payload = JwtUtil.readToken(token);
+        String requesterId = (String) payload.get("member_id");
+        if (requesterId == null || requesterId.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "유효하지 않은 토큰입니다.");
+            return result;
+        }
+
+        if (!service.isAdmin(requesterId)) {
+            log.info("계정 승인 실패: 요청자({})가 관리자가 아닙니다", requesterId);
+            result.put("success", false);
+            result.put("message", "관리자 권한이 필요합니다.");
+            return result;
+        }
+
+        // 계정 승인 처리
+        Member member = service.getMemberById(member_id);
+        if (member == null) {
+            result.put("success", false);
+            result.put("message", "존재하지 않는 계정입니다.");
+            return result;
+        }
+        
+        member.setAcceptYn(true);
+        boolean success = service.join(member);
+        
+        result.put("success", success);
+        if (success) {
+            result.put("message", "계정이 승인되었습니다.");
+        } else {
+            result.put("message", "계정 승인에 실패했습니다.");
+        }
         return result;
     }
 
