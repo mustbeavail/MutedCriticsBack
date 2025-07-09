@@ -43,8 +43,19 @@ public class MemberService {
         if (member == null) {
             return false;
         }
+        
+        // 계정 승인 여부 확인 - 미승인 계정은 로그인 불가
+        if (!member.isAcceptYn()) {
+            return false;
+        }
+        
         String hash = member.getMemberPw();
         return encoder.matches(member_pw, hash);
+    }
+    
+    // 회원 정보 조회
+    public Member getMemberById(String member_id) {
+        return repo.findById(member_id).orElse(null);
     }
 
     // 회원가입
