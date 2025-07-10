@@ -31,15 +31,9 @@ public class MailTemplate {
     @Column(name = "tem_name", length = 50)
     private String temName;
 
-    @Column(name = "tem_title", columnDefinition = "text")
-    private String temTitle;
-
     @Lob
     @Column(name = "tem_body", columnDefinition = "longtext")
     private String temBody;
-
-    @Column(name = "use_variable", columnDefinition = "text")
-    private String useVariable;
 
     @CreationTimestamp
     @Column(name = "created_at")
