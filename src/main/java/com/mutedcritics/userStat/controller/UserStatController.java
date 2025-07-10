@@ -14,13 +14,26 @@ import com.mutedcritics.userStat.service.UserStatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * 유저 통계 관련 API 요청을 처리하는 컨트롤러 클래스.
+ * 유저 대시보드 정보를 제공합니다.
+ */
 @RestController
-@Slf4j
-@RequiredArgsConstructor
+@Slf4j // Lombok을 사용하여 로그(Logger)를 자동으로 생성합니다.
+@RequiredArgsConstructor // Lombok을 사용하여 final 필드에 대한 생성자를 자동으로 생성합니다 (의존성 주입).
 public class UserStatController {
 
-    private final UserStatService service;
+    private final UserStatService service; // 유저 통계 서비스 주입
 
+    /**
+     * 특정 유저의 대시보드 정보를 조회하는 GET 요청을 처리합니다.
+     *
+     * @param userId 조회할 유저의 ID
+     * @param startDate 조회 기간의 시작 날짜 (ISO 형식: YYYY-MM-DD)
+     * @param endDate 조회 기간의 종료 날짜 (ISO 형식: YYYY-MM-DD)
+     * @return 유저 대시보드 정보를 담은 ResponseEntity
+     * @throws IllegalArgumentException startDate가 endDate보다 늦을 경우 발생
+     */
     @GetMapping("/user-dashboard")
     public ResponseEntity<?> getUserDashboard(
             @RequestParam String userId,
@@ -28,9 +41,11 @@ public class UserStatController {
             @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
         log.info("유저 대시보드 조회 요청 - 유저ID : {}, 시작일 : {}, 종료일 : {}", userId, startDate, endDate);
 
+        // 시작일이 종료일보다 늦으면 예외 발생
         if (startDate.isAfter(endDate))
             throw new IllegalArgumentException("startDate가 endDate보다 늦습니다.");
 
+        // 서비스 계층에서 대시보드 정보를 가져와 응답합니다.
         return ResponseEntity.ok(service.getDashboard(userId, startDate, endDate));
     }
 

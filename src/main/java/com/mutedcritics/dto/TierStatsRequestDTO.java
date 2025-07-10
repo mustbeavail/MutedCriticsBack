@@ -10,5 +10,6 @@ public class TierStatsRequestDTO {
     private String region; // 지역 필터
     private Boolean vip; // VIP 필터
     private Integer heroId; // 메인 영웅 필터
+    private String tierName; // 티어 필터
 
 }

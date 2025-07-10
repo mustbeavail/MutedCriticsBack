@@ -57,4 +57,100 @@
             FIELD(t.tier_name, '언랭크드', '브론즈', '실버', '골드', '플래티넘', '다이아몬드', '마스터', '그랜드마스터', '챌린저');
     </select>
 
-</mapper> 
+    <select id="getUsersByClassification" parameterType="com.mutedcritics.dto.TierStatsRequestDTO" resultType="com.mutedcritics.dto.UserClassificationDTO">
+        SELECT
+            u.user_id AS userId,
+            t.tier_name AS tierName,
+            u.user_gender AS userGender,
+            u.region,
+            (
+                SELECT SUM(mr.match_play_time)
+                FROM match_result mr
+                WHERE mr.user_id = u.user_id
+            ) AS totalPlayTime,
+            (
+                SELECT SUM(il.item_price)
+                FROM order_list ol
+                JOIN item_list il ON ol.item_idx = il.item_idx
+                WHERE ol.user_id = u.user_id
+            ) AS totalPayment,
+            (
+                SELECT h.heroes_name
+                FROM match_result mr
+                JOIN heroes h ON mr.heroes_idx = h.heroes_idx
+                JOIN match_table m ON mr.match_idx = m.match_idx
+                WHERE mr.user_id = u.user_id
+                    AND m.match_date BETWEEN (SELECT start_date FROM season WHERE season_idx = #{seasonId})
+                                         AND (SELECT end_date FROM season WHERE season_idx = #{seasonId})
+                GROUP BY h.heroes_name
+                ORDER BY COUNT(mr.heroes_idx) DESC, MAX(m.match_date) DESC
+                LIMIT 1
+            ) AS mainHero
+        FROM
+            user u
+        JOIN
+            tier t ON u.user_id = t.user_id
+        <if test="heroId != null">
+            JOIN (
+                SELECT
+                    user_id, heroes_idx
+                FROM (
+                    SELECT
+                        mr.user_id,
+                        mr.heroes_idx,
+                        ROW_NUMBER() OVER (PARTITION BY mr.user_id ORDER BY COUNT(mr.heroes_idx) DESC) AS rn
+                    FROM
+                        match_result mr
+                    JOIN
+                        match_table m ON mr.match_idx = m.match_idx
+                    WHERE
+                        m.match_date BETWEEN (SELECT start_date FROM season WHERE season_idx = #{seasonId})
+                                     AND (SELECT end_date FROM season WHERE season_idx = #{seasonId})
+                    GROUP BY
+                        mr.user_id, mr.heroes_idx
+                ) AS PlayCounts
+                WHERE rn = 1
+            ) AS main_hero ON u.user_id = main_hero.user_id
+        </if>
+        WHERE
+            t.season_idx = #{seasonId}
+        <if test="tierName != null and tierName != ''">
+            AND t.tier_name = #{tierName}
+        </if>
+        <if test="gender != null and gender != ''">
+            AND u.user_gender = #{gender}
+        </if>
+        <if test="region != null and region != ''">
+            AND u.region = #{region}
+        </if>
+        <if test="vip != null and vip == true">
+            AND u.vip_yn = b'1'
+        </if>
+        <if test="heroId != null">
+            AND main_hero.heroes_idx = #{heroId}
+        </if>
+    </select>
+
+    <select id="getSeasonTierStats" parameterType="Integer" resultType="com.mutedcritics.dto.SeasonTierStatsDTO">
+        SELECT 
+            s.season_idx AS seasonIdx,
+            t.tier_name AS tierName,
+            COUNT(DISTINCT t.user_id) AS userCount
+        FROM
+            tier t
+        JOIN
+            season s ON t.season_idx = s.season_idx
+        JOIN
+            user u ON u.user_id = t.user_id
+        <if test="seasonIdx != null">
+        WHERE
+            t.season_idx = #{seasonIdx}
+        </if>
+        GROUP BY
+            s.season_idx, t.tier_name
+        ORDER BY
+            s.season_idx ASC,
+            FIELD(t.tier_name, '언랭크드', '브론즈', '실버', '골드', '플래티넘', '다이아몬드', '마스터', '그랜드마스터', '챌린저');
+    </select>
+
+</mapper>
