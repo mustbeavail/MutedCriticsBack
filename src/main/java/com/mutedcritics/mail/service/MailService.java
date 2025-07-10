@@ -44,25 +44,24 @@ public class MailService {
     private final MemberRepository memberRepo;
     private final UserRepository userRepo;
 
+    // 이메일 발송
     public boolean sendMail(Map<String, Object> params) {
         Map<String, Object> result = new HashMap<>();
 
-        int temIdx = (int) params.get("tem_idx");
+        // 요청 파라미터 추출
         String memberId = (String) params.get("member_id");
         boolean isToAll = (boolean) params.get("is_to_all");
         String recipient = (String) params.get("recipient");
         String mailSub = (String) params.get("mail_sub");
         String mailContent = (String) params.get("mail_content");
 
-        // ID로 엔티티 조회
-        MailTemplate mailTemplate = mailTemplateRepo.findById(temIdx)
-            .orElseThrow(() -> new RuntimeException("템플릿을 찾을 수 없습니다: " + temIdx));
+        // 요청한 회원 아이디 찾기
         
         Member member = memberRepo.findById(memberId)
             .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다: " + memberId));
 
+        // 메일 정보 저장
         Mail mail = new Mail();
-        mail.setMailTemplate(mailTemplate);
         mail.setMember(member);
         mail.setToAll(isToAll);
         mail.setRecipient(recipient);
@@ -70,12 +69,14 @@ public class MailService {
         mail.setMailContent(mailContent);
         List<String> recipients = new ArrayList<>();
 
+        // 메일 수신자 찾기
         if (!mail.getRecipient().contains("@")) {
             recipients = userRepo.findUserIdsByUserType(mail.getRecipient());
         } else {
             recipients.add(mail.getRecipient());
         }
 
+        // 메일 발송
         try {
             Properties props = new Properties();
             props.put("mail.smtp.host", "smtp.naver.com"); // 네이버 SMTP 서버
@@ -95,18 +96,21 @@ public class MailService {
             // 메시지 생성
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(SENDER_EMAIL));
-            message.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient)); // API 요청에서 받은 이메일 사용
+            for (String recip : recipients) {
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(recip));
+            }
             message.setSubject(mail.getMailSub());
 
             // 메시지 내용 (HTML 형식)
-            String htmlContent = "";
+            String htmlContent = mail.getMailContent();
 
             message.setContent(htmlContent, "text/html; charset=utf-8");
 
             // 메시지 발송
             Transport.send(message);
 
-            log.info("인증 코드 발송 완료: {}", recipient);
+
+            
             return true;
         } catch (MessagingException e) {
             e.printStackTrace();
