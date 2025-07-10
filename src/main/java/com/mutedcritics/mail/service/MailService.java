@@ -46,27 +46,31 @@ public class MailService {
 
     // 이메일 발송
     public boolean sendMail(Map<String, Object> params) {
-        Map<String, Object> result = new HashMap<>();
 
         // 요청 파라미터 추출
-        String memberId = (String) params.get("member_id");
-        boolean isToAll = (boolean) params.get("is_to_all");
+        int temIdx = (int) params.get("temIdx");
+        String memberId = (String) params.get("memberId");
+        boolean isToAll = (boolean) params.get("isToAll");
         String recipient = (String) params.get("recipient");
-        String mailSub = (String) params.get("mail_sub");
-        String mailContent = (String) params.get("mail_content");
+        String mailSub = (String) params.get("mailSub");
+        String mailContent = (String) params.get("mailContent");
 
         // 요청한 회원 아이디 찾기
-        
         Member member = memberRepo.findById(memberId)
             .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다: " + memberId));
+        // 요청한 템플릿 찾기
+        MailTemplate mailTemplate = mailTemplateRepo.findById(temIdx)
+            .orElseThrow(() -> new RuntimeException("템플릿을 찾을 수 없습니다: " + temIdx));
 
-        // 메일 정보 저장
+        // 보낼 메일 정보 저장
         Mail mail = new Mail();
-        mail.setMember(member);
-        mail.setToAll(isToAll);
-        mail.setRecipient(recipient);
         mail.setMailSub(mailSub);
         mail.setMailContent(mailContent);
+        mail.setMember(member);
+        mail.setMailTemplate(mailTemplate);
+        mail.setToAll(isToAll);
+        mail.setRecipient(recipient);
+
         List<String> recipients = new ArrayList<>();
 
         // 메일 수신자 찾기
@@ -109,13 +113,20 @@ public class MailService {
             // 메시지 발송
             Transport.send(message);
 
+            // 메일 저장
+            mailRepo.save(mail);
 
-            
             return true;
         } catch (MessagingException e) {
             e.printStackTrace();
             return false;
         }
+
+    }
+
+    public boolean sendMailInterval(Map<String, Object> params) {
+
+        return false;
 
     }
 }

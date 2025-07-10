@@ -28,7 +28,13 @@ public class MailController {
 
         resp = new HashMap<>();
 
-        boolean success = service.sendMail(params);
+        boolean success = false;
+
+        if (params.get("mailInterval") == null || (int)params.get("mailInterval") == 0) {
+            success = service.sendMail(params);
+        } else {
+            success = service.sendMailInterval(params);
+        }
 
         resp.put("success", success);
 

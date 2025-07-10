@@ -1,6 +1,9 @@
 package com.mutedcritics.entity;
 
 import javax.persistence.*;
+
+import org.hibernate.annotations.CreationTimestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,14 +23,26 @@ public class AutoSend {
     @Column(name = "schedule_idx")
     private int scheduleIdx;
 
-    @Column(name = "tem_idx")
-    private int temIdx;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tem_idx")
+    private MailTemplate mailTemplate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @Column(name = "is_to_all")
     private boolean isToAll;
 
     @Column(name = "recipient", columnDefinition = "text")
     private String recipient;
+
+    @Column(name = "mail_sub", length = 255)
+    private String mailSub;
+
+    @Lob
+    @Column(name = "mail_content", columnDefinition = "longtext")
+    private String mailContent;
 
     @Column(name = "interval_days")
     private int intervalDays;
@@ -39,5 +54,7 @@ public class AutoSend {
     private boolean isActive;
 
     @Column(name = "created_at")
+    @CreationTimestamp
     private LocalDateTime createdAt;
+
 }
