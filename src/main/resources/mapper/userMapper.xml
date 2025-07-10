@@ -212,6 +212,17 @@
         CROSS   JOIN tier_season ts
     </select>
 
-    
+    <!-- 유저 지출 상세내역 -->
+    <select id="userSpending" resultType="map">
+        SELECT
+            ol.order_date,
+            ol.item_cate,
+            il.*,
+            bi.*
+        FROM order_list ol
+        LEFT JOIN item_list   il ON  ol.item_cate = 'item' AND il.item_idx   = ol.item_idx
+        LEFT JOIN bundle_item bi ON  ol.item_cate = 'bundle' AND bi.bundle_idx = ol.item_idx
+        WHERE ol.user_id = #{userId}
+    </select>
 
 </mapper>
