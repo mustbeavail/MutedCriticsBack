@@ -28,8 +28,8 @@
                     JOIN
                         match_table m ON mr.match_idx = m.match_idx
                     WHERE
-                        m.match_date BETWEEN (SELECT start_date FROM season WHERE season_idx = #{seasonId})
-                                     AND (SELECT end_date FROM season WHERE season_idx = #{seasonId})
+                        m.match_date BETWEEN (SELECT start_date FROM season WHERE season_idx = #{seasonIdx})
+                                     AND (SELECT end_date FROM season WHERE season_idx = #{seasonIdx})
                     GROUP BY
                         mr.user_id, mr.heroes_idx
                 ) AS PlayCounts
@@ -38,7 +38,7 @@
         </if>
 
         WHERE
-            t.season_idx = #{seasonId}
+            t.season_idx = #{seasonIdx}
         <if test="gender != null and gender != ''">
             AND u.user_gender = #{gender}
         </if>
@@ -46,7 +46,7 @@
             AND u.region = #{region}
         </if>
         <if test="vip != null and vip == true">
-            AND u.vip_yn = b'1'
+            AND u.vip_yn = true
         </if>
         <if test="heroId != null">
             AND main_hero.heroes_idx = #{heroId}
@@ -80,8 +80,8 @@
                 JOIN heroes h ON mr.heroes_idx = h.heroes_idx
                 JOIN match_table m ON mr.match_idx = m.match_idx
                 WHERE mr.user_id = u.user_id
-                    AND m.match_date BETWEEN (SELECT start_date FROM season WHERE season_idx = #{seasonId})
-                                         AND (SELECT end_date FROM season WHERE season_idx = #{seasonId})
+                    AND m.match_date BETWEEN (SELECT start_date FROM season WHERE season_idx = #{seasonIdx})
+                                         AND (SELECT end_date FROM season WHERE season_idx = #{seasonIdx})
                 GROUP BY h.heroes_name
                 ORDER BY COUNT(mr.heroes_idx) DESC, MAX(m.match_date) DESC
                 LIMIT 1
@@ -113,7 +113,7 @@
             ) AS main_hero ON u.user_id = main_hero.user_id
         </if>
         WHERE
-            t.season_idx = #{seasonId}
+            t.season_idx = #{seasonIdx}
         <if test="tierName != null and tierName != ''">
             AND t.tier_name = #{tierName}
         </if>
@@ -131,7 +131,7 @@
         </if>
     </select>
 
-    <select id="getSeasonTierStats" parameterType="Integer" resultType="com.mutedcritics.dto.SeasonTierStatsDTO">
+    <select id="getSeasonTierStats" parameterType="int" resultType="com.mutedcritics.dto.SeasonTierStatsDTO">
         SELECT 
             s.season_idx AS seasonIdx,
             t.tier_name AS tierName,

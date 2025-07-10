@@ -37,6 +37,6 @@ public interface UserTierStatsDAO {
      * 
      * @return 시즌별 티어 통계 DTO 리스트
      */
-    List<SeasonTierStatsDTO> getSeasonTierStats(Integer seasonIdx);
+    List<SeasonTierStatsDTO> getSeasonTierStats(int seasonIdx);
 
 }

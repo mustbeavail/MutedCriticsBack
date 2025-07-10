@@ -23,7 +23,7 @@ public class UserTierStatsService {
         return new TierStatsResponseDTO(tierStats, userList);
     }
 
-    public List<SeasonTierStatsDTO> getSeasonTierStats(Integer seasonIdx) {
+    public List<SeasonTierStatsDTO> getSeasonTierStats(int seasonIdx) {
         List<SeasonTierStatsDTO> response = dao.getSeasonTierStats(seasonIdx);
         return response;
     }

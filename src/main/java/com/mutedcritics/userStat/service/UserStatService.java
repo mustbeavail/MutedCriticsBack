@@ -50,7 +50,7 @@ public class UserStatService {
                 // 역할군(role)별로 그룹화하고, 각 그룹의 플레이타임을 합산합니다.
                 // 예: {"돌격": 100, "지원": 80, "공격": 50}
                 .collect(Collectors.groupingBy(HeroModeTimeDTO::getRole,
-                        Collectors.summingLong(HeroModeTimeDTO::getPlayTime)))
+                        Collectors.summingInt(HeroModeTimeDTO::getPlayTime)))
                 // Map의 엔트리들을 스트림으로 변환합니다.
                 .entrySet().stream()
                 // 플레이타임(value)이 가장 큰 엔트리를 찾습니다.
@@ -63,11 +63,11 @@ public class UserStatService {
         summary.setMainRole(mainRole);
 
         // 4. 모드별 플레이타임 계산 (빠른대전, 경쟁전 등 각 모드별 총 플레이타임)
-        Map<String, Long> modePlayTimes = list.stream()
+        Map<String, Integer> modePlayTimes = list.stream()
                 // 매치모드(matchMode)별로 그룹화하고, 각 그룹의 플레이타임을 합산합니다.
                 // 예: {"빠른대전": 120, "경쟁전": 90}
                 .collect(Collectors.groupingBy(HeroModeTimeDTO::getMatchMode,
-                        Collectors.summingLong(HeroModeTimeDTO::getPlayTime)));
+                        Collectors.summingInt(HeroModeTimeDTO::getPlayTime)));
         // 계산된 모드별 플레이타임을 summary DTO에 설정
         summary.setModePlayTimes(modePlayTimes);
 

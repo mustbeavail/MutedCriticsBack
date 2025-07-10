@@ -24,16 +24,14 @@ public class UserTierStatsController {
     private final UserTierStatsService service; // 유저 티어 통계 서비스 주입
 
     /**
-     * 유저 티어 통계 정보를 조회하는 GET 요청을 처리합니다.
+     * 유저 티어 통계 정보를 조회
      *
-     * @param params 티어 통계 조회에 필요한 요청 파라미터 (예: 시즌 ID, 영웅 ID 등)
-     * @return 티어 통계 응답 DTO를 담은 ResponseEntity
+     * @param params 티어 통계 조회에 필요한 요청 파라미터(시즌idx, 성별, 지역, vip, 메인 영웅, 티어)
+     * @return 티어 통계 응답 DTO를 담고 있음.
      */
     @GetMapping("/user-tier-stats")
     public ResponseEntity<TierStatsResponseDTO> getTierStatistics(TierStatsRequestDTO params) {
-        // 서비스 계층에서 티어 통계 정보를 가져옵니다.
         TierStatsResponseDTO response = service.getTierStatistics(params);
-        // 응답을 반환합니다.
         return ResponseEntity.ok(response);
     }
 
@@ -45,7 +43,7 @@ public class UserTierStatsController {
      */
     @GetMapping("/season-tier-stats")
     public ResponseEntity<List<SeasonTierStatsDTO>> getSeasonTierStats(
-            @RequestParam(required = false) Integer seasonIdx) {
+            @RequestParam(required = false) int seasonIdx) {
         List<SeasonTierStatsDTO> response = service.getSeasonTierStats(seasonIdx);
         return ResponseEntity.ok(response);
     }
