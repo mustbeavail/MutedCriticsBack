@@ -1,0 +1,55 @@
+package com.mutedcritics.mail.component;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import com.mutedcritics.entity.AutoSend;
+import com.mutedcritics.mail.repository.AutoSendRepository;
+import com.mutedcritics.mail.service.MailService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Component
+@EnableScheduling
+@Slf4j
+@RequiredArgsConstructor
+public class MailScheduler {
+
+    private final AutoSendRepository autoSendRepo;
+    private final MailService mailService;
+
+    @Scheduled(cron = "0 0 9 * * ?")
+    public void sendScheduledMails() {
+        LocalDate today = LocalDate.now();
+        List<AutoSend> scheduledMails = autoSendRepo.findScheduledMails(today);
+        
+        for (AutoSend autoSend : scheduledMails) {
+            // 메일 발송
+            Map<String, Object> params = new HashMap<>();
+            params.put("temIdx", autoSend.getMailTemplate().getTemIdx());
+            params.put("recipient", autoSend.getRecipient());
+            params.put("mailSub", autoSend.getMailSub());
+            params.put("mailContent", autoSend.getMailContent());
+            params.put("isToAll", autoSend.isToAll());
+            params.put("memberId", autoSend.getMember().getMemberId());
+            params.put("mailInterval", autoSend.getIntervalDays());
+            params.put("isActive", autoSend.isActive());
+            
+            boolean success = mailService.sendMailInterval(params);
+            
+            if (success) {
+                // 다음 발송일 계산 및 저장
+                LocalDate nextDate = today.plusDays(autoSend.getIntervalDays());
+                autoSend.setNextSendDate(nextDate);
+                autoSendRepo.save(autoSend);
+            }
+        }
+    }
+}

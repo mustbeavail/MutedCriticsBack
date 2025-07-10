@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mutedcritics.mail.service.MailService;
@@ -37,6 +39,21 @@ public class MailController {
         }
 
         resp.put("success", success);
+
+        return resp;
+    }
+
+    // 메일 템플릿 불러오기
+    @GetMapping("/mail/get/template")
+    public Map<String, Object> getMailTemplate(@RequestParam int temIdx) {
+
+        resp = new HashMap<>();
+
+        if(temIdx > 0) {
+            resp.put("template", service.getMailTemplate(temIdx));
+        } else {
+            resp.put("template", "잘못된 템플릿 번호 입니다.");
+        }
 
         return resp;
     }
