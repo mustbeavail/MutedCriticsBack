@@ -2,6 +2,7 @@ package com.mutedcritics.mail.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -14,6 +15,10 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.google.api.client.util.Value;
@@ -167,6 +172,18 @@ public class MailService {
             recipients.add(autoSend.getRecipient());
         }
 
+        // 예약 날짜가 있고 다음 발송일이 없다 == 최초 정기메일이자 예약메일, 메일 당장 안보내고 예약 날짜로 다음 발송일 설정
+        if (params.get("reservedDate") != null && params.get("nextSendDate") == null) {
+            autoSend.setNextSendDate((LocalDate) params.get("reservedDate"));
+
+            // 그런 와중에 mailInterval이 없다 => 반복 없음
+            if (params.get("mailInterval") == null || (int)params.get("mailInterval") == 0) {
+                autoSend.setIntervalDays(0);
+            }
+            autoSendRepo.save(autoSend);
+            return true;
+        }
+
         // 메일 발송
         try {
             Properties props = new Properties();
@@ -200,11 +217,21 @@ public class MailService {
             // 메시지 발송
             Transport.send(message);
 
-            // 최초 1번 메일 저장
+            // 다음 발송일이 없다 == 최초 정기메일, 메일 정보 저장 후 다음 발송일 설정
             if (params.get("nextSendDate") == null) {
                 autoSend.setNextSendDate(LocalDate.now().plusDays(autoSend.getIntervalDays()));
                 autoSendRepo.save(autoSend);
             }
+
+            // 메일 발송 성공 시 히스토리 저장
+            Mail mail = new Mail();
+            mail.setMailSub(autoSend.getMailSub());
+            mail.setMailContent(autoSend.getMailContent());
+            mail.setMember(autoSend.getMember());
+            mail.setMailTemplate(autoSend.getMailTemplate());
+            mail.setToAll(autoSend.isToAll());
+            mail.setRecipient(autoSend.getRecipient());
+            mailRepo.save(mail);
 
             return true;
 
@@ -223,4 +250,101 @@ public class MailService {
 
         return mailTemplate;
     }
+
+    // 메일 발송 목록 조회
+    public Map<String, Object> getMailList(String sort, int page, String align) {
+
+        Pageable pageable = null;
+        Page<Mail> mailList = null;
+        Page<AutoSend> autoSendList = null;
+        Map<String, Object> resp = new HashMap<>();
+
+        // 정기메일 목록 조회일 경우, 내림차순 정렬일 경우
+        if ("autoSendList".equals(sort) && "dateDesc".equals(align)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+            autoSendList = autoSendRepo.findAll(pageable);
+        // 정기메일 목록 조회일 경우, 오름차순 정렬일 경우
+        } else if ("autoSendList".equals(sort) && "dateAsc".equals(align)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").ascending());
+            autoSendList = autoSendRepo.findAll(pageable);
+        // 일반메일 목록 조회일 경우, 내림차순 정렬일 경우
+        } else if ("mailList".equals(sort) && "dateDesc".equals(align)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+            mailList = mailRepo.findAll(pageable);
+        // 일반메일 목록 조회일 경우, 오름차순 정렬일 경우
+        } else if ("mailList".equals(sort) && "dateAsc".equals(align)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").ascending());
+            mailList = mailRepo.findAll(pageable);
+        }
+
+        // 널 아닌 것만 넣어서 보내기
+        if (mailList != null) {
+            resp.put("mailList", mailList);
+        }
+        if (autoSendList != null) {
+            resp.put("autoSendList", autoSendList);
+        }
+        if (mailList == null && autoSendList == null) {
+            resp.put("warning", "메일 목록이 없습니다.");
+        }
+
+        return resp;
+    }
+
+    // 메일 발송 목록 검색
+    public Map<String, Object> searchMailList(String search, String searchType, int page, String sort) {
+
+        Pageable pageable = null;
+        Page<Mail> mailList = null;
+        Page<AutoSend> autoSendList = null;
+        Map<String, Object> resp = new HashMap<>();
+
+        // 정기메일 목록 검색일 경우
+        if("autoSendList".equals(sort)) {
+            // 메일 제목 검색일 경우
+            if("mailSub".equals(searchType)) {
+                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+                autoSendList = autoSendRepo.findByMailSubContaining(search, pageable);
+            // 회원 아이디 검색일 경우
+            } else if("memberId".equals(searchType)) {
+                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+                autoSendList = autoSendRepo.findByMemberIdContaining(search, pageable);
+            }
+            // 수신군 검색일 경우
+            else if("recipient".equals(searchType)) {
+                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+                autoSendList = autoSendRepo.findByRecipientContaining(search, pageable);
+            }
+        } else {
+            // 일반메일 목록 검색이고 메일 제목 검색일 경우
+            if("mailSub".equals(searchType)) {
+                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+                mailList = mailRepo.findByMailSubContaining(search, pageable);
+            // 회원 아이디 검색일 경우
+            } else if("memberId".equals(searchType)) {
+                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+                mailList = mailRepo.findByMemberIdContaining(search, pageable);
+            }
+            // 수신군 검색일 경우
+            else if("recipient".equals(searchType)) {
+                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+                mailList = mailRepo.findByRecipientContaining(search, pageable);
+            }
+        }
+
+        // 널 아닌 것만 넣어서 보내기, 널 아닌 것이 없으면 경고 메시지 보내기
+        if (mailList != null) {
+            resp.put("mailList", mailList);
+        }
+        if (autoSendList != null) {
+            resp.put("autoSendList", autoSendList);
+        }
+        // 널 아닌 것이 없으면 경고 메시지 보내기
+        if (mailList == null && autoSendList == null) {
+            resp.put("warning", "메일 목록이 없습니다.");
+        }
+
+        return resp;
+    }
+
 }

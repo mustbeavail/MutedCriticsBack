@@ -25,6 +25,7 @@ public class MailController {
 
     private Map<String, Object> resp = null;
 
+    // 메일 발송
     @PostMapping("/mail/send")
     public Map<String, Object> sendMail(@RequestBody Map<String, Object> params) {
 
@@ -32,7 +33,8 @@ public class MailController {
 
         boolean success = false;
 
-        if (params.get("mailInterval") == null || (int)params.get("mailInterval") == 0) {
+        if ((params.get("mailInterval") == null || (int)params.get("mailInterval") == 0)
+            && params.get("reservedDate") == null) {
             success = service.sendMail(params);
         } else {
             success = service.sendMailInterval(params);
@@ -44,7 +46,7 @@ public class MailController {
     }
 
     // 메일 템플릿 불러오기
-    @GetMapping("/mail/get/template")
+    @GetMapping("/mail/template")
     public Map<String, Object> getMailTemplate(@RequestParam int temIdx) {
 
         resp = new HashMap<>();
@@ -58,4 +60,36 @@ public class MailController {
         return resp;
     }
 
+    // 메일 발송 목록 조회
+    @GetMapping("/mail/list")
+    public Map<String, Object> getMailList(
+        @RequestParam String sort,
+        @RequestParam int page,
+        @RequestParam String align) {
+
+        resp = new HashMap<>();
+
+        resp = service.getMailList(sort, page, align);
+
+        return resp;
+    }
+
+    // 메일 발송 목록 검색
+    @GetMapping("/mail/search")
+    public Map<String, Object> searchMailList(
+        @RequestParam String search,
+        @RequestParam String searchType,
+        @RequestParam int page,
+        @RequestParam(required = false) String sort) {
+
+        resp = new HashMap<>();
+
+        resp = service.searchMailList(search, searchType, page, sort);
+
+        return resp;
+    }
+
+    // 메일 상세보기
+    // 정기 메일 수정하기
+    // 메일 삭제하기? 할까말까
 }

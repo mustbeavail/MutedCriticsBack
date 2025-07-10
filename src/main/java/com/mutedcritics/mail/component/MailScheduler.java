@@ -39,16 +39,22 @@ public class MailScheduler {
             params.put("mailContent", autoSend.getMailContent());
             params.put("isToAll", autoSend.isToAll());
             params.put("memberId", autoSend.getMember().getMemberId());
-            params.put("mailInterval", autoSend.getIntervalDays());
+            params.put("intervalDays", autoSend.getIntervalDays());
             params.put("isActive", autoSend.isActive());
             
             boolean success = mailService.sendMailInterval(params);
             
             if (success) {
-                // 다음 발송일 계산 및 저장
-                LocalDate nextDate = today.plusDays(autoSend.getIntervalDays());
-                autoSend.setNextSendDate(nextDate);
-                autoSendRepo.save(autoSend);
+                if (autoSend.getIntervalDays() > 0) {
+                    // 반복 예약
+                    LocalDate nextDate = today.plusDays(autoSend.getIntervalDays());
+                    autoSend.setNextSendDate(nextDate);
+                    autoSendRepo.save(autoSend);
+                } else {
+                    // 단발성 예약: 발송 후 비활성화
+                    autoSend.setActive(false);
+                    autoSendRepo.save(autoSend);
+                }
             }
         }
     }
