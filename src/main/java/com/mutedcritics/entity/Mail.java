@@ -13,6 +13,8 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -51,6 +53,7 @@ public class Mail {
     private String mailContent;
 
     @Column(name = "mail_date")
+    @CreationTimestamp
     private LocalDateTime mailDate;
 
 }
