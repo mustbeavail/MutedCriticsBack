@@ -11,7 +11,7 @@ import com.mutedcritics.entity.User;
 public interface UserRepository extends JpaRepository<User, String> {
 
     // userType으로 userId 목록 조회
-    @Query("SELECT u.userId FROM User u WHERE u.userType = :userType AND u.recieveYN = true")
+    @Query("SELECT u.userId FROM User u WHERE u.userType = :userType AND u.receiveYn = true")
     List<String> findUserIdsByUserType(@Param("userType") String userType);
 
 }
