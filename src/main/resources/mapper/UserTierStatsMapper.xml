@@ -162,9 +162,9 @@
             (SELECT SUM(mr.match_play_time)
                 FROM match_result mr
                 WHERE mr.user_id = u.user_id) AS totalPlayTime,
-            (SELECT SUM(il.tiem_price)
+            (SELECT SUM(il.item_price)
                 FROM order_list ol
-                JOIN item_list li ON ol.item_idx = li.item_idx
+                JOIN item_list il ON ol.item_idx = il.item_idx
                 WHERE ol.user_id = u.user_id) AS totalPayment
         FROM
             user u
@@ -239,5 +239,24 @@
             AND u.user_type != '탈퇴'
         </where>
     </select>
+
+    <select id="getUserCategoryStats" resultType="map">
+        SELECT '신규' AS category, COUNT(*) AS count FROM user WHERE user_type = '신규'
+        UNION ALL
+        SELECT '복귀', COUNT(*) AS count FROM user WHERE user_type = '복귀'
+        UNION ALL
+        SELECT 'vip', COUNT(*) AS count FROM user WHERE vip_yn = true
+        UNION ALL
+        SELECT 'receive_yes', COUNT(*) AS count FROM user WHERE receive_yn = true
+        UNION ALL
+        SELECT 'receive_no', COUNT(*) AS count FROM user WHERE receive_yn = false
+        UNION ALL
+        SELECT '휴면', COUNT(*) AS count FROM user WHERE user_type = '휴면'
+        UNION ALL
+        SELECT '정지', COUNT(*) AS count FROM user WHERE user_type = '정지'
+        UNION ALL
+        SELECT '이탈 위험군', COUNT(*) AS count FROM user WHERE user_type = '이탈 위험군'
+    </select>
+
 
 </mapper>

@@ -1,6 +1,7 @@
 package com.mutedcritics.userStat.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 
@@ -56,5 +57,12 @@ public interface UserTierStatsDAO {
      * @return 유저 카테고리 전체 개수
      */
     int getUserCategoryCount(UserCategoryRequestDTO params);
+
+    /**
+     * 카테고리별 유저 수를 조회합니다.
+     * 
+     * @return 카테고리별 유저 수
+     */
+    List<Map<String, Object>> getUserCategoryStats();
 
 }

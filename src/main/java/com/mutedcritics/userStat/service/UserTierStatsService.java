@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +50,8 @@ public class UserTierStatsService {
         int currentPage = params.getOffset() != null ? (params.getOffset() / pageSize) + 1 : 1;
         int totalPages = (int) Math.ceil((double) totalCount / pageSize);
 
-        return new UserCategoryResponseDTO(data, totalCount, totalPages, currentPage, pageSize);
+        List<Map<String, Object>> statsList = dao.getUserCategoryStats();
+
+        return new UserCategoryResponseDTO(data, totalCount, totalPages, currentPage, pageSize, statsList);
     }
 }
