@@ -3,6 +3,9 @@ package com.mutedcritics.userStat.controller;
 import com.mutedcritics.dto.SeasonTierStatsDTO;
 import com.mutedcritics.dto.TierStatsRequestDTO;
 import com.mutedcritics.dto.TierStatsResponseDTO;
+import com.mutedcritics.dto.UserCategoryDTO;
+import com.mutedcritics.dto.UserCategoryRequestDTO;
+import com.mutedcritics.dto.UserCategoryResponseDTO;
 import com.mutedcritics.userStat.service.UserTierStatsService;
 import lombok.RequiredArgsConstructor;
 
@@ -45,6 +48,25 @@ public class UserTierStatsController {
     public ResponseEntity<List<SeasonTierStatsDTO>> getSeasonTierStats(
             @RequestParam(required = false) int seasonIdx) {
         List<SeasonTierStatsDTO> response = service.getSeasonTierStats(seasonIdx);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 유저 카테고리 정보를 조회합니다.
+     *
+     * 요청 예시:
+     * GET /get-user-category?category=신규&limit=10&offset=0
+     *
+     * @param params 필터 및 페이징 파라미터
+     *               - category: 신규, 복귀, 휴면, 정지, 이탈 위험군, vip, receive_yes,
+     *               receive_no
+     *               - limit: 반환할 최대 개수
+     *               - offset: 시작 인덱스
+     * @return 유저 카테고리 DTO 리스트
+     */
+    @GetMapping("/get-user-category")
+    public ResponseEntity<UserCategoryResponseDTO> getUserCategory(UserCategoryRequestDTO params) {
+        UserCategoryResponseDTO response = service.getUserCategory(params);
         return ResponseEntity.ok(response);
     }
 }
