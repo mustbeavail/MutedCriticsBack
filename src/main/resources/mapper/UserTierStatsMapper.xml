@@ -153,4 +153,110 @@
             FIELD(t.tier_name, '언랭크드', '브론즈', '실버', '골드', '플래티넘', '다이아몬드', '마스터', '그랜드마스터', '챌린저');
     </select>
 
+    <select id="getUserCategory" parameterType="com.mutedcritics.dto.UserCategoryRequestDTO">
+        SELECT
+            u.user_id AS userId,
+            u.user_type AS userType,
+            u.user_gender AS userGender,
+            u.region,
+            (SELECT SUM(mr.match_play_time)
+                FROM match_result mr
+                WHERE mr.user_id = u.user_id) AS totalPlayTime,
+            (SELECT SUM(il.item_price)
+                FROM order_list ol
+                JOIN item_list il ON ol.item_idx = il.item_idx
+                WHERE ol.user_id = u.user_id) AS totalPayment
+        FROM
+            user u
+        <where>
+            <if test="category != null and category != ''">
+                <choose>
+                    <when test="category == '신규'">
+                        u.user_type = '신규'
+                    </when>
+                    <when test="category == '복귀'">
+                        AND u.user_type = '복귀'
+                    </when>
+                    <when test="category == '휴면'">
+                        AND u.user_type = '휴면'
+                    </when>
+                    <when test="category == '정지'">
+                        AND u.user_type = '정지'
+                    </when>
+                    <when test="category == '이탈 위험군'">
+                        AND u.user_type = '이탈 위험군'
+                    </when>
+                    <when test="category == 'vip'">
+                        AND u.vip_yn = true
+                    </when>
+                    <when test="category == 'receive_yes'">
+                        AND u.receive_yn = true
+                    </when>
+                    <when test="category == 'receive_no'">
+                        AND u.receive_yn = false
+                    </when>
+                </choose>
+            </if>
+            AND u.user_type != '탈퇴'
+        </where>
+        ORDER BY u.join_date DESC
+        LIMIT #{limit}
+        OFFSET #{offset}
+    </select>
+
+    <select id="getUserCategoryCount" parameterType="com.mutedcritics.dto.UserCategoryRequestDTO" resultType="int">
+        SELECT COUNT(*)
+        FROM user u
+        <where>
+            <if test="category != null and category != ''">
+                <choose>
+                    <when test="category == '신규'">
+                        u.user_type = '신규'
+                    </when>
+                    <when test="category == '복귀'">
+                        AND u.user_type = '복귀'
+                    </when>
+                    <when test="category == '휴면'">
+                        AND u.user_type = '휴면'
+                    </when>
+                    <when test="category == '정지'">
+                        AND u.user_type = '정지'
+                    </when>
+                    <when test="category == '이탈 위험군'">
+                        AND u.user_type = '이탈 위험군'
+                    </when>
+                    <when test="category == 'vip'">
+                        AND u.vip_yn = true
+                    </when>
+                    <when test="category == 'receive_yes'">
+                        AND u.receive_yn = true
+                    </when>
+                    <when test="category == 'receive_no'">
+                        AND u.receive_yn = false
+                    </when>
+                </choose>
+            </if>
+            AND u.user_type != '탈퇴'
+        </where>
+    </select>
+
+    <select id="getUserCategoryStats" resultType="map">
+        SELECT '신규' AS category, COUNT(*) AS count FROM user WHERE user_type = '신규'
+        UNION ALL
+        SELECT '복귀', COUNT(*) AS count FROM user WHERE user_type = '복귀'
+        UNION ALL
+        SELECT 'vip', COUNT(*) AS count FROM user WHERE vip_yn = true
+        UNION ALL
+        SELECT 'receive_yes', COUNT(*) AS count FROM user WHERE receive_yn = true
+        UNION ALL
+        SELECT 'receive_no', COUNT(*) AS count FROM user WHERE receive_yn = false
+        UNION ALL
+        SELECT '휴면', COUNT(*) AS count FROM user WHERE user_type = '휴면'
+        UNION ALL
+        SELECT '정지', COUNT(*) AS count FROM user WHERE user_type = '정지'
+        UNION ALL
+        SELECT '이탈 위험군', COUNT(*) AS count FROM user WHERE user_type = '이탈 위험군'
+    </select>
+
+
 </mapper>
