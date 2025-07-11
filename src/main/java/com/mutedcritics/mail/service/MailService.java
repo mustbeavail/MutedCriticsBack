@@ -347,4 +347,75 @@ public class MailService {
         return resp;
     }
 
+    // 메일 상세보기
+    public Map<String, Object> getMailDetail(int idx, String type) {
+
+        Map<String, Object> resp = new HashMap<>();
+
+        // 메일 상세보기
+        if ("mail".equals(type)) {
+        int mailIdx = idx;
+        Mail mail = mailRepo.findById(mailIdx)
+            .orElseThrow(() -> new RuntimeException("메일을 찾을 수 없습니다: " + mailIdx));
+
+        resp.put("mail", mail);
+
+        // 정기 메일 상세보기
+        } else if ("autoSend".equals(type)) {
+            int scheduleIdx = idx;
+            AutoSend autoSend = autoSendRepo.findById(scheduleIdx)
+                .orElseThrow(() -> new RuntimeException("정기메일을 찾을 수 없습니다: " + scheduleIdx));
+
+            resp.put("autoSend", autoSend);
+        }
+
+        return resp;
+    }
+
+    // 정기 메일 수정하기
+    public boolean updateMail(Map<String, Object> params) {
+
+        boolean success = false;
+        
+        // 요청 파라미터 추출
+        int scheduleIdx = (int) params.get("scheduleIdx");
+        int temIdx = (int) params.get("temIdx");
+        String memberId = (String) params.get("memberId");
+        boolean isToAll = (boolean) params.get("isToAll");
+        String recipient = (String) params.get("recipient");
+        String mailSub = (String) params.get("mailSub");
+        String mailContent = (String) params.get("mailContent");
+        int intervalDays = (int) params.get("intervalDays");
+        boolean isActive = (boolean) params.get("isActive");
+
+        // 요청한 회원 아이디 찾기
+        Member member = memberRepo.findById(memberId)
+            .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다: " + memberId));
+        // 요청한 템플릿 찾기
+        MailTemplate mailTemplate = mailTemplateRepo.findById(temIdx)
+            .orElseThrow(() -> new RuntimeException("템플릿을 찾을 수 없습니다: " + temIdx));
+
+        // 요청한 정기메일 찾기
+        AutoSend autoSend = autoSendRepo.findById(scheduleIdx)
+            .orElseThrow(() -> new RuntimeException("정기메일을 찾을 수 없습니다: " + scheduleIdx));
+
+        // 요청한 정기메일 수정
+        autoSend.setMailTemplate(mailTemplate);
+        autoSend.setMember(member);
+        autoSend.setToAll(isToAll);
+        autoSend.setRecipient(recipient);
+        autoSend.setMailSub(mailSub);
+        autoSend.setMailContent(mailContent);
+        autoSend.setIntervalDays(intervalDays);
+        autoSend.setActive(isActive);
+
+        try {
+            autoSendRepo.save(autoSend);
+            success = true;
+        } catch (Exception e) {
+            log.error("정기메일 수정 중 오류 발생: {}", e.getMessage(), e);
+        }
+
+        return success;
+    }
 }
