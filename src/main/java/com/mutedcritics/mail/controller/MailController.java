@@ -14,6 +14,9 @@ import com.mutedcritics.mail.service.MailService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 @CrossOrigin
 @RestController
@@ -90,6 +93,49 @@ public class MailController {
     }
 
     // 메일 상세보기
+    @GetMapping("/mail/detail")
+    public Map<String, Object> getMailDetail(
+        @RequestParam(required = false) Integer mailIdx,
+        @RequestParam(required = false) Integer scheduleIdx) {
+
+        resp = new HashMap<>();
+        
+        // 파라미터 유효성 검사
+        if ((mailIdx == null || mailIdx <= 0) && (scheduleIdx == null || scheduleIdx <= 0)) {
+            resp.put("status", "error");
+            resp.put("message", "mailIdx 또는 scheduleIdx 중 하나는 반드시 제공되어야 합니다.");
+            return resp;
+        }
+        
+        String type = "";
+        // 메일 상세보기
+        if (mailIdx != null && mailIdx > 0) {
+            type = "mail";
+            resp = service.getMailDetail(mailIdx, type);
+        // 정기 메일 상세보기
+        } else if (scheduleIdx != null && scheduleIdx > 0) {
+            type = "autoSend";
+            resp = service.getMailDetail(scheduleIdx, type);
+        }
+
+        return resp;
+    }
+
     // 정기 메일 수정하기
-    // 메일 삭제하기? 할까말까
+    @PutMapping("/mail/update/{scheduleIdx}")
+    public Map<String, Object> updateMail(
+            @PathVariable int scheduleIdx,
+            @RequestBody Map<String, Object> params) {
+
+        resp = new HashMap<>();
+        
+        params.put("scheduleIdx", scheduleIdx);
+        
+        boolean success = service.updateMail(params);
+
+        resp.put("success", success);
+
+        return resp;
+    }
+
 }
