@@ -277,11 +277,11 @@ public class MailService {
 
         // 정기메일 목록 조회일 경우, 내림차순 정렬일 경우
         if ("dateDesc".equals(align)) {
-            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+            pageable = PageRequest.of(page - 1, 15, Sort.by("createdAt").descending());
             autoSendList = autoSendRepo.findAll(pageable);
         // 정기메일 목록 조회일 경우, 오름차순 정렬일 경우
         } else if ("dateAsc".equals(align)) {
-            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").ascending());
+            pageable = PageRequest.of(page - 1, 15, Sort.by("createdAt").ascending());
             autoSendList = autoSendRepo.findAll(pageable);
         }
 
