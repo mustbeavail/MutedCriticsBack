@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC   "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mutedcritics.ingame.dao.IngameDAO">
+
+    <!-- 전체 기간 승리/패배 횟수 insert -->
+    <insert id="insertWinLoseCount">
+        INSERT INTO stats_hero_daily 
+        (heroes_idx, stats_date, tier_name, win_count, lose_count, pick_count, ban_count, potg_count, total_play_hours)
+        SELECT 
+            mr.heroes_idx,
+            DATE(mt.match_date) as stats_date,
+            COALESCE(t.tier_name, 'UNRANKED') as tier_name,
+            SUM(CASE WHEN mr.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) as win_count,
+            SUM(CASE WHEN mr.victory_or_defeat = 'defeat' THEN 1 ELSE 0 END) as lose_count,
+            0 as pick_count,
+            0 as ban_count,
+            0 as potg_count,
+            0 as total_play_hours
+        FROM match_result mr
+        JOIN match_table mt ON mr.match_idx = mt.match_idx
+        LEFT JOIN tier t ON mr.user_id = t.user_id
+        WHERE DATE(mt.match_date) BETWEEN #{startDate} AND #{endDate}
+        GROUP BY mr.heroes_idx, DATE(mt.match_date), COALESCE(t.tier_name, 'UNRANKED')
+        ON DUPLICATE KEY UPDATE
+            win_count = VALUES(win_count),
+            lose_count = VALUES(lose_count)
+    </insert>
+
+    <insert id="insertPickCount">
+        UPDATE stats_hero_daily shd
+        JOIN (
+            SELECT 
+                mr.heroes_idx,
+                DATE(mt.match_date) as stats_date,
+                COALESCE(t.tier_name, 'UNRANKED') as tier_name,
+                COUNT(DISTINCT mr.match_idx) as pick_count
+            FROM match_result mr
+            JOIN match_table mt ON mr.match_idx = mt.match_idx
+            LEFT JOIN tier t ON mr.user_id = t.user_id
+            WHERE DATE(mt.match_date) BETWEEN #{startDate} AND #{endDate}
+            GROUP BY mr.heroes_idx, DATE(mt.match_date), COALESCE(t.tier_name, 'UNRANKED')
+        ) pc ON shd.heroes_idx = pc.heroes_idx 
+             AND shd.stats_date = pc.stats_date 
+             AND shd.tier_name = pc.tier_name
+        SET shd.pick_count = pc.pick_count
+        WHERE shd.stats_date BETWEEN #{startDate} AND #{endDate}
+    </insert>
+
+</mapper>
