@@ -34,6 +34,6 @@ public class ForumPostDTO {
         this.title = post.getTitle();
         this.topic = post.getTopic();
         this.updatedAt = post.getUpdatedAt();
-        this.userId = post.getUser() != null ? post.getUser().getUserId() : null;
+        this.userId = post.getUser().getUserId();
     }
 }
