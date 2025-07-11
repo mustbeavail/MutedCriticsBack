@@ -44,7 +44,6 @@ public class ForumController {
 
             Page<ForumPost> forumPosts = service.getForumList(page, topic, align);
     
-            
             Page<ForumPostDTO> forumPostDTOs = forumPosts.map(post -> new ForumPostDTO(post));
             
             resp.put("forumPosts", forumPostDTOs);

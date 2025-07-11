@@ -252,124 +252,110 @@ public class MailService {
     }
 
     // 메일 발송 목록 조회
-    public Map<String, Object> getMailList(String sort, int page, String align) {
+    public Page<Mail> getMailList(int page, String align) {
 
         Pageable pageable = null;
         Page<Mail> mailList = null;
-        Page<AutoSend> autoSendList = null;
-        Map<String, Object> resp = new HashMap<>();
 
-        // 정기메일 목록 조회일 경우, 내림차순 정렬일 경우
-        if ("autoSendList".equals(sort) && "dateDesc".equals(align)) {
-            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
-            autoSendList = autoSendRepo.findAll(pageable);
-        // 정기메일 목록 조회일 경우, 오름차순 정렬일 경우
-        } else if ("autoSendList".equals(sort) && "dateAsc".equals(align)) {
-            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").ascending());
-            autoSendList = autoSendRepo.findAll(pageable);
         // 일반메일 목록 조회일 경우, 내림차순 정렬일 경우
-        } else if ("mailList".equals(sort) && "dateDesc".equals(align)) {
+        if ("dateDesc".equals(align)) {
             pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
             mailList = mailRepo.findAll(pageable);
         // 일반메일 목록 조회일 경우, 오름차순 정렬일 경우
-        } else if ("mailList".equals(sort) && "dateAsc".equals(align)) {
+        } else if ("dateAsc".equals(align)) {
             pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").ascending());
             mailList = mailRepo.findAll(pageable);
         }
 
-        // 널 아닌 것만 넣어서 보내기
-        if (mailList != null) {
-            resp.put("mailList", mailList);
-        }
-        if (autoSendList != null) {
-            resp.put("autoSendList", autoSendList);
-        }
-        if (mailList == null && autoSendList == null) {
-            resp.put("warning", "메일 목록이 없습니다.");
+        return mailList;
+    }
+    // 정기메일 목록 조회
+    public Page<AutoSend> getAutoSendList(int page, String align) {
+
+        Pageable pageable = null;
+        Page<AutoSend> autoSendList = null;
+
+        // 정기메일 목록 조회일 경우, 내림차순 정렬일 경우
+        if ("dateDesc".equals(align)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+            autoSendList = autoSendRepo.findAll(pageable);
+        // 정기메일 목록 조회일 경우, 오름차순 정렬일 경우
+        } else if ("dateAsc".equals(align)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").ascending());
+            autoSendList = autoSendRepo.findAll(pageable);
         }
 
-        return resp;
+        return autoSendList;
     }
 
     // 메일 발송 목록 검색
-    public Map<String, Object> searchMailList(String search, String searchType, int page, String sort) {
+    public Page<Mail> searchMailList(String search, String searchType, int page) {
 
         Pageable pageable = null;
         Page<Mail> mailList = null;
+
+        // 일반메일 목록 검색이고 메일 제목 검색일 경우
+        if("mailSub".equals(searchType)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+            mailList = mailRepo.findByMailSubContaining(search, pageable);
+        // 회원 아이디 검색일 경우
+        } else if("memberId".equals(searchType)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+            mailList = mailRepo.findByMemberIdContaining(search, pageable);
+        }
+        // 수신군 검색일 경우
+        else if("recipient".equals(searchType)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+            mailList = mailRepo.findByRecipientContaining(search, pageable);
+        }
+
+        if (mailList == null) {
+            mailList = Page.empty();
+        }
+
+        return mailList;
+    }
+
+    // 정기메일 목록 검색
+    public Page<AutoSend> searchAutoSendList(String search, String searchType, int page) {
+
+        Pageable pageable = null;
         Page<AutoSend> autoSendList = null;
-        Map<String, Object> resp = new HashMap<>();
 
-        // 정기메일 목록 검색일 경우
-        if("autoSendList".equals(sort)) {
-            // 메일 제목 검색일 경우
-            if("mailSub".equals(searchType)) {
-                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
-                autoSendList = autoSendRepo.findByMailSubContaining(search, pageable);
-            // 회원 아이디 검색일 경우
-            } else if("memberId".equals(searchType)) {
-                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
-                autoSendList = autoSendRepo.findByMemberIdContaining(search, pageable);
-            }
-            // 수신군 검색일 경우
-            else if("recipient".equals(searchType)) {
-                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
-                autoSendList = autoSendRepo.findByRecipientContaining(search, pageable);
-            }
-        } else {
-            // 일반메일 목록 검색이고 메일 제목 검색일 경우
-            if("mailSub".equals(searchType)) {
-                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
-                mailList = mailRepo.findByMailSubContaining(search, pageable);
-            // 회원 아이디 검색일 경우
-            } else if("memberId".equals(searchType)) {
-                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
-                mailList = mailRepo.findByMemberIdContaining(search, pageable);
-            }
-            // 수신군 검색일 경우
-            else if("recipient".equals(searchType)) {
-                pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
-                mailList = mailRepo.findByRecipientContaining(search, pageable);
-            }
+        if("mailSub".equals(searchType)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+            autoSendList = autoSendRepo.findByMailSubContaining(search, pageable);
+        } else if("memberId".equals(searchType)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+            autoSendList = autoSendRepo.findByMemberIdContaining(search, pageable);
+        } else if("recipient".equals(searchType)) {
+            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
+            autoSendList = autoSendRepo.findByRecipientContaining(search, pageable);
         }
 
-        // 널 아닌 것만 넣어서 보내기, 널 아닌 것이 없으면 경고 메시지 보내기
-        if (mailList != null) {
-            resp.put("mailList", mailList);
-        }
-        if (autoSendList != null) {
-            resp.put("autoSendList", autoSendList);
-        }
-        // 널 아닌 것이 없으면 경고 메시지 보내기
-        if (mailList == null && autoSendList == null) {
-            resp.put("warning", "메일 목록이 없습니다.");
+        if (autoSendList == null) {
+            autoSendList = Page.empty();
         }
 
-        return resp;
+        return autoSendList;
     }
 
     // 메일 상세보기
-    public Map<String, Object> getMailDetail(int idx, String type) {
+    public Mail getMailDetail(int mailIdx) {
 
-        Map<String, Object> resp = new HashMap<>();
-
-        // 메일 상세보기
-        if ("mail".equals(type)) {
-        int mailIdx = idx;
         Mail mail = mailRepo.findById(mailIdx)
             .orElseThrow(() -> new RuntimeException("메일을 찾을 수 없습니다: " + mailIdx));
 
-        resp.put("mail", mail);
+        return mail;
+    }
 
-        // 정기 메일 상세보기
-        } else if ("autoSend".equals(type)) {
-            int scheduleIdx = idx;
-            AutoSend autoSend = autoSendRepo.findById(scheduleIdx)
-                .orElseThrow(() -> new RuntimeException("정기메일을 찾을 수 없습니다: " + scheduleIdx));
+    // 정기메일 상세보기    
+    public AutoSend getAutoSendMailDetail(int scheduleIdx) {
 
-            resp.put("autoSend", autoSend);
-        }
+        AutoSend autoSend = autoSendRepo.findById(scheduleIdx)
+            .orElseThrow(() -> new RuntimeException("정기메일을 찾을 수 없습니다: " + scheduleIdx));
 
-        return resp;
+        return autoSend;
     }
 
     // 정기 메일 수정하기
