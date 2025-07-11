@@ -6,10 +6,13 @@ import java.util.Map;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mutedcritics.dto.ForumCommentDTO;
 import com.mutedcritics.dto.ForumPostDTO;
+import com.mutedcritics.entity.ForumComment;
 import com.mutedcritics.entity.ForumPost;
 import com.mutedcritics.forum.service.ForumService;
 
@@ -55,5 +58,36 @@ public class ForumController {
     }
 
     // 포럼 게시글 상세보기, 해당하는 댓글 불러오기
+    @GetMapping("/forum/detail/{postIdx}")
+    public Map<String, Object> getForumDetail(@PathVariable int postIdx, @RequestParam int page) {
+        resp = new HashMap<>();
+
+        // 게시글 상세보기
+        ForumPost forumPost = service.getForumPostDetail(postIdx);
+        ForumPostDTO forumPostDTO = new ForumPostDTO(forumPost);
+        resp.put("forumPost", forumPostDTO);
+
+        // 댓글 불러오기
+        Page<ForumComment> forumComments = service.getForumComments(postIdx, page);
+        Page<ForumCommentDTO> forumCommentDTOs = forumComments.map(comment -> new ForumCommentDTO(comment));
+        resp.put("forumComments", forumCommentDTOs);
+
+        return resp;
+    }   
+
     // 포럼 게시글 검색하기
+    @GetMapping("/forum/search")
+    public Map<String, Object> searchForum(
+        @RequestParam String search,
+        @RequestParam String searchType,
+        @RequestParam int page,
+        @RequestParam String topic) {
+        resp = new HashMap<>();
+
+        Page<ForumPost> forumPosts = service.searchForumPosts(search, searchType, page, topic);
+        Page<ForumPostDTO> forumPostDTOs = forumPosts.map(post -> new ForumPostDTO(post));
+        resp.put("forumPosts", forumPostDTOs);
+
+        return resp;
+    }
 }
