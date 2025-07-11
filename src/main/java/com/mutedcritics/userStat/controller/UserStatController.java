@@ -1,4 +1,4 @@
-package com.mutedcritics.userStat.controller;
+package com.mutedcritics.userstat.controller;
 
 import java.time.LocalDate;
 
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mutedcritics.userStat.service.UserStatService;
+import com.mutedcritics.userstat.service.UserStatService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,14 +28,14 @@ public class UserStatController {
     /**
      * 특정 유저의 대시보드 정보를 조회하는 GET 요청을 처리합니다.
      *
-     * @param userId 조회할 유저의 ID
+     * @param userId    조회할 유저의 ID
      * @param startDate 조회 기간의 시작 날짜 (ISO 형식: YYYY-MM-DD)
-     * @param endDate 조회 기간의 종료 날짜 (ISO 형식: YYYY-MM-DD)
+     * @param endDate   조회 기간의 종료 날짜 (ISO 형식: YYYY-MM-DD)
      * @return 유저 대시보드 정보를 담은 ResponseEntity
      * @throws IllegalArgumentException startDate가 endDate보다 늦을 경우 발생
      */
-    @GetMapping("/user-dashboard")
-    public ResponseEntity<?> getUserDashboard(
+    @GetMapping("/user-stats/overview")
+    public ResponseEntity<?> getUserStatsOverview(
             @RequestParam String userId,
             @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = ISO.DATE) LocalDate endDate) {
@@ -46,7 +46,7 @@ public class UserStatController {
             throw new IllegalArgumentException("startDate가 endDate보다 늦습니다.");
 
         // 서비스 계층에서 대시보드 정보를 가져와 응답합니다.
-        return ResponseEntity.ok(service.getDashboard(userId, startDate, endDate));
+        return ResponseEntity.ok(service.getUserStatsOverview(userId, startDate, endDate));
     }
 
 }

@@ -1,4 +1,4 @@
-package com.mutedcritics.userStat.service;
+package com.mutedcritics.userstat.service;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.mutedcritics.dto.HeroModeTimeDTO;
 import com.mutedcritics.dto.UserDashBoardDTO;
-import com.mutedcritics.userStat.dao.UserStatDAO;
+import com.mutedcritics.userstat.dao.UserStatDAO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +33,7 @@ public class UserStatService {
      * @return 유저 대시보드 정보 (승률, 플레이타임, 주 역할군, 모드별 플레이타임 등)
      * @throws NoSuchElementException 유저 데이터를 찾을 수 없는 경우 발생
      */
-    public Object getDashboard(String userId, LocalDate startDate, LocalDate endDate) {
+    public Object getUserStatsOverview(String userId, LocalDate startDate, LocalDate endDate) {
         // 1. 유저 기본 통계 정보 조회 (승수, 패수, 승률, 총 플레이타임)
         UserDashBoardDTO summary = dao.selectUsersummary(userId, startDate, endDate);
         // 조회된 요약 정보가 없으면 예외 발생
