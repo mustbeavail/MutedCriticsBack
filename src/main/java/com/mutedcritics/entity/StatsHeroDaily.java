@@ -42,6 +42,6 @@ public class StatsHeroDaily {
     @Column(name = "potg_count")
     private int potgCount;
 
-    @Column(name = "total_play_hours")
-    private int totalPlayHours;
+    @Column(name = "total_play_time")
+    private int totalPlayTime;
 }

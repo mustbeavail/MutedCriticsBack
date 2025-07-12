@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * 유저 통계 관련 API 요청을 처리하는 컨트롤러 클래스.
  * 유저 대시보드 정보를 제공합니다.
  */
+@CrossOrigin
 @RestController
 @Slf4j // Lombok을 사용하여 로그(Logger)를 자동으로 생성합니다.
 @RequiredArgsConstructor // Lombok을 사용하여 final 필드에 대한 생성자를 자동으로 생성합니다 (의존성 주입).

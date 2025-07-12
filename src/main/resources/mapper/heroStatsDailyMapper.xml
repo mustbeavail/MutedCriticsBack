@@ -4,61 +4,70 @@
 <mapper namespace="com.mutedcritics.ingame.dao.IngameDAO">
     <insert id="insertDailyHeroStats">
         INSERT INTO stats_hero_daily (
-            stats_date, heroes_idx, tier_name, pick_count, win_count, 
-            lose_count, potg_count, total_play_hours, ban_count
+            stats_date,
+            heroes_idx,
+            tier_name,
+            pick_count,
+            win_count,
+            lose_count,
+            potg_count,
+            total_play_time,
+            ban_count
         )
         SELECT
-            A.stats_date,
-            A.heroes_idx,
-            A.tier_name,
+            mt.match_date AS stats_date,
+            mr.heroes_idx,
+            t.tier_name,
             COUNT(*) AS pick_count,
-            SUM(CASE WHEN A.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) AS win_count,
-            SUM(CASE WHEN A.victory_or_defeat = 'defeat' THEN 1 ELSE 0 END) AS lose_count,
-            SUM(A.potg) AS potg_count,
-            SUM(A.match_play_time) AS total_play_time,
-            IFNULL(B.ban_count, 0) AS ban_count
-        FROM (
-            SELECT *
-            FROM (
-                SELECT
-                    mr.heroes_idx, mr.victory_or_defeat, mr.potg, mr.match_play_time,
-                    mt.match_date AS stats_date,
-                    IFNULL(t.tier_name, 'Unranked') AS tier_name,
-                    ROW_NUMBER() OVER(PARTITION BY mr.result_idx ORDER BY t.tier_date DESC) as rn
-                FROM
-                    match_result mr
-                JOIN
-                    match_table mt ON mr.match_idx = mt.match_idx
-                LEFT JOIN
-                    tier t ON mr.user_id = t.user_id AND t.tier_date &lt;= mt.match_date
-                WHERE
-                    mt.match_date BETWEEN #{startDate} AND #{endDate}
-            ) AS RankedMatches
-            WHERE RankedMatches.rn = 1
-        ) AS A
+            SUM(CASE WHEN mr.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) AS win_count,
+            SUM(CASE WHEN mr.victory_or_defeat = 'defeat' THEN 1 ELSE 0 END) AS lose_count,
+            SUM(CASE WHEN mr.potg = TRUE THEN 1 ELSE 0 END) AS potg_count,
+            SUM(mr.match_play_time) AS total_play_time,
+            IFNULL(b.ban_count, 0) AS ban_count
+        FROM match_result mr
+        JOIN match_table mt ON mr.match_idx = mt.match_idx
+        JOIN heroes h ON h.heroes_idx = mr.heroes_idx
+        JOIN (
+            SELECT t1.user_id, t1.tier_name
+            FROM tier t1
+            JOIN (
+                SELECT user_id, MAX(tier_date) AS max_date
+                FROM tier
+                WHERE tier_date &lt;= #{endDate}
+                GROUP BY user_id
+            ) t2 ON t1.user_id = t2.user_id AND t1.tier_date = t2.max_date
+        ) t ON mr.user_id = t.user_id
         LEFT JOIN (
             SELECT
-                mt.match_date AS stats_date,
                 mh.heroes_idx,
-                COUNT(mh.heroes_idx) AS ban_count
-            FROM
-                match_heroes mh
-            JOIN
-                match_table mt ON mh.match_idx = mt.match_idx
-            WHERE
-                mh.pick_or_ban = 'ban'
-                AND mt.match_date BETWEEN #{startDate} AND #{endDate}
-            GROUP BY
-                mt.match_date, mh.heroes_idx
-        ) AS B ON A.stats_date = B.stats_date AND A.heroes_idx = B.heroes_idx
-        GROUP BY
-            A.stats_date, A.heroes_idx, A.tier_name
+                mt2.match_date,
+                COUNT(*) AS ban_count
+            FROM match_heroes mh
+            JOIN match_table mt2 ON mh.match_idx = mt2.match_idx
+            WHERE mh.pick_or_ban = 'ban'
+            <if test="startDate != null and endDate != null">
+                AND mt2.match_date BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test="startDate != null and endDate == null">
+                AND mt2.match_date = #{startDate}
+            </if>
+            GROUP BY mh.heroes_idx, mt2.match_date
+        ) b ON b.heroes_idx = mr.heroes_idx AND b.match_date = mt.match_date
+        <where>
+            <if test="startDate != null and endDate != null">
+                mt.match_date BETWEEN #{startDate} AND #{endDate}
+            </if>
+            <if test="startDate != null and endDate == null">
+                mt.match_date = #{startDate}
+            </if>
+        </where>
+        GROUP BY mt.match_date, mr.heroes_idx, t.tier_name
         ON DUPLICATE KEY UPDATE
             pick_count = VALUES(pick_count),
             win_count = VALUES(win_count),
             lose_count = VALUES(lose_count),
             potg_count = VALUES(potg_count),
-            total_play_hours = VALUES(total_play_hours),
+            total_play_time = VALUES(total_play_time),
             ban_count = VALUES(ban_count);
     </insert>
 </mapper>

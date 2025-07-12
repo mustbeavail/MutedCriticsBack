@@ -7,12 +7,12 @@ import com.mutedcritics.dto.UserCategoryRequestDTO;
 import com.mutedcritics.dto.UserCategoryResponseDTO;
 import com.mutedcritics.userstat.service.UserTierStatsService;
 
-
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 유저 티어 통계 관련 API 요청을 처리하는 컨트롤러 클래스.
  * 유저의 티어별 통계 및 분류 정보를 제공합니다.
  */
+@CrossOrigin
 @RestController
 @RequiredArgsConstructor // Lombok을 사용하여 final 필드에 대한 생성자를 자동으로 생성합니다 (의존성 주입).
 public class UserTierStatsController {
