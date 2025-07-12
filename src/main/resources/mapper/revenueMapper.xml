@@ -3,4 +3,58 @@
 
 <mapper namespace="com.mutedcritics.revenue.dao.RevenueDAO">
 
+    <!-- 일일 총 매출 -->
+    <select id="dailyRevenue" resultType="int">
+
+    </select>
+
+    <!-- 일일 총 구매건수 -->
+    <select id="dailyPurchaseCount" resultType="int">
+
+    </select>
+
+    <!-- 일일 총 PU -->
+    <select id="dailyPU" resultType="int">
+
+    </select>
+
+    <!-- 일일 총 ARPU -->
+    <select id="dailyARPU" resultType="int">
+
+    </select>
+
+    <!-- 일일 총 ARPPU -->
+    <select id="dailyARPPU" resultType="int">
+
+    </select>
+
+    <!-- 일일 구매주기 -->
+    <select id="dailyInterval" resultType="int">
+
+    </select>
+
+    <!-- 일일 총매출 저장 -->
+    <insert id="dailyRevenueStats" parameterType="map">
+        INSERT INTO stats_revenue_daily
+        (
+            stats_date,
+            arppu,
+            arpu,
+            daily_interval,
+            daily_paying_users,
+            daily_purchase_count,
+            daily_revenue
+        )
+        VALUES
+        (
+            #{today},
+            COALESCE(#{dailyARPPU}, -1),
+            COALESCE(#{dailyARPU}, -1),
+            COALESCE(#{dailyInterval}, -1),
+            COALESCE(#{dailyPU}, -1),
+            COALESCE(#{dailyPurchaseCount}, -1),
+            COALESCE(#{dailyRevenue}, -1)
+        )
+    </insert>
+
 </mapper>
