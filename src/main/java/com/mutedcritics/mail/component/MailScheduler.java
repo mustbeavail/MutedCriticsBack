@@ -1,9 +1,9 @@
 package com.mutedcritics.mail.component;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,7 +25,7 @@ public class MailScheduler {
     private final AutoSendRepository autoSendRepo;
     private final MailService mailService;
 
-    @Scheduled(cron = "0 0 9 * * ?")
+    @Scheduled(cron = "0 0 15 * * ?", zone = "Asia/Seoul")
     public void sendScheduledMails() {
         LocalDate today = LocalDate.now();
         List<AutoSend> scheduledMails = autoSendRepo.findScheduledMails(today);

@@ -21,7 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.google.api.client.util.Value;
+import org.springframework.beans.factory.annotation.Value;
 import com.mutedcritics.entity.AutoSend;
 import com.mutedcritics.entity.Mail;
 import com.mutedcritics.entity.MailTemplate;
@@ -108,9 +108,15 @@ public class MailService {
             // 메시지 생성
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(SENDER_EMAIL));
-            for (String recip : recipients) {
-                message.addRecipient(Message.RecipientType.TO, new InternetAddress(recip));
+            if (recipients.size() > 0 && recipients != null) {
+                for (String recip : recipients) {
+                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(recip));
+                }
+            }else{
+                log.error("메일 발송 실패: 수신자가 없습니다.");
+                return false;
             }
+            
             message.setSubject(mail.getMailSub());
 
             // 메시지 내용 (HTML 형식)
@@ -144,6 +150,10 @@ public class MailService {
         String mailContent = (String) params.get("mailContent");
         int intervalDays = (int) params.get("intervalDays");
         boolean isActive = (boolean) params.get("isActive");
+        LocalDate reservedDate = null;
+        if (params.get("reservedDate") != null) {
+            reservedDate = LocalDate.parse((String)params.get("reservedDate"));
+        }
 
         // 요청한 회원 아이디 찾기
         Member member = memberRepo.findById(memberId)
@@ -173,11 +183,11 @@ public class MailService {
         }
 
         // 예약 날짜가 있고 다음 발송일이 없다 == 최초 정기메일이자 예약메일, 메일 당장 안보내고 예약 날짜로 다음 발송일 설정
-        if (params.get("reservedDate") != null && params.get("nextSendDate") == null) {
-            autoSend.setNextSendDate((LocalDate) params.get("reservedDate"));
+        if (reservedDate != null && params.get("nextSendDate") == null) {
+            autoSend.setNextSendDate(reservedDate);
 
-            // 그런 와중에 mailInterval이 없다 => 반복 없음
-            if (params.get("mailInterval") == null || (int)params.get("mailInterval") == 0) {
+            // 그런 와중에 intervalDays가 없다 => 반복 없음
+            if (params.get("intervalDays") == null || (int)params.get("intervalDays") == 0) {
                 autoSend.setIntervalDays(0);
             }
             autoSendRepo.save(autoSend);
@@ -204,8 +214,13 @@ public class MailService {
             // 메시지 생성
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(SENDER_EMAIL));
-            for (String recip : recipients) {
-                message.addRecipient(Message.RecipientType.TO, new InternetAddress(recip));
+            if (recipients.size() > 0 && recipients != null) {
+                for (String recip : recipients) {
+                    message.addRecipient(Message.RecipientType.TO, new InternetAddress(recip));
+                }
+            }else{
+                log.error("메일 발송 실패: 수신자가 없습니다.");
+                return false;
             }
             message.setSubject(autoSend.getMailSub());
 
@@ -291,21 +306,18 @@ public class MailService {
     // 메일 발송 목록 검색
     public Page<Mail> searchMailList(String search, String searchType, int page) {
 
-        Pageable pageable = null;
+        Pageable pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
         Page<Mail> mailList = null;
 
         // 일반메일 목록 검색이고 메일 제목 검색일 경우
         if("mailSub".equals(searchType)) {
-            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
             mailList = mailRepo.findByMailSubContaining(search, pageable);
         // 회원 아이디 검색일 경우
         } else if("memberId".equals(searchType)) {
-            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
             mailList = mailRepo.findByMemberIdContaining(search, pageable);
         }
         // 수신군 검색일 경우
         else if("recipient".equals(searchType)) {
-            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
             mailList = mailRepo.findByRecipientContaining(search, pageable);
         }
 
@@ -319,17 +331,14 @@ public class MailService {
     // 정기메일 목록 검색
     public Page<AutoSend> searchAutoSendList(String search, String searchType, int page) {
 
-        Pageable pageable = null;
+        Pageable pageable = PageRequest.of(page - 1, 15, Sort.by("createdAt").descending());
         Page<AutoSend> autoSendList = null;
 
         if("mailSub".equals(searchType)) {
-            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
             autoSendList = autoSendRepo.findByMailSubContaining(search, pageable);
         } else if("memberId".equals(searchType)) {
-            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
             autoSendList = autoSendRepo.findByMemberIdContaining(search, pageable);
         } else if("recipient".equals(searchType)) {
-            pageable = PageRequest.of(page - 1, 15, Sort.by("mailDate").descending());
             autoSendList = autoSendRepo.findByRecipientContaining(search, pageable);
         }
 
@@ -380,7 +389,6 @@ public class MailService {
         // 요청한 템플릿 찾기
         MailTemplate mailTemplate = mailTemplateRepo.findById(temIdx)
             .orElseThrow(() -> new RuntimeException("템플릿을 찾을 수 없습니다: " + temIdx));
-
         // 요청한 정기메일 찾기
         AutoSend autoSend = autoSendRepo.findById(scheduleIdx)
             .orElseThrow(() -> new RuntimeException("정기메일을 찾을 수 없습니다: " + scheduleIdx));

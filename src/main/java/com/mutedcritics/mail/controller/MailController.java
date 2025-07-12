@@ -40,7 +40,7 @@ public class MailController {
 
         boolean success = false;
 
-        if ((params.get("mailInterval") == null || (int) params.get("mailInterval") == 0)
+        if ((params.get("intervalDays") == null || (int) params.get("intervalDays") == 0)
                 && params.get("reservedDate") == null) {
             success = service.sendMail(params);
         } else {
@@ -100,6 +100,11 @@ public class MailController {
             @RequestParam(required = false) String sort) {
 
         resp = new HashMap<>();
+
+        if (search.equals("") || search == null || searchType.equals("") || searchType == null || page <= 0) {
+            resp.put("warning", "검색어와 검색 타입, 페이지 번호는 반드시 제공되어야 합니다.");
+            return resp;
+        }
 
         if ("autoSendList".equals(sort)) {
             Page<AutoSend> autoSends = service.searchAutoSendList(search, searchType, page);
