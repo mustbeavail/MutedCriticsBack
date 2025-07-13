@@ -25,11 +25,19 @@ public class MailScheduler {
     private final AutoSendRepository autoSendRepo;
     private final MailService mailService;
 
-    @Scheduled(cron = "0 0 15 * * ?", zone = "Asia/Seoul")
+    // 정기 메일 발송
+    @Scheduled(cron = "0 0 15 * * ?")
     public void sendScheduledMails() {
         LocalDate today = LocalDate.now();
         List<AutoSend> scheduledMails = autoSendRepo.findScheduledMails(today);
+
+        log.info("정기 메일 발송 메서드 실행");
         
+        if (scheduledMails.isEmpty() || scheduledMails == null) {
+            log.info("오늘 발송할 정기메일이 없습니다.");
+            return;
+        }
+
         for (AutoSend autoSend : scheduledMails) {
             // 메일 발송
             Map<String, Object> params = new HashMap<>();
