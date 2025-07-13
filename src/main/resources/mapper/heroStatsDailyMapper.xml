@@ -2,72 +2,324 @@
 <!DOCTYPE mapper PUBLIC   "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.mutedcritics.ingame.dao.IngameDAO">
-    <insert id="insertDailyHeroStats">
+    <!-- 일일 통계 업데이트 -->
+    <insert id="insertDailyHeroStats" parameterType="map">
         INSERT INTO stats_hero_daily (
-            stats_date,
-            heroes_idx,
-            tier_name,
-            pick_count,
-            win_count,
-            lose_count,
-            potg_count,
-            total_play_time,
-            ban_count
+          stats_date,
+          heroes_idx,
+          match_mode,
+          pick_count,
+          win_count,
+          lose_count,
+          potg_count,
+          total_play_time,
+          ban_count
         )
         SELECT
-            mt.match_date AS stats_date,
-            mr.heroes_idx,
-            t.tier_name,
-            COUNT(*) AS pick_count,
-            SUM(CASE WHEN mr.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) AS win_count,
-            SUM(CASE WHEN mr.victory_or_defeat = 'defeat' THEN 1 ELSE 0 END) AS lose_count,
-            SUM(CASE WHEN mr.potg = TRUE THEN 1 ELSE 0 END) AS potg_count,
-            SUM(mr.match_play_time) AS total_play_time,
-            IFNULL(b.ban_count, 0) AS ban_count
+          mt.match_date                                                   AS stats_date,
+          mr.heroes_idx                                                   AS heroes_idx,
+          mt.match_mode                                                   AS match_mode,
+          COUNT(*)                                                        AS pick_count,
+          SUM(CASE WHEN mr.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) AS win_count,
+          SUM(CASE WHEN mr.victory_or_defeat = 'defeat'  THEN 1 ELSE 0 END) AS lose_count,
+          SUM(CASE WHEN mr.potg = b'1' THEN 1 ELSE 0 END)                   AS potg_count,
+          SUM(mr.match_play_time)                                          AS total_play_time,
+          IFNULL(b.ban_count, 0)                                           AS ban_count
         FROM match_result mr
-        JOIN match_table mt ON mr.match_idx = mt.match_idx
-        JOIN heroes h ON h.heroes_idx = mr.heroes_idx
-        JOIN (
-            SELECT t1.user_id, t1.tier_name
-            FROM tier t1
-            JOIN (
-                SELECT user_id, MAX(tier_date) AS max_date
-                FROM tier
-                WHERE tier_date &lt;= #{endDate}
-                GROUP BY user_id
-            ) t2 ON t1.user_id = t2.user_id AND t1.tier_date = t2.max_date
-        ) t ON mr.user_id = t.user_id
+        JOIN match_table  mt ON mr.match_idx = mt.match_idx
+        
+        <!-- 영웅별 밴 수 집계 서브쿼리 -->
         LEFT JOIN (
-            SELECT
-                mh.heroes_idx,
-                mt2.match_date,
-                COUNT(*) AS ban_count
-            FROM match_heroes mh
-            JOIN match_table mt2 ON mh.match_idx = mt2.match_idx
-            WHERE mh.pick_or_ban = 'ban'
+          SELECT
+            mh.heroes_idx,
+            mt2.match_date,
+            mt2.match_mode,
+            COUNT(*) AS ban_count
+          FROM match_heroes mh
+          JOIN match_table mt2 ON mh.match_idx = mt2.match_idx
+          WHERE mh.pick_or_ban = 'ban'
             <if test="startDate != null and endDate != null">
-                AND mt2.match_date BETWEEN #{startDate} AND #{endDate}
+              AND mt2.match_date BETWEEN #{startDate} AND #{endDate}
             </if>
             <if test="startDate != null and endDate == null">
-                AND mt2.match_date = #{startDate}
+              AND mt2.match_date = #{startDate}
             </if>
-            GROUP BY mh.heroes_idx, mt2.match_date
-        ) b ON b.heroes_idx = mr.heroes_idx AND b.match_date = mt.match_date
+          GROUP BY mh.heroes_idx, mt2.match_date, mt2.match_mode
+        ) b ON b.heroes_idx = mr.heroes_idx
+            AND b.match_date = mt.match_date
+            AND b.match_mode = mt.match_mode
+        
+        <where>
+          <if test="startDate != null and endDate != null">
+            mt.match_date BETWEEN #{startDate} AND #{endDate}
+          </if>
+          <if test="startDate != null and endDate == null">
+            mt.match_date = #{startDate}
+          </if>
+        </where>
+        
+        GROUP BY
+          mt.match_date,
+          mr.heroes_idx,
+          mt.match_mode
+        
+        ON DUPLICATE KEY UPDATE
+          pick_count      = VALUES(pick_count),
+          win_count       = VALUES(win_count),
+          lose_count      = VALUES(lose_count),
+          potg_count      = VALUES(potg_count),
+          total_play_time = VALUES(total_play_time),
+          ban_count       = VALUES(ban_count);
+      </insert>
+
+      <!-- 영웅이 보유한 아이템 수 -->
+    <select id="getHeroItemCount" resultType="com.mutedcritics.dto.HeroItemCountDTO">
+        SELECT
+            h.heroes_idx AS heroesIdx,
+            h.heroes_name AS heroName,
+            h.role AS role,
+            COUNT(hi.heroes_idx) AS itemCount
+        FROM heroes h
+        JOIN heroes_item hi ON hi.heroes_idx = h.heroes_idx
+        GROUP BY h.heroes_idx
+        <if test="sortOrder != null and sortOrder != ''">
+            ORDER BY itemCount ${sortOrder}
+        </if>
+    </select>
+
+    <!-- 영웅별 총 플레이타임, potg, 아이템 개수 -->
+    <select id="getHeroPlaytimePotgItemCount" resultType="map">
+        SELECT
+            h.heroes_name AS heroName,
+            IFNULL(s.total_play_time, 0) AS totalPlayTime,
+            IFNULL(s.total_potg_count, 0) AS totalPotgCount,
+            IFNULL(i.item_count, 0) AS itemCount
+        FROM
+            heroes h
+        LEFT JOIN (
+            SELECT
+                heroes_idx,
+                SUM(total_play_time) AS total_play_time,
+                SUM(potg_count) AS total_potg_count
+            FROM stats_hero_daily
+            GROUP BY heroes_idx
+        ) s ON h.heroes_idx = s.heroes_idx
+        LEFT JOIN (
+            SELECT
+                heroes_idx,
+                COUNT(*) AS item_count
+            FROM heroes_item
+            GROUP BY heroes_idx
+        ) i ON h.heroes_idx = i.heroes_idx
+        <if test="sortOrder != null and sortOrder != ''">
+            ORDER BY totalPlayTime ${sortOrder}
+        </if>
+    </select>
+
+    <!-- 영웅별 총 플레이타임 조회 -->
+    <select id="getHeroPlayTime" resultType="com.mutedcritics.dto.HeroPlayTimeDTO">
+        SELECT
+            h.heroes_name AS heroName,
+            h.role AS role,
+            IFNULL(SUM(s.total_play_time), 0) AS totalPlayTime,
+            IFNULL(SUM(s.pick_count), 0) AS matchCount,
+            CASE 
+                WHEN SUM(s.pick_count) > 0 THEN ROUND(SUM(s.total_play_time) / SUM(s.pick_count), 2)
+                ELSE 0 
+            END AS avgPlayTimePerMatch
+        FROM heroes h
+        LEFT JOIN stats_hero_daily s ON h.heroes_idx = s.heroes_idx
+        GROUP BY h.heroes_idx, h.heroes_name, h.role
+        <if test="sortOrder != null and sortOrder != ''">
+            ORDER BY totalPlayTime ${sortOrder}
+        </if>
+    </select>
+
+    <!-- 모드별 총 플레이타임 조회 -->
+    <select id="getModePlayTime" resultType="com.mutedcritics.dto.ModePlayTimeDTO">
+        SELECT
+            s.match_mode AS matchMode,
+            SUM(s.total_play_time) AS totalPlayTime,
+            SUM(s.pick_count) AS matchCount,
+            CASE 
+                WHEN SUM(s.pick_count) > 0 THEN ROUND(SUM(s.total_play_time) / SUM(s.pick_count), 2)
+                ELSE 0 
+            END AS avgPlayTimePerMatch
+        FROM stats_hero_daily s
+        GROUP BY s.match_mode
+        <if test="sortOrder != null and sortOrder != ''">
+            ORDER BY totalPlayTime ${sortOrder}
+        </if>
+    </select>
+
+    <!-- 영웅별 승률 조회 -->
+    <select id="getHeroWinRate" resultType="com.mutedcritics.dto.HeroWinRateDTO">
+        SELECT
+            h.heroes_name AS heroName,
+            h.role AS role,
+            <choose>
+                <when test="tierName != null and tierName != ''">
+                    #{tierName} AS tierName,
+                </when>
+                <otherwise>
+                    'ALL' AS tierName,
+                </otherwise>
+            </choose>
+            SUM(CASE WHEN mr.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) AS winCount,
+            SUM(CASE WHEN mr.victory_or_defeat = 'defeat' THEN 1 ELSE 0 END) AS loseCount,
+            COUNT(*) AS totalMatches,
+            CASE 
+                WHEN COUNT(*) > 0 THEN ROUND(SUM(CASE WHEN mr.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2)
+                ELSE 0 
+            END AS winRate
+        FROM match_result mr
+        JOIN match_table mt ON mr.match_idx = mt.match_idx
+        JOIN heroes h ON mr.heroes_idx = h.heroes_idx
+        <if test="tierName != null and tierName != ''">
+            LEFT JOIN (
+                SELECT DISTINCT
+                    tt.user_id,
+                    tt.tier_name,
+                    tt.tier_date
+                FROM tier tt
+                WHERE tt.tier_date = (
+                    SELECT MAX(tt2.tier_date)
+                    FROM tier tt2
+                    WHERE tt2.user_id = tt.user_id
+                      AND tt2.tier_date &lt;= #{endDate}
+                )
+            ) t ON mr.user_id = t.user_id
+        </if>
         <where>
             <if test="startDate != null and endDate != null">
                 mt.match_date BETWEEN #{startDate} AND #{endDate}
             </if>
-            <if test="startDate != null and endDate == null">
-                mt.match_date = #{startDate}
+            <if test="tierName != null and tierName != ''">
+                AND t.tier_name = #{tierName}
             </if>
         </where>
-        GROUP BY mt.match_date, mr.heroes_idx, t.tier_name
-        ON DUPLICATE KEY UPDATE
-            pick_count = VALUES(pick_count),
-            win_count = VALUES(win_count),
-            lose_count = VALUES(lose_count),
-            potg_count = VALUES(potg_count),
-            total_play_time = VALUES(total_play_time),
-            ban_count = VALUES(ban_count);
-    </insert>
+        <choose>
+            <when test="tierName != null and tierName != ''">
+                GROUP BY h.heroes_idx, h.heroes_name, h.role, t.tier_name
+            </when>
+            <otherwise>
+                GROUP BY h.heroes_idx, h.heroes_name, h.role
+            </otherwise>
+        </choose>
+        <if test="sortOrder != null and sortOrder != ''">
+            ORDER BY winRate ${sortOrder}
+        </if>
+    </select>
+
+    <!-- 영웅별 최고의 플레이 비중 조회 -->
+    <select id="getHeroPotgRate" resultType="com.mutedcritics.dto.HeroPotgRateDTO">
+        SELECT
+            h.heroes_name AS heroName,
+            h.role AS role,
+            COUNT(*) AS totalMatches,
+            SUM(CASE WHEN mr.potg = b'1' THEN 1 ELSE 0 END) AS potgCount,
+            CASE 
+                WHEN COUNT(*) > 0 THEN ROUND(SUM(CASE WHEN mr.potg = b'1' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2)
+                ELSE 0 
+            END AS potgRate
+        FROM match_result mr
+        JOIN match_table mt ON mr.match_idx = mt.match_idx
+        JOIN heroes h ON mr.heroes_idx = h.heroes_idx
+        <where>
+            <if test="startDate != null and endDate != null">
+                mt.match_date BETWEEN #{startDate} AND #{endDate}
+            </if>
+        </where>
+        GROUP BY h.heroes_idx, h.heroes_name, h.role
+        <if test="sortOrder != null and sortOrder != ''">
+            ORDER BY potgRate ${sortOrder}
+        </if>
+    </select>
+
+    <!-- 영웅별 밴률/픽률 조회 -->
+    <select id="getHeroBanPickRate" resultType="com.mutedcritics.dto.HeroBanPickRateDTO">
+        SELECT
+            h.heroes_name AS heroName,
+            h.role AS role,
+            IFNULL(p.pick_count, 0) AS pickCount,
+            IFNULL(b.ban_count, 0) AS banCount,
+            (
+                SELECT COUNT(DISTINCT mt.match_idx)
+                FROM match_table mt
+                <where>
+                    <if test="startDate != null and endDate != null">
+                        mt.match_date BETWEEN #{startDate} AND #{endDate}
+                    </if>
+                </where>
+            ) AS totalGames,
+            CASE 
+                WHEN (
+                    SELECT COUNT(DISTINCT mt.match_idx)
+                    FROM match_table mt
+                    <where>
+                        <if test="startDate != null and endDate != null">
+                            mt.match_date BETWEEN #{startDate} AND #{endDate}
+                        </if>
+                    </where>
+                ) > 0 THEN ROUND(IFNULL(p.pick_count, 0) * 100.0 / (
+                    SELECT COUNT(DISTINCT mt.match_idx)
+                    FROM match_table mt
+                    <where>
+                        <if test="startDate != null and endDate != null">
+                            mt.match_date BETWEEN #{startDate} AND #{endDate}
+                        </if>
+                    </where>
+                ), 2)
+                ELSE 0 
+            END AS pickRate,
+            CASE 
+                WHEN (
+                    SELECT COUNT(DISTINCT mt.match_idx)
+                    FROM match_table mt
+                    <where>
+                        <if test="startDate != null and endDate != null">
+                            mt.match_date BETWEEN #{startDate} AND #{endDate}
+                        </if>
+                    </where>
+                ) > 0 THEN ROUND(IFNULL(b.ban_count, 0) * 100.0 / (
+                    SELECT COUNT(DISTINCT mt.match_idx)
+                    FROM match_table mt
+                    <where>
+                        <if test="startDate != null and endDate != null">
+                            mt.match_date BETWEEN #{startDate} AND #{endDate}
+                        </if>
+                    </where>
+                ), 2)
+                ELSE 0 
+            END AS banRate
+        FROM heroes h
+        LEFT JOIN (
+            SELECT
+                mr.heroes_idx,
+                COUNT(*) AS pick_count
+            FROM match_result mr
+            JOIN match_table mt ON mr.match_idx = mt.match_idx
+            <where>
+                <if test="startDate != null and endDate != null">
+                    mt.match_date BETWEEN #{startDate} AND #{endDate}
+                </if>
+            </where>
+            GROUP BY mr.heroes_idx
+        ) p ON h.heroes_idx = p.heroes_idx
+        LEFT JOIN (
+            SELECT
+                mh.heroes_idx,
+                COUNT(*) AS ban_count
+            FROM match_heroes mh
+            JOIN match_table mt ON mh.match_idx = mt.match_idx
+            WHERE mh.pick_or_ban = 'ban'
+            <if test="startDate != null and endDate != null">
+                AND mt.match_date BETWEEN #{startDate} AND #{endDate}
+            </if>
+            GROUP BY mh.heroes_idx
+        ) b ON h.heroes_idx = b.heroes_idx
+        <if test="sortOrder != null and sortOrder != ''">
+            ORDER BY pickRate ${sortOrder}
+        </if>
+    </select>
 </mapper>

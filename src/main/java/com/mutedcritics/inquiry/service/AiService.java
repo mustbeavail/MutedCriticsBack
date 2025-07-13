@@ -3,7 +3,14 @@ package com.mutedcritics.inquiry.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import javax.mail.Message;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -43,12 +50,70 @@ public class AiService {
     @Value("${gemini.api.url}")
     private String geminiApiUrl;
 
+    @Value("${sender.email}")
+    private String SENDER_EMAIL;
+
+    @Value("${sender.password}")
+    private String SENDER_PASSWORD;
+
+    // 상담사 답변시 알림 메일 발송
+    public void sendAgentResponseMail(String agentId, int inquiryIdx) {
+        try {
+            // 문의/신고 게시글 조회(고객 아이디를 찾기 위해)
+            Inquiry inquiry = inquiryRepository.findById(inquiryIdx)
+                    .orElseThrow(() -> new RuntimeException("문의/신고가 존재하지 않습니다. inquiryIdx: " + inquiryIdx));
+
+            // 수신자 정보 (고객)
+            String recipient = inquiry.getUser().getUserId(); // 고객 이메일
+            log.info("수신자 정보 : {}", recipient);
+
+            // 메일 제목과 메일 내용
+            String title = "고객님의 문의/신고 글에 답변이 등록되었습니다.";
+            String content = "안녕하세요! 저희 Null Core 를 플레이해 주셔서 감사합니다.\n" +
+                    "고객님이 남기신 문의/신고 글에 답변이 등록되었습니다.\n" +
+                    "답변 내용은 다음과 같습니다.\n" +
+                    "--------------------------------\n" +
+                    inquiry.getResponse().getContent() +
+                    "\n--------------------------------\n" +
+                    "감사합니다.";
+
+            // 메일 발송
+            Properties props = new Properties();
+            props.put("mail.smtp.host", "smtp.naver.com"); // 네이버 SMTP 서버
+            props.put("mail.smtp.port", "587"); // 네이버 TLS 포트 사용
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true"); // TLS 사용
+            props.put("mail.smtp.ssl.trust", "smtp.naver.com");
+            props.put("mail.debug", "true"); // 디버깅 활성화
+
+            // 세션 생성 (발신자 인증 정보 사용)
+            Session session = Session.getInstance(props, new javax.mail.Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(SENDER_EMAIL, SENDER_PASSWORD);
+                }
+            });
+
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(SENDER_EMAIL));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
+            message.setSubject(title);
+            message.setText(content, "UTF-8");
+
+            Transport.send(message);
+            log.info("상담사 답변 메일 발송 성공 : {}", recipient);
+
+        } catch (Exception e) {
+            log.error("상담사 답변 메일 발송 실패 : {}", e.getMessage(), e);
+        }
+
+    }
+
     // 상담사 지원용 AI 답변 생성
     public String generateAiResponseForAgent(Integer inquiryId) {
         log.info("AI 답변 생성 요청 (상담사 지원) - Inquiry ID: {}", inquiryId);
 
         Inquiry inquiry = inquiryRepository.findById(inquiryId)
-                .orElseThrow(() -> new RuntimeException("Inquiry not found with id: " + inquiryId));
+                .orElseThrow(() -> new RuntimeException("문의/신고가 존재하지 않습니다. inquiryIdx: " + inquiryId));
 
         return generateAiResponse(inquiry);
     }
@@ -57,10 +122,11 @@ public class AiService {
     @Transactional
     public String saveAgentResponse(ResponseDTO responseDTO) {
         Inquiry inquiry = inquiryRepository.findById(responseDTO.getInquiryIdx())
-                .orElseThrow(() -> new RuntimeException("Inquiry not found with id: " + responseDTO.getInquiryIdx()));
+                .orElseThrow(
+                        () -> new RuntimeException("문의/신고가 존재하지 않습니다. inquiryIdx: " + responseDTO.getInquiryIdx()));
 
         Member agent = memberRepository.findById(responseDTO.getAgentId())
-                .orElseThrow(() -> new RuntimeException("Agent not found with id: " + responseDTO.getAgentId()));
+                .orElseThrow(() -> new RuntimeException("상담사가 존재하지 않습니다. agentId: " + responseDTO.getAgentId()));
 
         // 이전 상태 저장
         String previousStatus = inquiry.getStatus();
@@ -79,6 +145,9 @@ public class AiService {
         inquiry.setStatus("완료");
 
         inquiryRepository.save(inquiry);
+
+        // 상담사 답변 메일 발송
+        sendAgentResponseMail(responseDTO.getAgentId(), responseDTO.getInquiryIdx());
 
         // 상태가 변경된 경우 통계 업데이트 (미처리 → 완료)
         if (!"완료".equals(previousStatus)) {
