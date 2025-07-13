@@ -5,35 +5,127 @@
 
     <!-- 일일 총 매출 -->
     <select id="dailyRevenue" resultType="int">
-
+        WITH
+        <!-- 일일 주문 목록 -->
+        daily_order_list AS (
+            SELECT
+                ol.item_idx,
+                ol.item_cate
+            FROM order_list ol
+            WHERE ol.order_date = #{today}
+        ),
+        <!-- 일일 판매 금액 -->
+        daily_sales_amt AS (
+            SELECT
+                COALESCE(
+                    SUM(
+                        COALESCE(
+                            CASE 
+                                WHEN dol.item_cate = 'item' THEN il.item_price
+                                WHEN dol.item_cate = 'bundle' THEN bi.bundle_price
+                            END
+                        , 0)
+                    )
+                , 0) as daily_item_price
+            FROM daily_order_list dol
+            LEFT JOIN item_list il ON dol.item_idx = il.item_idx AND dol.item_cate = 'item'
+            LEFT JOIN bundle_item bi ON dol.item_idx = bi.bundle_idx AND dol.item_cate = 'bundle'
+        ),
+        <!-- 일일 환불 금액-->
+        daily_refund_amt AS (
+            SELECT
+                COALESCE(SUM(rl.refund_amt), 0) as daily_refund_amt
+            FROM refund_list rl
+            WHERE rl.refund_date = #{today}
+        )
+        SELECT
+            dsa.daily_item_price - dra.daily_refund_amt AS daily_revenue
+        FROM daily_sales_amt dsa
+        CROSS JOIN daily_refund_amt dra
     </select>
 
     <!-- 일일 총 구매건수 -->
     <select id="dailyPurchaseCount" resultType="int">
-
+        SELECT
+            COALESCE(COUNT(ol.order_idx), 0) as daily_purchase_count
+        FROM order_list ol
+        WHERE ol.order_date = #{today}
     </select>
 
     <!-- 일일 총 PU -->
     <select id="dailyPU" resultType="int">
-
+        SELECT
+            COALESCE(COUNT(DISTINCT ol.user_id), 0) as daily_pu
+        FROM order_list ol
+        WHERE ol.order_date = #{today}
     </select>
 
-    <!-- 일일 총 ARPU -->
+    <!-- 일일 ARPU -->
     <select id="dailyARPU" resultType="int">
-
+        WITH
+        total_sales_amt AS(
+            SELECT
+                COALESCE(SUM(srd.daily_revenue), 0) as total_sales_amt
+            FROM stats_revenue_daily srd
+            WHERE srd.stats_date = #{today}
+        ),
+        total_user_count AS(
+            SELECT
+                COALESCE(COUNT(DISTINCT u.user_id), 0) as total_user_count
+            FROM user u
+            WHERE u.join_date &lt;= #{today}
+        )
+        SELECT 
+            tsa.total_sales_amt / NULLIF(tuc.total_user_count, 0) as daily_arpu
+        FROM total_sales_amt tsa
+        CROSS JOIN total_user_count tuc
     </select>
 
-    <!-- 일일 총 ARPPU -->
+    <!-- 일일 ARPPU -->
     <select id="dailyARPPU" resultType="int">
-
+        WITH
+        total_sales_amt AS(
+            SELECT
+                COALESCE(SUM(srd.daily_revenue), 0) as total_sales_amt
+            FROM stats_revenue_daily srd
+            WHERE srd.stats_date = #{today}
+        ),
+        total_pu AS(
+            SELECT
+                COALESCE(COUNT(DISTINCT srd.daily_paying_users), 0) as total_pu
+            FROM stats_revenue_daily srd
+            WHERE srd.stats_date = #{today}
+        )
+        SELECT
+            tsa.total_sales_amt / NULLIF(tp.total_pu, 0) as daily_arppu
+        FROM total_sales_amt tsa
+        CROSS JOIN total_pu tp
     </select>
 
-    <!-- 일일 구매주기 -->
+    <!-- 일일 평균 구매 간격 -->
     <select id="dailyInterval" resultType="int">
-
+        WITH
+        user_daily_interval AS(
+            SELECT
+            user_id,
+            AVG(diff_days) AS user_daily_interval
+        FROM (
+            SELECT
+                user_id,
+                order_date,
+                LAG(order_date) OVER (PARTITION BY user_id ORDER BY order_date) AS prev_order_date,
+                TIMESTAMPDIFF(DAY, LAG(order_date) OVER (PARTITION BY user_id ORDER BY order_date), order_date) AS diff_days
+            FROM order_list
+            ) t
+            WHERE t.prev_order_date IS NOT NULL AND t.order_date &lt;= #{today}
+            GROUP BY user_id
+        )
+        SELECT
+            COALESCE(AVG(udi.user_daily_interval), 0) as daily_interval
+        FROM user_daily_interval udi
     </select>
 
-    <!-- 일일 총매출 저장 -->
+    <!-- 일일 매출 통계 저장 -->
     <insert id="dailyRevenueStats" parameterType="map">
         INSERT INTO stats_revenue_daily
         (
@@ -55,6 +147,13 @@
             COALESCE(#{dailyPurchaseCount}, -1),
             COALESCE(#{dailyRevenue}, -1)
         )
+        ON DUPLICATE KEY UPDATE
+            arppu = COALESCE(#{dailyARPPU}, -1),
+            arpu = COALESCE(#{dailyARPU}, -1),
+            daily_interval = COALESCE(#{dailyInterval}, -1),
+            daily_paying_users = COALESCE(#{dailyPU}, -1),
+            daily_purchase_count = COALESCE(#{dailyPurchaseCount}, -1),
+            daily_revenue = COALESCE(#{dailyRevenue}, -1)
     </insert>
 
 </mapper>

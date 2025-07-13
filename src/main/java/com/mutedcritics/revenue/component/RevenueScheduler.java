@@ -21,7 +21,7 @@ public class RevenueScheduler {
 
     private final RevenueService service;
 
-    @Scheduled(cron = "0 0 19 * * ?")
+    @Scheduled(cron = "0 7 23 * * ?")
     public void dailyRevenueStats() {
 
         Map<String, Object> params = new HashMap<>();
@@ -57,22 +57,6 @@ public class RevenueScheduler {
             log.warn("일일 총 PU 조회 실패");
             failCount++;
         }
-        // 일일 총 ARPU
-        Integer dailyARPU = service.dailyARPU(today);
-        if (dailyARPU != null) {
-            params.put("dailyARPU", dailyARPU);
-        }else{
-            log.warn("일일 총 ARPU 조회 실패");
-            failCount++;
-        }
-        // 일일 총 ARPPU
-        Integer dailyARPPU = service.dailyARPPU(today);
-        if (dailyARPPU != null) {
-            params.put("dailyARPPU", dailyARPPU);
-        }else{
-            log.warn("일일 총 ARPPU 조회 실패");
-            failCount++;
-        }
         // 일일 구매주기
         Integer dailyInterval = service.dailyInterval(today);
         if (dailyInterval != null) {
@@ -82,18 +66,48 @@ public class RevenueScheduler {
             failCount++;
         }
 
-        if (failCount == 6) {
-            log.warn("모든 일일 매출 통계 조회 실패");
+        if (failCount == 4) {
+            log.warn("모든 일일 매출 통계 1차 조회 실패");
             return;
         }
 
-        // 일일 매출 통계 저장
+        // 일일 매출 통계 1차 저장
         boolean success = service.dailyRevenueStats(params);
         
         if (success) {
-            log.info("일일 매출 통계 저장 성공");
+            log.info("일일 매출 통계 1차 저장 성공");
+            failCount = 0;
+            success = false;
+
+            // 일일 총 ARPU
+            Integer dailyARPU = service.dailyARPU(today);
+            if (dailyARPU != null) {
+                params.put("dailyARPU", dailyARPU);
+            }else{
+                log.warn("일일 총 ARPU 조회 실패");
+                failCount++;
+            }
+            // 일일 총 ARPPU
+            Integer dailyARPPU = service.dailyARPPU(today);
+            if (dailyARPPU != null) {
+                params.put("dailyARPPU", dailyARPPU);
+            }else{
+                log.warn("일일 총 ARPPU 조회 실패");
+                failCount++;
+            }
+            if (failCount == 2) {
+                log.warn("모든 일일 매출 통계 2차 조회 실패");
+                return;
+            }
+            // 일일 매출 통계 2차 저장
+            success = service.dailyRevenueStats(params);
+            if (success) {
+                log.info("일일 매출 통계 2차 저장 성공");
+            } else {
+                log.warn("일일 매출 통계 2차 저장 실패");
+            }
         } else {
-            log.warn("일일 매출 통계 저장 실패");
+            log.warn("일일 매출 통계 1차 저장 실패");
         }
 
     }

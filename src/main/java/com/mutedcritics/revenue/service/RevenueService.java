@@ -20,7 +20,7 @@ public class RevenueService {
     // 일일 총 매출
     public Integer dailyRevenue(LocalDate today) {
         Integer dailyRevenue = revenueDAO.dailyRevenue(today);
-        if (dailyRevenue == null || dailyRevenue < 0) {
+        if (dailyRevenue == null) {
             return null;
         }
         return dailyRevenue;
@@ -44,7 +44,7 @@ public class RevenueService {
     // 일일 총 ARPU
     public Integer dailyARPU(LocalDate today) {
         Integer dailyARPU = revenueDAO.dailyARPU(today);
-        if (dailyARPU == null || dailyARPU < 0) {
+        if (dailyARPU == null) {
             return null;
         }
         return dailyARPU;
@@ -52,7 +52,7 @@ public class RevenueService {
     // 일일 총 ARPPU
     public Integer dailyARPPU(LocalDate today) {
         Integer dailyARPPU = revenueDAO.dailyARPPU(today);
-        if (dailyARPPU == null || dailyARPPU < 0) {
+        if (dailyARPPU == null) {
             return null;
         }
         return dailyARPPU;
