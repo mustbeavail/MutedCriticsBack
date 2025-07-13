@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "stats_hero_daily", uniqueConstraints = @UniqueConstraint(columnNames = { "stats_date", "heroes_idx",
-        "tier_name" }))
+        "match_mode" }))
 @Data
 public class StatsHeroDaily {
 
@@ -24,8 +24,8 @@ public class StatsHeroDaily {
     @Column(name = "stats_date", nullable = false)
     private LocalDate statsDate;
 
-    @Column(name = "tier_name", length = 20)
-    private String tierName;
+    @Column(name = "match_mode", length = 50, nullable = false)
+    private String matchMode;
 
     @Column(name = "win_count")
     private int winCount;
