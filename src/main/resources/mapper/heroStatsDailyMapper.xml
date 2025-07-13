@@ -70,4 +70,18 @@
             total_play_time = VALUES(total_play_time),
             ban_count = VALUES(ban_count);
     </insert>
+
+    <select id="getHeroItemCount" resultType="com.mutedcritics.dto.HeroItemCountDTO">
+        SELECT
+            h.heroes_idx AS heroesIdx,
+            h.heroes_name AS heroName,
+            h.role AS role,
+            COUNT(hi.heroes_idx) AS itemCount
+        FROM heroes h
+        JOIN heroes_item hi ON hi.heroes_idx = h.heroes_idx
+        GROUP BY h.heroes_idx
+        <if test="sortOrder != null and sortOrder != ''">
+            ORDER BY itemCount ${sortOrder}
+        </if>
+    </select>
 </mapper>

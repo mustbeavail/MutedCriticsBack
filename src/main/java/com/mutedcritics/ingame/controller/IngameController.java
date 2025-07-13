@@ -1,14 +1,18 @@
 package com.mutedcritics.ingame.controller;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mutedcritics.dto.HeroItemCountDTO;
 import com.mutedcritics.ingame.service.IngameService;
 
 import lombok.RequiredArgsConstructor;
@@ -44,5 +48,17 @@ public class IngameController {
         log.info("startDate : {}, endDate : {}", startDate, endDate);
         service.insertDailyHeroStats(startDate, endDate);
         return ResponseEntity.ok(Map.of("msg", startDate + " ~ " + endDate + " 날짜의 일일 영웅 통계가 업데이트 되었습니다."));
+    }
+
+    /**
+     * 영웅이 보유한 아이템 수
+     * 
+     * @param sortOrder
+     * @return
+     */
+    @GetMapping("/get/hero-item-count")
+    public ResponseEntity<?> getHeroItemCount(@RequestParam(defaultValue = "asc") String sortOrder) {
+        List<HeroItemCountDTO> list = service.getHeroItemCount(sortOrder);
+        return ResponseEntity.ok(Map.of("list", list));
     }
 }
