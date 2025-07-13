@@ -148,11 +148,23 @@ public class MailService {
         String recipient = (String) params.get("recipient");
         String mailSub = (String) params.get("mailSub");
         String mailContent = (String) params.get("mailContent");
-        int intervalDays = (int) params.get("intervalDays");
-        boolean isActive = (boolean) params.get("isActive");
+        int intervalDays = 0;
+        if (params.get("intervalDays") != null) {
+            intervalDays = (int) params.get("intervalDays");
+        }
+        boolean isActive = false;
+        if (params.get("isActive") != null) {
+            isActive = (boolean) params.get("isActive");
+        }
+        LocalDate nextSendDate = null;
+        if (params.get("nextSendDate") != null) {
+            String nextSendDateStr = params.get("nextSendDate").toString();
+            nextSendDate = LocalDate.parse(nextSendDateStr);
+        }
         LocalDate reservedDate = null;
         if (params.get("reservedDate") != null) {
-            reservedDate = LocalDate.parse((String)params.get("reservedDate"));
+            String reservedDateStr = params.get("reservedDate").toString();
+            reservedDate = LocalDate.parse(reservedDateStr);
         }
 
         // 요청한 회원 아이디 찾기
@@ -183,13 +195,8 @@ public class MailService {
         }
 
         // 예약 날짜가 있고 다음 발송일이 없다 == 최초 정기메일이자 예약메일, 메일 당장 안보내고 예약 날짜로 다음 발송일 설정
-        if (reservedDate != null && params.get("nextSendDate") == null) {
+        if (reservedDate != null && nextSendDate == null) {
             autoSend.setNextSendDate(reservedDate);
-
-            // 그런 와중에 intervalDays가 없다 => 반복 없음
-            if (params.get("intervalDays") == null || (int)params.get("intervalDays") == 0) {
-                autoSend.setIntervalDays(0);
-            }
             autoSendRepo.save(autoSend);
             return true;
         }
@@ -233,8 +240,8 @@ public class MailService {
             Transport.send(message);
 
             // 다음 발송일이 없다 == 최초 정기메일, 메일 정보 저장 후 다음 발송일 설정
-            if (params.get("nextSendDate") == null) {
-                autoSend.setNextSendDate(LocalDate.now().plusDays(autoSend.getIntervalDays()));
+            if (nextSendDate == null) {
+                autoSend.setNextSendDate(LocalDate.now().plusDays(intervalDays));
                 autoSendRepo.save(autoSend);
             }
 
@@ -382,6 +389,8 @@ public class MailService {
         String mailContent = (String) params.get("mailContent");
         int intervalDays = (int) params.get("intervalDays");
         boolean isActive = (boolean) params.get("isActive");
+        String nextSendDateStr = params.get("nextSendDate").toString();
+        LocalDate nextSendDate = LocalDate.parse(nextSendDateStr);
 
         // 요청한 회원 아이디 찾기
         Member member = memberRepo.findById(memberId)
@@ -402,7 +411,8 @@ public class MailService {
         autoSend.setMailContent(mailContent);
         autoSend.setIntervalDays(intervalDays);
         autoSend.setActive(isActive);
-
+        autoSend.setNextSendDate(nextSendDate);
+        
         try {
             autoSendRepo.save(autoSend);
             success = true;

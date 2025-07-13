@@ -21,7 +21,7 @@ public class RevenueScheduler {
 
     private final RevenueService service;
 
-    @Scheduled(cron = "0 0 15 * * ?")
+    @Scheduled(cron = "0 0 19 * * ?")
     public void dailyRevenueStats() {
 
         Map<String, Object> params = new HashMap<>();
