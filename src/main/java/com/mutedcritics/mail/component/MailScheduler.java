@@ -26,7 +26,7 @@ public class MailScheduler {
     private final MailService mailService;
 
     // 정기 메일 발송
-    @Scheduled(cron = "0 0 15 * * ?")
+    @Scheduled(cron = "0 33 16 * * ?")
     public void sendScheduledMails() {
         LocalDate today = LocalDate.now();
         List<AutoSend> scheduledMails = autoSendRepo.findScheduledMails(today);
@@ -49,6 +49,7 @@ public class MailScheduler {
             params.put("memberId", autoSend.getMember().getMemberId());
             params.put("intervalDays", autoSend.getIntervalDays());
             params.put("isActive", autoSend.isActive());
+            params.put("nextSendDate", autoSend.getNextSendDate());
             
             boolean success = mailService.sendMailInterval(params);
             
