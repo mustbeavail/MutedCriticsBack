@@ -156,4 +156,93 @@
             daily_revenue = COALESCE(#{dailyRevenue}, -1)
     </insert>
 
+    <!-- 기간별 판매액 조회 -->
+    <select id="getRevenuePeriod" resultType="map">
+        SELECT
+            stats_date,
+            daily_revenue
+        FROM stats_revenue_daily
+        WHERE stats_date BETWEEN #{param1} AND #{param2}
+    </select>
+
+    <!-- 기간별 ARPU 조회 -->
+    <select id="getARPU" resultType="map">
+        SELECT
+            stats_date,
+            arpu
+        FROM stats_revenue_daily
+        WHERE stats_date BETWEEN #{param1} AND #{param2}
+    </select>
+
+    <!-- 기간별 ARPPU 조회 -->
+    <select id="getARPPU" resultType="map">
+        SELECT
+            stats_date,
+            arppu
+        FROM stats_revenue_daily
+        WHERE stats_date BETWEEN #{param1} AND #{param2}
+    </select>
+
+    <!-- 기간별 구매주기 조회 -->
+    <select id="getPurchaseInterval" resultType="map">
+        SELECT
+            stats_date,
+            daily_interval
+        FROM stats_revenue_daily
+        WHERE stats_date BETWEEN #{param1} AND #{param2}
+    </select>
+
+    <!-- 기간별 PU 조회 -->
+    <select id="getPU" resultType="map">
+        SELECT
+            stats_date,
+            daily_paying_users
+        FROM stats_revenue_daily
+        WHERE stats_date BETWEEN #{param1} AND #{param2}
+    </select>
+
+    <!-- 전체 기간 매출통계 조회 -->
+    <select id="getTotal" resultType="map">
+        WITH
+        total_user_count AS(
+            SELECT
+                COUNT(u.user_id) AS total_user_count
+            FROM user u
+            WHERE u.join_date &lt;= #{today}
+                AND u.user_type != '휴면'
+                AND u.withdraw_date IS NULL
+        )
+        SELECT
+            SUM(srd.daily_revenue) AS total_revenue,
+            SUM(srd.daily_purchase_count) AS total_purchase_count,
+            SUM(srd.daily_paying_users) AS total_paying_users,
+            tuc.total_user_count,
+            MAX(CASE
+                WHEN srd.stats_date = #{today}
+                    THEN srd.daily_interval
+                END) AS total_interval,
+            TRUNCATE(AVG(srd.arpu), 0) AS total_arpu,
+            TRUNCATE(AVG(srd.arppu), 0) AS total_arppu
+        FROM stats_revenue_daily srd
+        CROSS JOIN total_user_count tuc
+    </select>
+
+    <!-- ACL 조회 -->
+    <select id="getACL" resultType="java.math.BigDecimal">
+        SELECT
+            AVG(
+                CASE
+                    WHEN u.dormant_date  IS NOT NULL
+                            AND u.dormant_date  &lt;= #{today}
+                        THEN DATEDIFF(u.dormant_date , u.join_date)
+                    WHEN u.withdraw_date IS NOT NULL
+                            AND u.withdraw_date &lt;= #{today}
+                        THEN DATEDIFF(u.withdraw_date, u.join_date)
+                    ELSE 0
+                END
+                ) AS avg_customer_lifetime
+        FROM user u
+        WHERE u.join_date &lt;= #{today}
+    </select>
+
 </mapper>
