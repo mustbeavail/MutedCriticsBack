@@ -39,6 +39,9 @@ public class User {
     @Column(name = "dormant_date")
     private LocalDate dormantDate;
 
+    @Column(name = "returning_date")
+    private LocalDate returningDate;
+
     @Column(name = "withdraw_date")
     private LocalDate withdrawDate;
 

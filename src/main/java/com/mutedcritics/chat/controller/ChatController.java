@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,18 +34,27 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatController {
 
     private final ChatService chatService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     // 웹소켓 메시지 처리
     @MessageMapping("/chat/{roomIdx}")
-    @SendTo("/topic/chat/{roomIdx}")
-    public ChatMessageDTO sendMessage(@DestinationVariable int roomIdx,
+    public void sendMessage(@DestinationVariable int roomIdx,
             @Payload ChatMessageDTO chatMessage) {
 
-        log.info("메시지 수진 - 방번호: {}, 발신자: {}, 내용: {}",
+        log.info("메시지 수신 - 방번호: {}, 발신자: {}, 내용: {}",
                 roomIdx, chatMessage.getSenderId(), chatMessage.getMsgContent());
 
         ChatMsg savedMessage = chatService.saveMessage(chatMessage);
-        return chatService.convertToDTO(savedMessage);
+        ChatMessageDTO messageToSend = chatService.convertToDTO(savedMessage);
+
+        if (messageToSend == null) {
+            log.error("메시지 DTO 변환 실패: savedMessage={}", savedMessage);
+            return;
+        }
+
+        String destination = "/topic/chat/" + roomIdx;
+        log.info("메시지 전송 - 목적지: {}, 내용: {}", destination, messageToSend);
+        messagingTemplate.convertAndSend(destination, messageToSend);
     }
 
     // 1대1 채팅방 생성 또는 기존 방 조회
