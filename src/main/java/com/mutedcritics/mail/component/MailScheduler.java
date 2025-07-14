@@ -26,7 +26,7 @@ public class MailScheduler {
     private final MailService mailService;
 
     // 정기 메일 발송
-    @Scheduled(cron = "0 0 15 * * ?")
+    @Scheduled(cron = "0 0 9 * * ?")
     public void sendScheduledMails() {
         LocalDate today = LocalDate.now();
         List<AutoSend> scheduledMails = autoSendRepo.findScheduledMails(today);

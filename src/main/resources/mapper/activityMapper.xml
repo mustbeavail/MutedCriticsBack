@@ -1,36 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC   "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mutedcritics.activity.ActivityDAO">
+<mapper namespace="com.mutedcritics.activity.dao.ActivityDAO">
 
     <!-- 총 접속자 수 -->
     <select id="total_user" resultType="map">
         select COUNT(DISTINCT user_id) AS user_count from access_stats
     </select>
 
-    <!-- 오늘 날짜 기준 총 일일 접속자 수 -->
-    <select id="today_daily_user" resultType="map">
+    <!-- 일일 접속자 수 조회 -->
+    <select id="DAU" resultType="int">
         SELECT COUNT(DISTINCT user_id) AS user_count
         FROM access_stats
-        WHERE access_time &gt;= CURDATE() - INTERVAL 1 DAY
-        AND access_time &lt; CURDATE()
+        WHERE access_time &gt;= #{today}
+        AND  access_time &lt; DATE_ADD(#{today}, INTERVAL 1 DAY)
+    </select>
+    <!-- 일일 신규 유저 수 조회 -->
+    <select id="getNewUserCount" resultType="int">
+        SELECT COUNT(user_id) AS new_user_count
+        FROM user
+        WHERE join_date = #{today}
+    </select>
+    <!-- 일일 휴면 전환 유저 수 조회 -->
+    <select id="getDormantUserCount" resultType="int">
+        SELECT COUNT(user_id) AS dormant_user_count
+        FROM user
+        WHERE dormant_date = #{today}
+    </select>
+    <!-- 일일 복귀 유저 수 조회 -->
+    <select id="getReturningUserCount" resultType="int">
+        SELECT COUNT(user_id) AS returning_user_count
+        FROM user
+        WHERE returning_date = #{today}
+    </select>
+    <!-- 일일 탈퇴 유저 수 조회 -->
+    <select id="getWithdrawnUserCount" resultType="int">
+        SELECT COUNT(user_id) AS withdrawn_user_count
+        FROM user
+        WHERE withdrawn_date = #{today}
     </select>
 
-    <!-- 오늘 날짜 기준 총 주간 접속자 수 -->
-    <select id="today_weekly_user" resultType="map">
-        SELECT COUNT(DISTINCT user_id) AS user_count
-        FROM access_stats
-        WHERE access_time &gt;= CURDATE() - INTERVAL 7 DAY
-        AND access_time &lt; CURDATE()
-    </select>
-
-    <!-- 오늘 날짜 기준 총 월간 접속자 수 -->
-    <select id="today_monthly_user" resultType="map">
-        SELECT COUNT(DISTINCT user_id) AS user_count
-        FROM access_stats
-        WHERE access_time &gt;= DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH, '%Y-%m-01')
-        AND access_time &lt; DATE_FORMAT(CURDATE(), '%Y-%m-01')
-    </select>
+    <!-- 일일 통계 저장 -->
+    <insert id="insertDailyActivity" parameterType="map">
+        INSERT INTO daily_activity (stats_date, dau, new_user_count, dormant_user_count, returning_user_count, withdrawn_user_count)
+        VALUES (#{today}, #{DAU}, #{newUserCount}, #{dormantUserCount}, #{returningUserCount}, #{withdrawnUserCount})
+    </insert>
+    
 
     <!-- 기간별 일일 활성 이용자 수 -->
     <select id="period_daily_user" resultType="map">
