@@ -1,9 +1,6 @@
 package com.mutedcritics.activity.component;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
-import java.time.temporal.WeekFields;
 import java.util.HashMap;
 import java.util.Map;
 

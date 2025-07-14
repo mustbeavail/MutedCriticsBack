@@ -9,12 +9,19 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import lombok.extern.slf4j.Slf4j;
+
 @ControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     
     @ExceptionHandler(RuntimeException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException e) {
+
+        log.error("몬가... 몬가 잘못됏슴 ", e);
+        log.error("Message: {}", e.getMessage());
+
         Map<String, Object> response = new HashMap<>();
         response.put("status", "error");
         response.put("message", e.getMessage() != null ? 
