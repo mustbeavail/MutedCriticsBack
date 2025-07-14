@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -177,5 +178,14 @@ public class IngameController {
 
         List<HeroBanPickRateDTO> list = service.getHeroBanPickRate(start, end, sortOrder);
         return ResponseEntity.ok(Map.of("list", list));
+    }
+
+    /**
+     * 새벽 1시마다 일일 영웅 통계 업데이트
+     * 어제 날짜로 업데이트
+     */
+    @Scheduled(cron = "0 0 1 * * *")
+    public void insertDailyHeroStats() {
+        service.insertDailyHeroStats(LocalDate.now().minusDays(1), LocalDate.now().minusDays(1));
     }
 }
