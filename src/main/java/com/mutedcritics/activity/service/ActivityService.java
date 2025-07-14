@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.mutedcritics.activity.DateRange;
 import com.mutedcritics.activity.dao.ActivityDAO;
 
 import lombok.RequiredArgsConstructor;
@@ -43,8 +42,9 @@ public class ActivityService {
     }
     
     // 일일 통계 저장
-    public void insertDailyActivity(Map<String, Object> params) {
+    public boolean insertDailyActivity(Map<String, Object> params) {
         int row = dao.insertDailyActivity(params);
+        return row > 0;
     }
 
 }

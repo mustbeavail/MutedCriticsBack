@@ -3,11 +3,6 @@
 
 <mapper namespace="com.mutedcritics.activity.dao.ActivityDAO">
 
-    <!-- 총 접속자 수 -->
-    <select id="total_user" resultType="map">
-        select COUNT(DISTINCT user_id) AS user_count from access_stats
-    </select>
-
     <!-- 일일 접속자 수 조회 -->
     <select id="DAU" resultType="int">
         SELECT COUNT(DISTINCT user_id) AS user_count
@@ -37,38 +32,13 @@
     <select id="getWithdrawnUserCount" resultType="int">
         SELECT COUNT(user_id) AS withdrawn_user_count
         FROM user
-        WHERE withdrawn_date = #{today}
+        WHERE withdraw_date = #{today}
     </select>
 
     <!-- 일일 통계 저장 -->
     <insert id="insertDailyActivity" parameterType="map">
-        INSERT INTO daily_activity (stats_date, dau, new_user_count, dormant_user_count, returning_user_count, withdrawn_user_count)
+        INSERT INTO stats_activity_daily (stats_date, dau, new_user_count, dormant_user_count, returning_user_count, withdrawn_user_count)
         VALUES (#{today}, #{DAU}, #{newUserCount}, #{dormantUserCount}, #{returningUserCount}, #{withdrawnUserCount})
     </insert>
-    
-
-    <!-- 기간별 일일 활성 이용자 수 -->
-    <select id="period_daily_user" resultType="map">
-        SELECT COUNT(DISTINCT user_id) AS user_count
-        FROM access_stats
-        WHERE access_time &gt;= #{start_date}
-        AND access_time &lt; #{end_date}
-    </select>
-
-    <!-- 기간별 주간 활성 이용자 수 -->
-    <select id="period_weekly_user" resultType="map">
-        SELECT COUNT(DISTINCT user_id) AS user_count
-        FROM access_stats
-        WHERE access_time &gt;= #{fromDate}
-        AND access_time &lt; #{toDate}
-    </select>
-
-    <!-- 기간별 월간 활성 이용자 수 -->
-    <select id="period_monthly_user" resultType="map">
-        SELECT COUNT(DISTINCT user_id) AS user_count
-        FROM access_stats
-        WHERE access_time &gt;= #{fromDate}
-        AND access_time &lt; #{toDate}
-    </select>
 
 </mapper>

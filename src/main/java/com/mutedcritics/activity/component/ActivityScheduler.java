@@ -81,11 +81,12 @@ public class ActivityScheduler {
         }
 
         // 통계 저장
+        boolean success = false;
         if (successCount > 0) {
-            service.insertDailyActivity(params);
+            success = service.insertDailyActivity(params);
         } else if (successCount != 5) {
             log.warn("누락된 통계 갯수: {} 날짜: {}", 5 - successCount, today);
-        } else {
+        } else if (!success) {
             log.error("일일 사용자 활동 통계 저장 오류: {}", successCount, today);
             throw new RuntimeException("일일 사용자 활동 통계 저장 오류 " + today);
         }

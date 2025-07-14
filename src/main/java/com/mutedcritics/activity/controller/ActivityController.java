@@ -1,14 +1,17 @@
 package com.mutedcritics.activity.controller;
 
-import java.util.HashMap;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mutedcritics.activity.service.ActivityHistoricalService;
 import com.mutedcritics.activity.service.ActivityService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,8 +24,32 @@ import lombok.extern.slf4j.Slf4j;
 public class ActivityController {
 
     private final ActivityService service;
+    private final ActivityHistoricalService historicalService;
+    Map<String, Object> params = null;
 
-    // 총 접속자 수
+    // 이전 통계 일괄 저장
+    @PostMapping("/activity/historical")
+    public ResponseEntity<String> calculateHistorical(
+            @RequestParam String startDate,
+            @RequestParam String endDate) {
+        
+        try {
+            LocalDate start = LocalDate.parse(startDate);
+            LocalDate end = LocalDate.parse(endDate);
+
+            // 비동기로 처리
+            CompletableFuture.runAsync(() -> 
+                historicalService.processHistoricalStats(start, end));
+            
+            return ResponseEntity.ok("통계 계산이 시작되었습니다.");
+            
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest()
+                .body("날짜 형식이 잘못되었습니다. YYYY-MM-DD 형식을 사용해주세요.");
+        }
+    }
+
+/*     // 총 접속자 수
     @GetMapping("/activity/total_user")
     public Map<String, Object> total_user() {
         Map<String, Object> result = new HashMap<String, Object>();
@@ -86,6 +113,6 @@ public class ActivityController {
                 
         log.info("{}년 {}월 부터 {}년 {}월 까지", fromYear, fromMonth, toYear, toMonth);
         return service.period_monthly_user(fromYear, fromMonth, toYear, toMonth);
-    }
+    } */
 
 }

@@ -23,7 +23,6 @@ public class RevenueHistoricalService {
         int processedCount = 0;
 
         while (!currentDate.isAfter(endDate)) {
-            // 7일치 처리
             for (int i = 0; i < BATCH_SIZE && !currentDate.isAfter(endDate); i++) {
                 try {
                     Map<String, Object> params = new HashMap<>();
