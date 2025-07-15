@@ -19,9 +19,11 @@ public class StatsItemDaily {
     @Column(name = "stats_date", nullable = false)
     private LocalDate statsDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_idx")
-    private ItemList itemList;
+    @Column(name = "item_idx")
+    private int itemIdx;
+
+    @Column(name = "item_cate", columnDefinition = "varchar(10)")
+    private String itemCate;
 
     @Column(name = "daily_sales_revenue")
     private Long dailySalesRevenue;

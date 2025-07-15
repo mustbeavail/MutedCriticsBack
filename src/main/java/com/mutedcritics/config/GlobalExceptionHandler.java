@@ -19,12 +19,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException e) {
 
-        log.error("몬가... 몬가 잘못됏슴 ", e);
-        log.error("Message: {}", e.getMessage());
+        log.error("무언가 잘못되었습니다. 코드를 다시 점검해 보세요.", e);
+        log.error("msg: {}", e.getMessage());
 
         Map<String, Object> response = new HashMap<>();
         response.put("status", "error");
-        response.put("message", e.getMessage() != null ? 
+        response.put("msg", e.getMessage() != null ?
             e.getMessage() : "알 수 없는 오류가 발생했습니다.");
         
         return ResponseEntity.badRequest().body(response);
