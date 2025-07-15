@@ -12,6 +12,10 @@ import java.time.LocalDate;
 public class StatsItemDaily {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "item_stats_id")
+    private Long itemStatsId;
+
     @Column(name = "stats_date", nullable = false)
     private LocalDate statsDate;
 
