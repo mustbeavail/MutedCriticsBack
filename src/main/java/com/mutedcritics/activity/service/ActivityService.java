@@ -115,11 +115,40 @@ public class ActivityService {
             ym = ym.plusMonths(1);
         }
 
-        List<Map<String, Object>> list = new ArrayList<>();
+        List<Map<String, Object>> periodWAU = new ArrayList<>();
 
-        list = dao.periodWeeklyUser(weeklyDates);
+        periodWAU = dao.periodWeeklyUser(weeklyDates);
 
-        resp.put("list", list);
+        resp.put("periodWAU", periodWAU);
+
+        return resp;
+    }
+
+    public Map<String, Object> periodMonthlyUser(int fromYear, int fromMonth, int toYear, int toMonth) {
+
+        resp = new HashMap<>();
+
+        YearMonth startYM = YearMonth.of(fromYear, fromMonth);
+        YearMonth endYM   = YearMonth.of(toYear,   toMonth);
+
+        Map<String, List<LocalDate>> monthlyDates = new LinkedHashMap<>();
+        YearMonth ym = startYM;
+        while (!ym.isAfter(endYM)) {
+            LocalDate firstOfMonth = ym.atDay(1);
+            LocalDate lastOfMonth  = ym.atEndOfMonth();
+
+            List<LocalDate> dates = firstOfMonth.datesUntil(lastOfMonth.plusDays(1))
+            .collect(Collectors.toList());
+
+            String key = String.format("%d-%02d", ym.getYear(), ym.getMonthValue());
+            monthlyDates.put(key, dates);
+            ym = ym.plusMonths(1);
+        }
+
+        List<Map<String, Object>> periodMAU = new ArrayList<>();
+        periodMAU = dao.periodMonthlyUser(monthlyDates);
+
+        resp.put("periodMAU", periodMAU);
 
         return resp;
     }

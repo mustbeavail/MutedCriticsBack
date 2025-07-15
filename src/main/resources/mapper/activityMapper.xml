@@ -43,7 +43,7 @@
 
     <!-- 기간별 일일 활성 이용자 수 -->
     <select id="periodDailyUser" resultType="map">
-        SELECT stats_date, dau
+        SELECT stats_date, DAU
         FROM stats_activity_daily
         WHERE stats_date BETWEEN #{startDate} AND #{endDate}
     </select>
@@ -53,7 +53,21 @@
         <foreach collection="weeklyDates" item="dates" index="week" separator="UNION ALL">
             SELECT 
                 #{week} AS week,
-                COALESCE(SUM(dau), 0) AS dau
+                COALESCE(SUM(dau), 0) AS WAU
+            FROM stats_activity_daily
+            WHERE
+            <foreach collection="dates" item="d" open="(" separator=" OR " close=")">
+                stats_date = #{d}
+            </foreach>
+        </foreach>
+    </select>
+
+    <!-- 기간별 월간 활성 이용자 수 -->
+    <select id="periodMonthlyUser" resultType="map" parameterType="map">
+        <foreach collection="monthlyDates" item="dates" index="month" separator="UNION ALL">
+            SELECT 
+                #{month} AS month,
+                COALESCE(SUM(dau), 0) AS MAU
             FROM stats_activity_daily
             WHERE
             <foreach collection="dates" item="d" open="(" separator=" OR " close=")">

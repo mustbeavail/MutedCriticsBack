@@ -82,49 +82,15 @@ public class ActivityController {
         return resp;
     }
 
-
-/*     // 총 접속자 수
-    @GetMapping("/activity/total_user")
-    public Map<String, Object> total_user() {
-        Map<String, Object> result = new HashMap<String, Object>();
-        result = service.total_user();
-        return result;
-    }
-
-    // 오늘 날짜 기준 총 일일 접속자 수
-    @GetMapping("/activity/today_daily_user")
-    public Map<String, Object> today_daily_user() {
-        Map<String, Object> result = new HashMap<String, Object>();
-        result = service.today_daily_user();
-        return result;
-    }
-
-    // 오늘 날짜 기준 총 주간 접속자 수
-    @GetMapping("/activity/today_weekly_user")
-    public Map<String, Object> today_weekly_user() {
-        Map<String, Object> result = new HashMap<String, Object>();
-        result = service.today_weekly_user();
-        return result;
-    }
-
-    // 오늘 날짜 기준 총 월간 접속자 수
-    @GetMapping("/activity/today_monthly_user")
-    public Map<String, Object> today_monthly_user() {
-        Map<String, Object> result = new HashMap<String, Object>();
-        result = service.today_monthly_user();
-        return result;
-    }
-
     // 기간별 월간 활성 이용자 수
-    @GetMapping("/activity/period_monthly_user")
-    public Map<String, Object> period_monthly_user(
+    @GetMapping("/activity/periodMonthlyUser")
+    public Map<String, Object> periodMonthlyUser(
             @RequestParam int fromYear,
             @RequestParam int fromMonth,
             @RequestParam int toYear,
             @RequestParam int toMonth) {
                 
         log.info("{}년 {}월 부터 {}년 {}월 까지", fromYear, fromMonth, toYear, toMonth);
-        return service.period_monthly_user(fromYear, fromMonth, toYear, toMonth);
-    } */
-
+        return service.periodMonthlyUser(fromYear, fromMonth, toYear, toMonth);
+    }
 }
