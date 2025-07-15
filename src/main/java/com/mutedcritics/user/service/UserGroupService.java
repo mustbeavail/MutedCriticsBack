@@ -27,6 +27,6 @@ public class UserGroupService {
 
     @Scheduled(cron = "0 0 1 * * *")
     public void classifyUsersDaily() {
-        classifyUsers(LocalDate.now());
+        classifyUsers(LocalDate.now().minusDays(1));
     }
 }

@@ -87,7 +87,7 @@ public class UserService {
             int size) {
         resp = new HashMap<>();
 
-        // 페이징 계산 (1-based page를 0-based offset으로 변환)
+        // 페이징 계산
         int offset = (page - 1) * size;
 
         // 데이터 조회

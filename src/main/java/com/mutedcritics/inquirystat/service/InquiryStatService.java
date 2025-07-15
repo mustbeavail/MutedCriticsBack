@@ -98,7 +98,7 @@ public class InquiryStatService {
     @Scheduled(cron = "0 0 1 * * *")
     public void updateDailyStatsScheduled() {
         log.info("일일 통계 자동 insert");
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now().minusDays(1);
         updateDailyStatsManual(today);
     }
 }
