@@ -5,6 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mutedcritics.dto.UserListDTO;
+import com.mutedcritics.mail.repository.UserRepository;
+import com.mutedcritics.user.repository.UserListRepository;
+import com.mutedcritics.user.repository.UserListRepositoryCustom;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.dto.UserDTO;
@@ -21,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserService {
 
     private final UserDAO dao;
+    private final UserListRepository userListRepository;
 
     Map<String, Object> resp = null;
 
@@ -62,7 +70,7 @@ public class UserService {
         List<Map<String, Object>> itemList = new ArrayList<>();
         List<Map<String, Object>> bundleList = new ArrayList<>();
         Map<String, Object> resp = new HashMap<>();
-    
+
         if (!userSpendingList.isEmpty()) {
             for (Map<String, Object> row : userSpendingList) {
                 String itemCate = (String) row.get("item_cate");
@@ -81,6 +89,9 @@ public class UserService {
         return resp;
     }
 
-
-
+    // 유저 리스트 불러오기
+    public ResponseEntity<Page<UserListDTO>> getUserList(String searchType, String keyword, Pageable pageable) {
+        Page<UserListDTO> userList = userListRepository.findUserList(searchType, keyword, pageable);
+        return ResponseEntity.ok(userList);
+    }
 }

@@ -37,7 +37,7 @@ public class InquiryController {
             @RequestParam(defaultValue = "desc") String sortOrder,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        log.info("문의 리스트 불러오기 - userId: {}, category: {}, status: {}, sortBy: {}, sortOrder: {}, page: {}, size: {}",
+        log.info("문의 리스트 불러오기 - userId: {}, category: {}, status: {}, isVip : {}, sortBy: {}, sortOrder: {}, page: {}, size: {}",
                 userId, category, status, isVip, sortBy, sortOrder, page, size);
 
         Pageable pageable = PageRequest.of(page - 1, size);
