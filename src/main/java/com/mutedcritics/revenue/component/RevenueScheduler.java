@@ -21,12 +21,12 @@ public class RevenueScheduler {
 
     private final RevenueService service;
 
-    @Scheduled(cron = "0 7 23 * * ?")
+    @Scheduled(cron = "0 0 1 * * ?")
     public void dailyRevenueStats() {
 
         Map<String, Object> params = new HashMap<>();
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now().minusDays(1);
         params.put("today", today);
 
         int failCount = 0;

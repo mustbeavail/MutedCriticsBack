@@ -23,4 +23,20 @@ public class ItemService {
 
         return dao.dailyItemSalesInfo(today);
     }
+
+    // 일일 아이템 통계 저장
+    public boolean insertItemStats(Map<String, Object> resp) {
+
+        int row = dao.insertItemStats(resp);
+        
+        return row > 0;
+    }
+
+    // 아이템 리스트 조회
+    public List<Map<String, Object>> itemList(String startDate, String endDate, String align, int page) {
+
+        int offset = (page - 1) * 15;
+
+        return dao.itemList(startDate, endDate, align, offset);
+    }
 }

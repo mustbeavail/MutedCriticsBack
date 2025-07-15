@@ -21,12 +21,12 @@ public class ActivityScheduler {
     Map<String, Object> params = null;
 
     // 일일 접속자 수 통계
-    @Scheduled(cron = "0 0 9 * * *")
+    @Scheduled(cron = "0 0 1 * * *")
     public void dailyActivityStats() {
 
         params = new HashMap<>();
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now().minusDays(1);
         params.put("today", today);
         
         int successCount = 0;

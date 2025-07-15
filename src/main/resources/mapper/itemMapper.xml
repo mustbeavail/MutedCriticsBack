@@ -1,6 +1,144 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC   "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.mutedcritics.item.ItemDAO">
+<mapper namespace="com.mutedcritics.item.dao.ItemDAO">
 
+    <!-- 일일 아이템 통계 조회 -->
+    <select id="dailyItemSalesInfo" resultType="map">
+        WITH
+        daily_sales_count AS (
+            SELECT COALESCE(COUNT(ol.item_idx), 0) AS daily_sales_count, ol.item_idx
+            FROM order_list ol
+            WHERE ol.order_date = #{today}
+            GROUP BY ol.item_idx
+        ),
+        daily_sales_revenue AS (
+            SELECT COALESCE(SUM(
+                CASE ol.item_cate
+                    WHEN 'item'   THEN il.item_price
+                    WHEN 'bundle' THEN bi.bundle_price
+                END
+            ), 0) AS daily_sales_revenue, ol.item_idx
+            FROM order_list ol
+            LEFT JOIN item_list il
+            ON il.item_idx = ol.item_idx AND ol.item_cate = 'item'
+            LEFT JOIN bundle_item bi
+            ON bi.bundle_idx = ol.item_idx AND ol.item_cate = 'bundle'
+            WHERE ol.order_date = #{today}
+            GROUP BY ol.item_idx
+        ),
+        daily_paying_users AS (
+            SELECT COALESCE(COUNT(DISTINCT ol.user_id), 0) AS daily_paying_users, ol.item_idx
+            FROM order_list ol
+            WHERE ol.order_date = #{today}
+            GROUP BY ol.item_idx
+        ),
+        daily_refund_amount AS (
+            SELECT COALESCE(SUM(rl.refund_amt), 0) AS daily_refund_amount, ol.item_idx
+            FROM refund_list rl
+            LEFT JOIN order_list ol
+            ON rl.order_idx = ol.order_idx
+            WHERE rl.refund_date = #{today}
+            GROUP BY ol.item_idx
+        ),
+        daily_refund_count AS (
+            SELECT COALESCE(COUNT(rl.refund_idx), 0) AS daily_refund_count, ol.item_idx
+            FROM refund_list rl
+            LEFT JOIN order_list ol
+            ON rl.order_idx = ol.order_idx
+            WHERE rl.refund_date = #{today}
+            GROUP BY ol.item_idx
+        )
+		SELECT
+		    COALESCE(dsc.item_idx, dsr.item_idx, dpu.item_idx,
+		             dra.item_idx, drc.item_idx) AS item_idx,
+		    COALESCE(dsc.daily_sales_count, 0) AS daily_sales_count,
+		    COALESCE(dsr.daily_sales_revenue, 0) AS daily_sales_revenue,
+		    COALESCE(dpu.daily_paying_users, 0) AS daily_paying_users,
+		    COALESCE(dra.daily_refund_amount, 0) AS daily_refund_amount,
+		    COALESCE(drc.daily_refund_count, 0) AS daily_refund_count
+		FROM daily_sales_count dsc
+		LEFT JOIN daily_sales_revenue dsr USING (item_idx)
+		LEFT JOIN daily_paying_users dpu USING (item_idx)
+		LEFT JOIN daily_refund_amount dra USING (item_idx)
+		LEFT JOIN daily_refund_count drc USING (item_idx)
+    </select>
+
+    <!-- 일일 아이템 통계 저장 -->
+    <insert id="insertItemStats" parameterType="map">
+        INSERT INTO stats_item_daily
+        (stats_date, item_idx,
+        daily_sales_revenue, daily_sales_count,
+        daily_paying_users, daily_refund_amount,
+        daily_refund_count)
+        VALUES
+        (#{stats_date}, #{item_idx},
+        #{daily_sales_revenue}, #{daily_sales_count},
+        #{daily_paying_users}, #{daily_refund_amount},
+        #{daily_refund_count})
+        ON DUPLICATE KEY UPDATE
+        daily_sales_revenue = VALUES(daily_sales_revenue),
+        daily_sales_count = VALUES(daily_sales_count),
+        daily_paying_users = VALUES(daily_paying_users),
+        daily_refund_amount = VALUES(daily_refund_amount),
+        daily_refund_count = VALUES(daily_refund_count)
+    </insert>
+
+    <!-- 아이템 리스트 조회 -->
+    <select id="itemList" resultType="map">
+        WITH
+        item_list AS (
+            SELECT
+                SUM(CASE WHEN ol.order_idx IS NOT NULL THEN il.item_price ELSE 0 END)
+                AS period_revenue,
+                COALESCE(COUNT(DISTINCT ol.user_id), 0)
+                AS period_paying_users,
+                il.item_idx,
+                il.item_name,
+                il.sell_type,
+                il.item_cate,
+                il.sell_start_date,
+                COALESCE(il.sell_end_date, '9999-12-31') AS sell_end_date,
+                il.item_price
+            FROM item_list il
+            LEFT JOIN order_list ol
+            ON il.item_idx = ol.item_idx
+            AND ol.item_cate = 'item'
+            AND ol.order_date BETWEEN #{startDate} AND #{endDate}
+            GROUP BY il.item_idx
+        ),
+        bundle_list AS (
+            SELECT
+                SUM(CASE WHEN ol.order_idx IS NOT NULL THEN bi.bundle_price ELSE 0 END)
+                AS period_revenue,
+                COALESCE(COUNT(DISTINCT ol.user_id), 0)
+                AS period_paying_users,
+                bi.bundle_idx,
+                bi.bundle_name,
+                bi.sell_type,
+                'bundle' AS item_cate,
+                bi.sell_start_date,
+                COALESCE(bi.sell_end_date, '9999-12-31') AS sell_end_date,
+                bi.bundle_price
+            FROM bundle_item bi
+            LEFT JOIN order_list ol
+            ON bi.bundle_idx = ol.item_idx
+            AND ol.item_cate = 'bundle'
+            AND ol.order_date BETWEEN #{startDate} AND #{endDate}
+            GROUP BY bi.bundle_idx
+        )
+        SELECT * FROM item_list il
+        UNION ALL
+        SELECT * FROM bundle_list bl
+        <choose>
+            <when test="align == 'sellTypeASC'">ORDER BY sell_type ASC</when>
+            <when test="align == 'sellTypeDESC'">ORDER BY sell_type DESC</when>
+            <when test="align == 'periodRevenueASC'">ORDER BY period_revenue ASC</when>
+            <when test="align == 'periodRevenueDESC'">ORDER BY period_revenue DESC</when>
+            <when test="align == 'periodPayingUsersASC'">ORDER BY period_paying_users ASC</when>
+            <when test="align == 'periodPayingUsersDESC'">ORDER BY period_paying_users DESC</when>
+            <otherwise>ORDER BY period_revenue DESC</otherwise>
+        </choose>
+        LIMIT 15 OFFSET #{offset}
+    </select>
 </mapper>

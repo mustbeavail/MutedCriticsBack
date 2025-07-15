@@ -5,10 +5,22 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface ItemDAO {
 
+    // 일일 아이템 통계 조회
     List<Map<String, Object>> dailyItemSalesInfo(LocalDate today);
+
+    // 일일 아이템 통계 저장
+    int insertItemStats(Map<String, Object> resp);
+
+    // 아이템 리스트 조회
+    List<Map<String, Object>> itemList(
+        @Param("startDate") String startDate,
+        @Param("endDate") String endDate,
+        @Param("align") String align,
+        @Param("offset") int offset);
 
 }

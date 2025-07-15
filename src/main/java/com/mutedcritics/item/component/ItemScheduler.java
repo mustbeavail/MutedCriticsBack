@@ -22,11 +22,11 @@ public class ItemScheduler {
     private final ItemService service;
 
     // 일일 아이템 통계 조회 및 저장
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 1 * * *")
     public void itemStats() {
         log.info("일일 아이템 통계 시작");
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now().minusDays(1);
         // 일일 아이템 통계 조회
         List<Map<String, Object>> salesInfoList = service.dailyItemSalesInfo(today);
 
