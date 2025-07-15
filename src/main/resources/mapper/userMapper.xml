@@ -225,4 +225,155 @@
         WHERE ol.user_id = #{userId}
     </select>
 
+    <!-- 유저 리스트 조회 -->
+    <select id="getUserList" resultType="com.mutedcritics.dto.UserListDTO">
+        SELECT 
+            u.user_id AS userId,
+            u.user_nick AS userNick,
+            u.region,
+            u.user_type AS userType,
+            u.vip_yn AS vipYn,
+            COALESCE(
+                (SELECT SUM(mr.match_play_time) 
+                 FROM match_result mr 
+                 WHERE mr.user_id = u.user_id), 0
+            ) AS totalPlayTime,
+            COALESCE(
+                (SELECT SUM(
+                    CASE ol.item_cate
+                        WHEN 'item' THEN il.item_price
+                        WHEN 'bundle' THEN bi.bundle_price
+                        ELSE 0
+                    END
+                ) - COALESCE(
+                    (SELECT SUM(rl.refund_amt) 
+                     FROM refund_list rl 
+                     WHERE rl.user_id = u.user_id), 0
+                )
+                FROM order_list ol
+                LEFT JOIN item_list il ON ol.item_idx = il.item_idx AND ol.item_cate = 'item'
+                LEFT JOIN bundle_item bi ON ol.item_idx = bi.bundle_idx AND ol.item_cate = 'bundle'
+                WHERE ol.user_id = u.user_id), 0
+            ) AS totalSpent
+        FROM user u
+        WHERE 1=1
+            AND (u.withdraw_date IS NULL OR u.withdraw_date > CURDATE())
+            AND (
+                SELECT SUM(
+                    CASE ol.item_cate
+                        WHEN 'item' THEN il.item_price
+                        WHEN 'bundle' THEN bi.bundle_price
+                        ELSE 0
+                    END
+                ) - COALESCE(
+                    (SELECT SUM(rl.refund_amt) 
+                     FROM refund_list rl 
+                     WHERE rl.user_id = u.user_id), 0
+                )
+                FROM order_list ol
+                LEFT JOIN item_list il ON ol.item_idx = il.item_idx AND ol.item_cate = 'item'
+                LEFT JOIN bundle_item bi ON ol.item_idx = bi.bundle_idx AND ol.item_cate = 'bundle'
+                WHERE ol.user_id = u.user_id
+            ) > 0
+            <if test="searchType != null and keyword != null and keyword != ''">
+                <choose>
+                    <when test="searchType == 'userId'">
+                        AND u.user_id LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType == 'userNick'">
+                        AND u.user_nick LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType == 'region'">
+                        AND u.region = #{keyword}
+                    </when>
+                    <when test="searchType == 'userType'">
+                        AND u.user_type = #{keyword}
+                    </when>
+                </choose>
+            </if>
+        ORDER BY 
+            <choose>
+                <when test="sortBy == 'totalSpent'">
+                    totalSpent 
+                    <if test="sortOrder == 'asc'">ASC</if>
+                    <if test="sortOrder == 'desc'">DESC</if>
+                </when>
+                <when test="sortBy == 'totalPlayTime'">
+                    totalPlayTime 
+                    <if test="sortOrder == 'asc'">ASC</if>
+                    <if test="sortOrder == 'desc'">DESC</if>
+                </when>
+                <when test="sortBy == 'region'">
+                    u.region 
+                    <if test="sortOrder == 'asc'">ASC</if>
+                    <if test="sortOrder == 'desc'">DESC</if>
+                </when>
+                <when test="sortBy == 'userType'">
+                    u.user_type 
+                    <if test="sortOrder == 'asc'">ASC</if>
+                    <if test="sortOrder == 'desc'">DESC</if>
+                </when>
+                <when test="sortBy == 'vipYn'">
+                    u.vip_yn 
+                    <if test="sortOrder == 'asc'">ASC</if>
+                    <if test="sortOrder == 'desc'">DESC</if>
+                </when>
+                <when test="sortBy == 'userId'">
+                    u.user_id 
+                    <if test="sortOrder == 'asc'">ASC</if>
+                    <if test="sortOrder == 'desc'">DESC</if>
+                </when>
+                <when test="sortBy == 'userNick'">
+                    u.user_nick 
+                    <if test="sortOrder == 'asc'">ASC</if>
+                    <if test="sortOrder == 'desc'">DESC</if>
+                </when>
+                <otherwise>
+                    totalSpent DESC
+                </otherwise>
+            </choose>
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 유저 리스트 전체 개수 조회 -->
+    <select id="getUserListCount" resultType="int">
+        SELECT COUNT(u.user_id)
+        FROM user u
+        WHERE 1=1
+            AND (u.withdraw_date IS NULL OR u.withdraw_date > CURDATE())
+            AND (
+                SELECT SUM(
+                    CASE ol.item_cate
+                        WHEN 'item' THEN il.item_price
+                        WHEN 'bundle' THEN bi.bundle_price
+                        ELSE 0
+                    END
+                ) - COALESCE(
+                    (SELECT SUM(rl.refund_amt) 
+                     FROM refund_list rl 
+                     WHERE rl.user_id = u.user_id), 0
+                )
+                FROM order_list ol
+                LEFT JOIN item_list il ON ol.item_idx = il.item_idx AND ol.item_cate = 'item'
+                LEFT JOIN bundle_item bi ON ol.item_idx = bi.bundle_idx AND ol.item_cate = 'bundle'
+                WHERE ol.user_id = u.user_id
+            ) > 0
+            <if test="searchType != null and keyword != null and keyword != ''">
+                <choose>
+                    <when test="searchType == 'userId'">
+                        AND u.user_id LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType == 'userNick'">
+                        AND u.user_nick LIKE CONCAT('%', #{keyword}, '%')
+                    </when>
+                    <when test="searchType == 'region'">
+                        AND u.region = #{keyword}
+                    </when>
+                    <when test="searchType == 'userType'">
+                        AND u.user_type = #{keyword}
+                    </when>
+                </choose>
+            </if>
+    </select>
+
 </mapper>

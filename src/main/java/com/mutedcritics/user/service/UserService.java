@@ -6,12 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.mutedcritics.dto.UserListDTO;
-import com.mutedcritics.mail.repository.UserRepository;
-import com.mutedcritics.user.repository.UserListRepository;
-import com.mutedcritics.user.repository.UserListRepositoryCustom;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.dto.UserDTO;
@@ -28,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 public class UserService {
 
     private final UserDAO dao;
-    private final UserListRepository userListRepository;
 
     Map<String, Object> resp = null;
 
@@ -90,8 +83,30 @@ public class UserService {
     }
 
     // 유저 리스트 불러오기
-    public ResponseEntity<Page<UserListDTO>> getUserList(String searchType, String keyword, Pageable pageable) {
-        Page<UserListDTO> userList = userListRepository.findUserList(searchType, keyword, pageable);
-        return ResponseEntity.ok(userList);
+    public Map<String, Object> getUserList(String searchType, String keyword, String sortBy, String sortOrder, int page,
+            int size) {
+        resp = new HashMap<>();
+
+        // 페이징 계산 (1-based page를 0-based offset으로 변환)
+        int offset = (page - 1) * size;
+
+        // 데이터 조회
+        List<UserListDTO> userList = dao.getUserList(searchType, keyword, sortBy, sortOrder, offset, size);
+        int totalCount = dao.getUserListCount(searchType, keyword);
+
+        // 페이징 정보 계산
+        int totalPages = (int) Math.ceil((double) totalCount / size);
+
+        // 응답 데이터 구성
+        resp.put("content", userList);
+        resp.put("totalElements", totalCount);
+        resp.put("totalPages", totalPages);
+        resp.put("currentPage", page);
+        resp.put("pageSize", size);
+        resp.put("first", page == 1);
+        resp.put("last", page == totalPages);
+        resp.put("empty", userList.isEmpty());
+
+        return resp;
     }
 }
