@@ -17,7 +17,10 @@ import com.mutedcritics.member.MemberRepository;
 import com.mutedcritics.dto.ChatMemberDTO;
 import com.mutedcritics.dto.ChatMessageDTO;
 import com.mutedcritics.dto.ChatRoomDTO;
+import com.mutedcritics.dto.LeaveChatRoomRequestDTO;
 import com.mutedcritics.dto.MemberSerachDTO;
+import com.mutedcritics.dto.PrivateChatRoomRequestDTO;
+import com.mutedcritics.dto.RenameChatRoomRequestDTO;
 import com.mutedcritics.entity.ChatMember;
 import com.mutedcritics.entity.ChatMemberId;
 import com.mutedcritics.entity.ChatMsg;
@@ -57,18 +60,18 @@ public class ChatService {
 
     // 1대1 채팅방 생성 또는 기존 방 조회
     @Transactional
-    public ChatRoomDTO createOrGetPrivateRoom(String memberId, String targetMemberId) {
+    public ChatRoomDTO createOrGetPrivateRoom(PrivateChatRoomRequestDTO request) {
         // Repository에서 기존 방 검색
-        Optional<ChatRoom> existingRoom = chatRoomRepository.findExistingPrivateRoom(memberId, targetMemberId);
+        Optional<ChatRoom> existingRoom = chatRoomRepository.findExistingPrivateRoom(request.getMemberId(), request.getTargetMemberId());
 
         if (existingRoom.isPresent()) {
             return convertToRoomDTO(existingRoom.get());
         }
 
         // 새로운 1대1 채팅방 생성
-        Member owner = memberRepository.findById(memberId)
+        Member owner = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new RuntimeException("방장을 찾을 수 없습니다."));
-        Member targetMember = memberRepository.findById(targetMemberId)
+        Member targetMember = memberRepository.findById(request.getTargetMemberId())
                 .orElseThrow(() -> new RuntimeException("대상 회원을 찾을 수 없습니다."));
 
         ChatRoom newRoom = new ChatRoom();
@@ -80,8 +83,8 @@ public class ChatService {
         ChatRoom savedRoom = chatRoomRepository.save(newRoom);
 
         // 채팅방 멤버 추가
-        addMemberToRoom(savedRoom.getRoomIdx(), memberId);
-        addMemberToRoom(savedRoom.getRoomIdx(), targetMemberId);
+        addMemberToRoom(savedRoom.getRoomIdx(), request.getMemberId());
+        addMemberToRoom(savedRoom.getRoomIdx(), request.getTargetMemberId());
 
         return convertToRoomDTO(savedRoom);
     }
@@ -116,31 +119,31 @@ public class ChatService {
 
     // 채팅방 나가기
     @Transactional
-    public void leaveChatRoom(int roomIdx, String memberId) {
+    public void leaveChatRoom(int roomIdx, LeaveChatRoomRequestDTO request) {
         // Repository에서 나가기 처리
-        chatMemberRepository.leaveChatRoom(roomIdx, memberId);
+        chatMemberRepository.leaveChatRoom(roomIdx, request.getMemberId());
 
         // 채팅방 멤버 수 확인 후 채팅방 삭제 결정
         long activeMemberCount = chatRoomRepository.countActiveMembers(roomIdx);
 
         if (activeMemberCount == 0) {
-            chatRoomRepository.deleteById(roomIdx); // 엔티티에서 cascade 설정해야할 듯
+            chatRoomRepository.deleteById(roomIdx); // 엔티티에서 cascade 설정해야할 듯(완료!)
         }
     }
 
     // 채팅방 이름 변경(방장만 가능)
     @Transactional
-    public void renameChatRoom(int roomIdx, String newRoomName, String memberId) {
+    public void renameChatRoom(int roomIdx, RenameChatRoomRequestDTO request) {
         // 방장 확인
         ChatRoom room = chatRoomRepository.findById(roomIdx)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
 
-        if (!room.getOwner().getMemberId().equals(memberId)) {
+        if (!room.getOwner().getMemberId().equals(request.getMemberId())) {
             throw new RuntimeException("방장만 채팅방 이름을 변경할 수 있습니다.");
         }
 
         // 채팅방 이름 변경
-        chatRoomRepository.updateRoomName(roomIdx, newRoomName);
+        chatRoomRepository.updateRoomName(roomIdx, request.getNewRoomName());
     }
 
     // 채팅방에 멤버 추가
