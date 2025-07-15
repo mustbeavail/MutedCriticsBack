@@ -4,11 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.mutedcritics.dto.UserListDTO;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +26,6 @@ public class UserController {
     private final UserService service;
 
     Map<String, Object> resp = null;
-
 
     // 유저 상세 정보
     @GetMapping("/user/detail")
@@ -79,28 +73,17 @@ public class UserController {
 
     // 유저 리스트 불러오기
     @GetMapping("/user/list")
-    public ResponseEntity<Page<UserListDTO>> getUserList(
+    public Map<String, Object> getUserList(
             @RequestParam(required = false) String searchType,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "totalSpent") String sortBy,
             @RequestParam(defaultValue = "desc") String sortOrder,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         log.info("유저 리스트 조회 - searchType: {}, keyword: {}, sortBy: {}, sortOrder: {}, page: {}, size: {}",
                 searchType, keyword, sortBy, sortOrder, page, size);
 
-        // Sort 객체 생성
-        Sort.Direction direction = "asc".equalsIgnoreCase(sortOrder)
-                ? Sort.Direction.ASC
-                : Sort.Direction.DESC;
-        // direction : desc
-        // sortBy : totalSpent
-        Sort sort = Sort.by(direction, sortBy);
-
-        // PageRequest 생성
-        Pageable pageable = PageRequest.of(page - 1, size, sort);
-        return service.getUserList(searchType, keyword, pageable);
+        return service.getUserList(searchType, keyword, sortBy, sortOrder, page, size);
     }
 
 }
