@@ -2,7 +2,95 @@
 <!DOCTYPE mapper PUBLIC   "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.mutedcritics.user.dao.UserGroupDAO">
-    <select id="">
+    <update id="updateWithdrawnUsers">
+        UPDATE user
+        SET user_type = '탈퇴'
+        WHERE user_type = '미분류'
+          AND withdraw_date IS NOT NULL;
+    </update>
 
-    </select>
+    <update id="updateDormantUsers">
+        UPDATE user u
+        LEFT JOIN (
+        SELECT user_id, MAX(access_time) AS last_access_date
+        FROM access_stats
+        GROUP BY user_id
+        ) la ON u.user_id = la.user_id
+        SET u.user_type = '휴면', u.dormant_date = #{baseDate}
+        WHERE u.user_type = '미분류'
+        AND (
+        la.last_access_date &lt; DATE_SUB(#{baseDate}, INTERVAL 6 MONTH)
+        OR (la.last_access_date IS NULL AND u.join_date &lt; DATE_SUB(#{baseDate}, INTERVAL 6 MONTH))
+        );
+    </update>
+
+    <update id="updateLeaverUsers">
+        UPDATE user u
+        LEFT JOIN (
+        SELECT user_id, MAX(access_time) AS last_access_date
+        FROM access_stats
+        GROUP BY user_id
+        ) la ON u.user_id = la.user_id
+        SET u.user_type = '이탈 위험군'
+        WHERE u.user_type = '미분류'
+        AND (
+        la.last_access_date &lt; DATE_SUB(#{baseDate}, INTERVAL 4 MONTH)
+        OR (la.last_access_date IS NULL AND u.join_date &lt; DATE_SUB(#{baseDate}, INTERVAL 4 MONTH))
+        );
+    </update>
+
+    <update id="updateReturningUsers">
+        UPDATE user u
+            JOIN (
+            SELECT user_id, MAX (access_time) AS last_access_date
+            FROM access_stats
+            GROUP BY user_id
+            ) la
+        ON u.user_id = la.user_id
+            SET u.user_type = '복귀', u.returning_date = #{baseDate}, u.dormant_date = NULL
+        WHERE u.user_type = '휴면'
+          AND la.last_access_date >= DATE_SUB(#{baseDate}
+            , INTERVAL 2 MONTH);
+    </update>
+
+    <update id="updateReturningToNormal">
+        UPDATE user
+        SET user_type = '일반', returning_date = NULL
+        WHERE user_type = '복귀'
+        AND returning_date &lt; DATE_SUB(#{baseDate}, INTERVAL 2 MONTH);
+    </update>
+
+    <update id="updateNewUsers">
+        UPDATE user
+        SET user_type = '신규'
+        WHERE user_type = '미분류'
+          AND join_date >= DATE_SUB(#{baseDate}, INTERVAL 2 MONTH);
+    </update>
+
+    <update id="updateVipUsers">
+        UPDATE user
+            JOIN (
+            SELECT user_id
+            FROM (
+            SELECT o.user_id, DATE_FORMAT(o.order_date, '%Y-%m') AS ym,
+            SUM (il.item_price) - IFNULL(SUM (r.refund_amt), 0) AS net_spent
+            FROM order_list o
+            JOIN item_list il ON o.item_idx = il.item_idx
+            LEFT JOIN refund_list r ON r.order_idx = o.order_idx
+            WHERE o.order_date >= DATE_SUB(#{baseDate}, INTERVAL 6 MONTH)
+            GROUP BY o.user_id, DATE_FORMAT(o.order_date, '%Y-%m')
+            HAVING net_spent >= 300000
+            ) monthly_spent
+            GROUP BY user_id
+            HAVING COUNT (*) >= 3
+            ) vip_user
+        ON USER.user_id = vip_user.user_id
+            SET USER.vip_yn = 1;
+    </update>
+
+    <update id="updateGeneralUsers">
+        UPDATE user
+        SET user_type = '일반'
+        WHERE user_type = '미분류';
+    </update>
 </mapper>
