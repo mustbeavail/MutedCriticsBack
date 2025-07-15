@@ -7,7 +7,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "stats_item_daily", uniqueConstraints = @UniqueConstraint(columnNames = {"stats_date", "item_idx"}))
+@Table(name = "stats_item_daily", uniqueConstraints = @UniqueConstraint(columnNames = { "stats_date", "item_idx" }))
 @Data
 public class StatsItemDaily {
 
@@ -21,6 +21,9 @@ public class StatsItemDaily {
 
     @Column(name = "item_idx")
     private int itemIdx;
+
+    @Column(name = "item_name", columnDefinition = "varchar(100)")
+    private String itemName;
 
     @Column(name = "item_cate", columnDefinition = "varchar(10)")
     private String itemCate;
