@@ -33,10 +33,10 @@ public class ItemService {
     }
 
     // 아이템 리스트 조회
-    public List<Map<String, Object>> itemList(String startDate, String endDate, String align, int page) {
+    public List<Map<String, Object>> itemList(String startDate, String endDate, String align, int page, String search) {
 
         int offset = (page - 1) * 15;
 
-        return dao.itemList(startDate, endDate, align, offset);
+        return dao.itemList(startDate, endDate, align, offset, search);
     }
 }

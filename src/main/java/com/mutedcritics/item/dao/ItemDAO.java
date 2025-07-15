@@ -21,6 +21,7 @@ public interface ItemDAO {
         @Param("startDate") String startDate,
         @Param("endDate") String endDate,
         @Param("align") String align,
-        @Param("offset") int offset);
+        @Param("offset") int offset,
+        @Param("search") String search);
 
 }

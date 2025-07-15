@@ -33,6 +33,8 @@ public class ItemHistoricalService {
                         for (Map<String, Object> salesInfo : salesInfoList) {
                             params.put("stats_date", currentDate);
                             params.put("item_idx", salesInfo.get("item_idx"));
+                            params.put("item_name", salesInfo.get("item_name"));
+                            params.put("item_cate", salesInfo.get("item_cate"));
                             params.put("daily_sales_revenue", salesInfo.get("daily_sales_revenue"));
                             params.put("daily_sales_count", salesInfo.get("daily_sales_count"));
                             params.put("daily_paying_users", salesInfo.get("daily_paying_users"));
@@ -49,7 +51,9 @@ public class ItemHistoricalService {
                 currentDate = currentDate.plusDays(1);
             }
 
-            log.info("{}일 처리 중 (총 {}일 중)", currentDate, ChronoUnit.DAYS.between(startDate, endDate) + 1);
+            if (!currentDate.isAfter(endDate)) {
+                log.info("{}일 처리 중 (총 {}일 중)", currentDate, ChronoUnit.DAYS.between(startDate, endDate) + 1);
+            }
 
             // 잠시 쉬기 (서버 부하 방지)
             try {

@@ -18,7 +18,9 @@
                     WHEN 'item'   THEN il.item_price
                     WHEN 'bundle' THEN bi.bundle_price
                 END
-            ), 0) AS daily_sales_revenue, ol.item_idx
+            ), 0) AS daily_sales_revenue,
+            ol.item_idx, ol.item_cate,
+            COALESCE(il.item_name, bi.bundle_name) AS item_name
             FROM order_list ol
             LEFT JOIN item_list il
             ON il.item_idx = ol.item_idx AND ol.item_cate = 'item'
@@ -52,6 +54,8 @@
 		SELECT
 		    COALESCE(dsc.item_idx, dsr.item_idx, dpu.item_idx,
 		             dra.item_idx, drc.item_idx) AS item_idx,
+		    dsr.item_cate,
+            dsr.item_name,
 		    COALESCE(dsc.daily_sales_count, 0) AS daily_sales_count,
 		    COALESCE(dsr.daily_sales_revenue, 0) AS daily_sales_revenue,
 		    COALESCE(dpu.daily_paying_users, 0) AS daily_paying_users,
@@ -67,69 +71,79 @@
     <!-- 일일 아이템 통계 저장 -->
     <insert id="insertItemStats" parameterType="map">
         INSERT INTO stats_item_daily
-        (stats_date, item_idx,
+        (stats_date, item_idx, item_cate,
         daily_sales_revenue, daily_sales_count,
         daily_paying_users, daily_refund_amount,
-        daily_refund_count)
+        daily_refund_count, item_name)
         VALUES
-        (#{stats_date}, #{item_idx},
+        (#{stats_date}, #{item_idx}, #{item_cate},
         #{daily_sales_revenue}, #{daily_sales_count},
         #{daily_paying_users}, #{daily_refund_amount},
-        #{daily_refund_count})
+        #{daily_refund_count}, #{item_name})
         ON DUPLICATE KEY UPDATE
+        item_cate = VALUES(item_cate),
         daily_sales_revenue = VALUES(daily_sales_revenue),
         daily_sales_count = VALUES(daily_sales_count),
         daily_paying_users = VALUES(daily_paying_users),
         daily_refund_amount = VALUES(daily_refund_amount),
-        daily_refund_count = VALUES(daily_refund_count)
+        daily_refund_count = VALUES(daily_refund_count),
+        item_name = VALUES(item_name)
     </insert>
 
-    <!-- 아이템 리스트 조회 -->
+    <!-- 아이템 리스트 조회 / 검색 -->
     <select id="itemList" resultType="map">
         WITH
         item_list AS (
             SELECT
-                SUM(CASE WHEN ol.order_idx IS NOT NULL THEN il.item_price ELSE 0 END)
-                AS period_revenue,
-                COALESCE(COUNT(DISTINCT ol.user_id), 0)
-                AS period_paying_users,
+                COALESCE(SUM(daily_sales_revenue), 0) AS period_revenue,
+                COALESCE(SUM(daily_sales_count), 0) AS period_sales_count,
+                COALESCE(SUM(daily_paying_users), 0) AS period_paying_users,
                 il.item_idx,
                 il.item_name,
                 il.sell_type,
-                il.item_cate,
+                il.item_cate AS item_cate,
                 il.sell_start_date,
                 COALESCE(il.sell_end_date, '9999-12-31') AS sell_end_date,
                 il.item_price
-            FROM item_list il
-            LEFT JOIN order_list ol
-            ON il.item_idx = ol.item_idx
-            AND ol.item_cate = 'item'
-            AND ol.order_date BETWEEN #{startDate} AND #{endDate}
+            FROM stats_item_daily sid
+            LEFT JOIN item_list il
+            ON il.item_idx = sid.item_idx
+                AND sid.stats_date BETWEEN #{startDate} AND #{endDate}
+                AND sid.item_cate = 'item'
+            <if test="search != null and search != ''">
+                AND il.item_name LIKE CONCAT('%', #{search}, '%')
+            </if>
             GROUP BY il.item_idx
         ),
         bundle_list AS (
             SELECT
-                SUM(CASE WHEN ol.order_idx IS NOT NULL THEN bi.bundle_price ELSE 0 END)
-                AS period_revenue,
-                COALESCE(COUNT(DISTINCT ol.user_id), 0)
-                AS period_paying_users,
-                bi.bundle_idx,
-                bi.bundle_name,
-                bi.sell_type,
-                'bundle' AS item_cate,
-                bi.sell_start_date,
-                COALESCE(bi.sell_end_date, '9999-12-31') AS sell_end_date,
-                bi.bundle_price
-            FROM bundle_item bi
-            LEFT JOIN order_list ol
-            ON bi.bundle_idx = ol.item_idx
-            AND ol.item_cate = 'bundle'
-            AND ol.order_date BETWEEN #{startDate} AND #{endDate}
-            GROUP BY bi.bundle_idx
+            COALESCE(SUM(daily_sales_revenue), 0) AS period_revenue,
+            COALESCE(SUM(daily_sales_count), 0) AS period_sales_count,
+            COALESCE(SUM(daily_paying_users), 0) AS period_paying_users,
+            bi.bundle_idx,
+            bi.bundle_name,
+            bi.sell_type,
+            'bundle' AS item_cate,
+            bi.sell_start_date,
+            COALESCE(bi.sell_end_date, '9999-12-31') AS sell_end_date,
+            bi.bundle_price
+        FROM stats_item_daily sid
+        LEFT JOIN bundle_item bi
+        ON bi.bundle_idx = sid.item_idx
+            AND sid.stats_date BETWEEN #{startDate} AND #{endDate}
+            AND sid.item_cate = 'bundle'
+        <if test="search != null and search != ''">
+            AND bi.bundle_name LIKE CONCAT('%', #{search}, '%')
+        </if>
+        GROUP BY bi.bundle_idx
+        ),
+        all_items AS (
+            SELECT * FROM item_list
+            UNION ALL
+            SELECT * FROM bundle_list
         )
-        SELECT * FROM item_list il
-        UNION ALL
-        SELECT * FROM bundle_list bl
+        SELECT *
+        FROM all_items
         <choose>
             <when test="align == 'sellTypeASC'">ORDER BY sell_type ASC</when>
             <when test="align == 'sellTypeDESC'">ORDER BY sell_type DESC</when>
@@ -140,5 +154,52 @@
             <otherwise>ORDER BY period_revenue DESC</otherwise>
         </choose>
         LIMIT 15 OFFSET #{offset}
+    </select>
+
+    <!-- 아이템 검색 -->
+    <select id="itemSearch" resultType="map">
+        WITH
+        item_list AS (
+            SELECT
+                COALESCE(SUM(daily_sales_revenue), 0) AS period_revenue,
+                COALESCE(SUM(daily_sales_count), 0) AS period_sales_count,
+                COALESCE(SUM(daily_paying_users), 0) AS period_paying_users,
+                il.item_idx,
+                il.item_name,
+                il.sell_type,
+                il.item_cate AS item_cate,
+                il.sell_start_date,
+                COALESCE(il.sell_end_date, '9999-12-31') AS sell_end_date,
+                il.item_price
+            FROM stats_item_daily sid
+            LEFT JOIN item_list il
+            ON il.item_idx = sid.item_idx
+            WHERE sid.stats_date BETWEEN #{startDate} AND #{endDate} AND sid.item_cate = 'item'
+            GROUP BY il.item_idx
+        ),
+        bundle_list AS (
+            SELECT
+            COALESCE(SUM(daily_sales_revenue), 0) AS period_revenue,
+            COALESCE(SUM(daily_sales_count), 0) AS period_sales_count,
+            COALESCE(SUM(daily_paying_users), 0) AS period_paying_users,
+            bi.bundle_idx,
+            bi.bundle_name,
+            bi.sell_type,
+            'bundle' AS item_cate,
+            bi.sell_start_date,
+            COALESCE(bi.sell_end_date, '9999-12-31') AS sell_end_date,
+            bi.bundle_price
+        FROM stats_item_daily sid
+        LEFT JOIN bundle_item bi
+        ON bi.bundle_idx = sid.item_idx
+        WHERE sid.stats_date BETWEEN #{startDate} AND #{endDate} AND sid.item_cate = 'bundle'
+        GROUP BY bi.bundle_idx
+        )
+        SELECT * FROM (
+            SELECT * FROM item_list il
+            UNION ALL
+            SELECT * FROM bundle_list bl
+        ) AS full_item_list
+        WHERE full_item_list.item_name LIKE CONCAT('%', #{search}, '%')
     </select>
 </mapper>

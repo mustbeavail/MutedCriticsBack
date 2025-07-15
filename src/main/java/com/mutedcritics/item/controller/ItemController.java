@@ -52,17 +52,18 @@ public class ItemController {
         }
     }
 
-    // 아이템 리스트 조회
+    // 아이템 리스트 조회, 검색
     @GetMapping("/item/list")
     public Map<String, Object> itemList(
             @RequestParam String startDate,
             @RequestParam String endDate,
             @RequestParam String align,
-            @RequestParam int page) {
+            @RequestParam int page,
+            @RequestParam(required = false) String search) {
 
         resp = new HashMap<>();
 
-        List<Map<String, Object>> list = service.itemList(startDate, endDate, align, page);
+        List<Map<String, Object>> list = service.itemList(startDate, endDate, align, page, search);
         resp.put("itemList", list);
 
         return resp;
