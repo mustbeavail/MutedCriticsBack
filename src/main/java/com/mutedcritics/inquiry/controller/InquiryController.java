@@ -35,12 +35,12 @@ public class InquiryController {
             @RequestParam(required = false, defaultValue = "false") boolean isVip,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortOrder,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         log.info("문의 리스트 불러오기 - userId: {}, category: {}, status: {}, sortBy: {}, sortOrder: {}, page: {}, size: {}",
                 userId, category, status, isVip, sortBy, sortOrder, page, size);
 
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
 
         return service.getInquiriesWithConditions(userId, category, status, isVip, sortBy, sortOrder, pageable);
     }
@@ -52,12 +52,12 @@ public class InquiryController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortOrder,
             @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         log.info("신고 리스트 불러오기 - userId: {}, sortBy: {}, sortOrder: {}, page: {}, size: {}",
                 userId, sortBy, sortOrder, page, size);
 
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
 
         return service.getReportsWithConditions(userId, status, sortBy, sortOrder, pageable);
     }

@@ -22,6 +22,9 @@ import com.mutedcritics.chat.service.ChatService;
 import com.mutedcritics.dto.ChatMessageDTO;
 import com.mutedcritics.dto.ChatRoomDTO;
 import com.mutedcritics.dto.MemberSerachDTO;
+import com.mutedcritics.dto.PrivateChatRoomRequestDTO;
+import com.mutedcritics.dto.LeaveChatRoomRequestDTO;
+import com.mutedcritics.dto.RenameChatRoomRequestDTO;
 import com.mutedcritics.entity.ChatMsg;
 
 import lombok.RequiredArgsConstructor;
@@ -57,34 +60,33 @@ public class ChatController {
         messagingTemplate.convertAndSend(destination, messageToSend);
     }
 
-    // 1대1 채팅방 생성 또는 기존 방 조회
+    // 1대1 채팅방 생성 또는 기존 방 조회(request : memberId, targetMemberId)
     @PostMapping("/room/private")
     public ResponseEntity<ChatRoomDTO> createOrGetPrivateRoom(
-            @RequestParam String memberId,
-            @RequestParam String targetMemberId) {
-        ChatRoomDTO chatRoom = chatService.createOrGetPrivateRoom(memberId, targetMemberId);
+            @RequestBody PrivateChatRoomRequestDTO request) {
+        ChatRoomDTO chatRoom = chatService.createOrGetPrivateRoom(request);
         return ResponseEntity.ok(chatRoom);
     }
 
-    // 내 채팅방 목록 조회(페이징)
+    // 내 채팅방 목록 불러오기
     @GetMapping("/rooms")
     public ResponseEntity<Page<ChatRoomDTO>> getMyChatRooms(
             @RequestParam String memberId,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String searchKeyword) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
         Page<ChatRoomDTO> chatRooms = chatService.getMyChatRooms(memberId, searchKeyword, pageable);
         return ResponseEntity.ok(chatRooms);
     }
 
-    // 채팅방 메시지 조회
+    // 채팅방 메시지 불러오기
     @GetMapping("/room/{roomIdx}/messages")
     public ResponseEntity<List<ChatMessageDTO>> getChatMessages(
             @PathVariable int roomIdx,
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "50") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
         List<ChatMessageDTO> messages = chatService.getChatMessages(roomIdx, pageable);
         return ResponseEntity.ok(messages);
     }
@@ -98,21 +100,20 @@ public class ChatController {
         return ResponseEntity.ok(members);
     }
 
-    // 채팅방 나가기
+    // 채팅방 나가기(request : memberId)
     @PostMapping("/room/{roomIdx}/leave")
     public ResponseEntity<String> leaveChatRoom(
             @PathVariable int roomIdx,
-            @RequestParam String memberId) {
-        chatService.leaveChatRoom(roomIdx, memberId);
+            @RequestBody LeaveChatRoomRequestDTO request) {
+        chatService.leaveChatRoom(roomIdx, request);
         return ResponseEntity.ok("채팅방에서 나갔습니다.");
     }
 
-    // 채팅방 이름 변경(방장만 가능)
+    // 채팅방 이름 변경(방장만 가능)(request : newRoomName, memberId)
     @PostMapping("/room/{roomIdx}/rename")
     public ResponseEntity<String> renameChatRoom(@PathVariable int roomIdx,
-            @RequestBody String newRoomName,
-            @RequestParam String memberid) {
-        chatService.renameChatRoom(roomIdx, newRoomName, memberid);
+            @RequestBody RenameChatRoomRequestDTO request) {
+        chatService.renameChatRoom(roomIdx, request);
         return ResponseEntity.ok("채팅방 이름이 변경되었습니다.");
     }
 
