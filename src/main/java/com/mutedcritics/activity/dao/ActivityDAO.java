@@ -1,6 +1,7 @@
 package com.mutedcritics.activity.dao;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -25,9 +26,12 @@ public interface ActivityDAO {
     // 일일 통계 저장
     int insertDailyActivity(Map<String, Object> params);
 
-/*     // 기간별 일일 활성 이용자 수
-    Map<String, Object> period_daily_user(String start_date, String end_date);
+    // 기간별 일일 활성 이용자 수
+    List<Map<String, Object>> periodDailyUser(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
+    List<Map<String, Object>> periodWeeklyUser(@Param("weeklyDates") Map<String, List<LocalDate>> weeklyDates);
+
+/* 
     // 기간별 주간 활성 이용자 수
     Map<String, Object> period_weekly_user(LocalDate fromDate, LocalDate toDate);
 

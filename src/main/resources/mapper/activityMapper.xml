@@ -41,4 +41,25 @@
         VALUES (#{today}, #{DAU}, #{newUserCount}, #{dormantUserCount}, #{returningUserCount}, #{withdrawnUserCount})
     </insert>
 
+    <!-- 기간별 일일 활성 이용자 수 -->
+    <select id="periodDailyUser" resultType="map">
+        SELECT stats_date, dau
+        FROM stats_activity_daily
+        WHERE stats_date BETWEEN #{startDate} AND #{endDate}
+    </select>
+
+    <!-- 기간별 주간 활성 이용자 수 -->
+    <select id="periodWeeklyUser" resultType="map" parameterType="map">
+        <foreach collection="weeklyDates" item="dates" index="week" separator="UNION ALL">
+            SELECT 
+                #{week} AS week,
+                COALESCE(SUM(dau), 0) AS dau
+            FROM stats_activity_daily
+            WHERE
+            <foreach collection="dates" item="d" open="(" separator=" OR " close=")">
+                stats_date = #{d}
+            </foreach>
+        </foreach>
+    </select>
+
 </mapper>
