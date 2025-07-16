@@ -1,6 +1,7 @@
 package com.mutedcritics.item.service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,5 +54,11 @@ public class ItemService {
         int offset = (page - 1) * 10;
 
         return dao.refundList(startDate, endDate, align, offset, search);
+    }
+
+    // 아이템 환불내역 요약 조회
+    public List<Map<String, Object>> refundSummary(String startDate, String endDate) {
+
+        return dao.refundSummary(startDate, endDate);
     }
 }

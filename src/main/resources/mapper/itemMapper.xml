@@ -13,19 +13,19 @@
             GROUP BY ol.item_idx
         ),
         daily_sales_revenue AS (
-            SELECT COALESCE(SUM(
-                CASE ol.item_cate
-                    WHEN 'item'   THEN il.item_price
-                    WHEN 'bundle' THEN bi.bundle_price
-                END
-            ), 0) AS daily_sales_revenue,
-            ol.item_idx, ol.item_cate,
-            COALESCE(il.item_name, bi.bundle_name) AS item_name
+            SELECT 
+                COALESCE(SUM(
+                    CASE ol.item_cate
+                        WHEN 'item'   THEN il.item_price
+                        WHEN 'bundle' THEN bi.bundle_price
+                        END), 0) AS daily_sales_revenue,
+                ol.item_idx, ol.item_cate,
+                COALESCE(il.item_name, bi.bundle_name) AS item_name
             FROM order_list ol
-            LEFT JOIN item_list il
-            ON il.item_idx = ol.item_idx AND ol.item_cate = 'item'
-            LEFT JOIN bundle_item bi
-            ON bi.bundle_idx = ol.item_idx AND ol.item_cate = 'bundle'
+                LEFT JOIN item_list il
+                ON il.item_idx = ol.item_idx AND ol.item_cate = 'item'
+                LEFT JOIN bundle_item bi
+                ON bi.bundle_idx = ol.item_idx AND ol.item_cate = 'bundle'
             WHERE ol.order_date = #{today}
             GROUP BY ol.item_idx
         ),
@@ -38,16 +38,16 @@
         daily_refund_amount AS (
             SELECT COALESCE(SUM(rl.refund_amt), 0) AS daily_refund_amount, ol.item_idx
             FROM refund_list rl
-            LEFT JOIN order_list ol
-            ON rl.order_idx = ol.order_idx
+                LEFT JOIN order_list ol
+                ON rl.order_idx = ol.order_idx
             WHERE rl.refund_date = #{today}
             GROUP BY ol.item_idx
         ),
         daily_refund_count AS (
             SELECT COALESCE(COUNT(rl.refund_idx), 0) AS daily_refund_count, ol.item_idx
             FROM refund_list rl
-            LEFT JOIN order_list ol
-            ON rl.order_idx = ol.order_idx
+                LEFT JOIN order_list ol
+                ON rl.order_idx = ol.order_idx
             WHERE rl.refund_date = #{today}
             GROUP BY ol.item_idx
         )
@@ -62,32 +62,32 @@
 		    COALESCE(dra.daily_refund_amount, 0) AS daily_refund_amount,
 		    COALESCE(drc.daily_refund_count, 0) AS daily_refund_count
 		FROM daily_sales_count dsc
-		LEFT JOIN daily_sales_revenue dsr USING (item_idx)
-		LEFT JOIN daily_paying_users dpu USING (item_idx)
-		LEFT JOIN daily_refund_amount dra USING (item_idx)
-		LEFT JOIN daily_refund_count drc USING (item_idx)
+            LEFT JOIN daily_sales_revenue dsr USING (item_idx)
+            LEFT JOIN daily_paying_users dpu USING (item_idx)
+            LEFT JOIN daily_refund_amount dra USING (item_idx)
+            LEFT JOIN daily_refund_count drc USING (item_idx)
     </select>
 
     <!-- 일일 아이템 통계 저장 -->
     <insert id="insertItemStats" parameterType="map">
         INSERT INTO stats_item_daily
-        (stats_date, item_idx, item_cate,
-        daily_sales_revenue, daily_sales_count,
-        daily_paying_users, daily_refund_amount,
-        daily_refund_count, item_name)
+            (stats_date, item_idx, item_cate,
+            daily_sales_revenue, daily_sales_count,
+            daily_paying_users, daily_refund_amount,
+            daily_refund_count, item_name)
         VALUES
-        (#{stats_date}, #{item_idx}, #{item_cate},
-        #{daily_sales_revenue}, #{daily_sales_count},
-        #{daily_paying_users}, #{daily_refund_amount},
-        #{daily_refund_count}, #{item_name})
+            (#{stats_date}, #{item_idx}, #{item_cate},
+            #{daily_sales_revenue}, #{daily_sales_count},
+            #{daily_paying_users}, #{daily_refund_amount},
+            #{daily_refund_count}, #{item_name})
         ON DUPLICATE KEY UPDATE
-        item_cate = VALUES(item_cate),
-        daily_sales_revenue = VALUES(daily_sales_revenue),
-        daily_sales_count = VALUES(daily_sales_count),
-        daily_paying_users = VALUES(daily_paying_users),
-        daily_refund_amount = VALUES(daily_refund_amount),
-        daily_refund_count = VALUES(daily_refund_count),
-        item_name = VALUES(item_name)
+            item_cate = VALUES(item_cate),
+            daily_sales_revenue = VALUES(daily_sales_revenue),
+            daily_sales_count = VALUES(daily_sales_count),
+            daily_paying_users = VALUES(daily_paying_users),
+            daily_refund_amount = VALUES(daily_refund_amount),
+            daily_refund_count = VALUES(daily_refund_count),
+            item_name = VALUES(item_name)
     </insert>
 
     <!-- 아이템 리스트 조회 / 검색 -->
@@ -117,14 +117,14 @@
         ),
         bundle_list_detail AS (
             SELECT
-            COALESCE(SUM(daily_sales_revenue), 0) AS period_revenue,
-            COALESCE(SUM(daily_sales_count), 0) AS period_sales_count,
-            COALESCE(SUM(daily_paying_users), 0) AS period_paying_users,
-            bi.bundle_idx AS item_idx,
-            bi.bundle_name AS item_name,
-            bi.sell_type,
-            'bundle' AS item_cate,
-            bi.sell_start_date,
+                COALESCE(SUM(daily_sales_revenue), 0) AS period_revenue,
+                COALESCE(SUM(daily_sales_count), 0) AS period_sales_count,
+                COALESCE(SUM(daily_paying_users), 0) AS period_paying_users,
+                bi.bundle_idx AS item_idx,
+                bi.bundle_name AS item_name,
+                bi.sell_type,
+                'bundle' AS item_cate,
+                bi.sell_start_date,
             COALESCE(bi.sell_end_date, '9999-12-31') AS sell_end_date,
             bi.bundle_price
         FROM bundle_item bi
@@ -179,16 +179,16 @@
         ),
         bundle_list_detail AS (
             SELECT
-            COALESCE(SUM(sid.daily_sales_revenue), 0) AS period_revenue,
-            COALESCE(SUM(sid.daily_sales_count), 0) AS period_sales_count,
-            COALESCE(SUM(sid.daily_paying_users), 0) AS period_paying_users,
-            bi.bundle_idx AS item_idx,
-            bi.bundle_name AS item_name,
-            bi.sell_type,
-            'bundle' AS item_cate,
-            bi.sell_start_date,
-            bi.sell_end_date,
-            bi.bundle_price
+                COALESCE(SUM(sid.daily_sales_revenue), 0) AS period_revenue,
+                COALESCE(SUM(sid.daily_sales_count), 0) AS period_sales_count,
+                COALESCE(SUM(sid.daily_paying_users), 0) AS period_paying_users,
+                bi.bundle_idx AS item_idx,
+                bi.bundle_name AS item_name,
+                bi.sell_type,
+                'bundle' AS item_cate,
+                bi.sell_start_date,
+                bi.sell_end_date,
+                bi.bundle_price
         FROM bundle_item bi
         LEFT JOIN stats_item_daily sid
         ON bi.bundle_idx = sid.item_idx
@@ -209,5 +209,75 @@
             <when test="align == 'periodPayingUsersDESC'">ORDER BY period_paying_users DESC</when>
             <otherwise>ORDER BY period_revenue DESC</otherwise>
         </choose>
+    </select>
+
+    <!-- 아이템 환불내역 요약 조회 -->
+    <select id="refundSummary" resultType="map">
+        WITH
+        total_refund_amount AS (
+            SELECT COALESCE(SUM(sid.daily_refund_amount), 0) AS total_refund_amount
+            FROM stats_item_daily sid
+            WHERE sid.stats_date BETWEEN #{startDate} AND #{endDate}
+        ),
+        total_refund_count AS (
+            SELECT COALESCE(SUM(sid.daily_refund_count), 0) AS total_refund_count
+            FROM stats_item_daily sid
+            WHERE sid.stats_date BETWEEN #{startDate} AND #{endDate}
+        ),
+        most_refund_item AS (
+            SELECT
+                sid.item_name,
+                COALESCE(SUM(sid.daily_refund_count), 0) AS most_item_refund_count
+            FROM stats_item_daily sid
+            WHERE sid.stats_date BETWEEN #{startDate} AND #{endDate}
+            GROUP BY sid.item_name
+            ORDER BY most_item_refund_count DESC
+            LIMIT 1
+        )
+        SELECT 
+            'TOTAL_REFUND_AMOUNT' AS metric_type,
+            NULL AS metric_label,
+            tra.total_refund_amount AS metric_value
+        FROM total_refund_amount tra
+        UNION ALL
+        SELECT 
+            'TOTAL_REFUND_COUNT'  AS metric_type,
+            NULL AS metric_label,
+            trc.total_refund_count AS metric_value
+        FROM total_refund_count trc
+        UNION ALL
+        SELECT 
+            'MOST_REFUND_ITEM' AS metric_type,
+            mri.item_name AS metric_label,
+            mri.most_item_refund_count AS metric_value
+        FROM most_refund_item mri
+    </select>
+
+    <!-- 아이템 환불내역 조회 / 검색 -->
+    <select id="refundList" resultType="map">
+        SELECT
+            rl.refund_idx,
+            rl.refund_amt,
+            rl.refund_date,
+            rl.why,
+            rl.order_idx,
+            ol.user_id
+        FROM refund_list rl
+            LEFT JOIN order_list ol
+            ON rl.order_idx = ol.order_idx
+        WHERE rl.refund_date BETWEEN #{startDate} AND #{endDate}
+        <if test="search != null and search != ''">
+            AND ol.user_id LIKE CONCAT('%', #{search}, '%')
+        </if>
+        <choose>
+            <when test="align == 'refundAmountASC'">ORDER BY rl.refund_amt ASC</when>
+            <when test="align == 'refundAmountDESC'">ORDER BY rl.refund_amt DESC</when>
+            <when test="align == 'refundDateASC'">ORDER BY rl.refund_date ASC</when>
+            <when test="align == 'refundDateDESC'">ORDER BY rl.refund_date DESC</when>
+            <when test="align == 'refundWhyASC'">ORDER BY rl.why ASC</when>
+            <when test="align == 'refundWhyDESC'">ORDER BY rl.why DESC</when>
+            <otherwise>ORDER BY rl.refund_date DESC</otherwise>
+        </choose>
+        LIMIT 10 OFFSET #{offset}
     </select>
 </mapper>
