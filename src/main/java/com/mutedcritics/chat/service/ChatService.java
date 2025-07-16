@@ -26,6 +26,7 @@ import com.mutedcritics.entity.ChatMemberId;
 import com.mutedcritics.entity.ChatMsg;
 import com.mutedcritics.entity.ChatRoom;
 import com.mutedcritics.entity.Member;
+import com.mutedcritics.notice.service.NoticeService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,7 @@ public class ChatService {
     private final ChatMsgRepository chatMsgRepository;
     private final ChatMemberRepository chatMemberRepository;
     private final MemberRepository memberRepository;
+    private final NoticeService notiService;
 
     // 메시지 저장
     @Transactional
@@ -55,7 +57,17 @@ public class ChatService {
         chatMessage.setMsgContent(messageDTO.getMsgContent());
         chatMessage.setSentAt(LocalDateTime.now());
 
-        return chatMsgRepository.save(chatMessage);
+        ChatMsg savedMessage = chatMsgRepository.save(chatMessage);
+
+        if (savedMessage != null || savedMessage.getMsgIdx() > 0) {
+            // 메시지 알림 저장하기
+            notiService.saveChatNotification(chatMessage);
+            return savedMessage;
+        }
+        else {
+            throw new RuntimeException("메시지 저장 실패");
+        }
+
     }
 
     // 1대1 채팅방 생성 또는 기존 방 조회
