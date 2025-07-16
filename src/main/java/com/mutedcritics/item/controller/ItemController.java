@@ -83,8 +83,8 @@ public class ItemController {
         return resp;
     }
 
-    // 아이템 환불내역 조회 / 검색
-    @GetMapping("/item/refund")
+    // 아이템 환불내역 리스트 조회 / 검색
+    @GetMapping("/item/refund/list")
     public Map<String, Object> refundList(
             @RequestParam String startDate,
             @RequestParam String endDate,
@@ -95,7 +95,23 @@ public class ItemController {
         resp = new HashMap<>();
 
         List<Map<String, Object>> list = service.refundList(startDate, endDate, align, page, search);
+
         resp.put("refundList", list);
+
+        return resp;
+    }
+
+    // 아이템 환불내역 요약 조회
+    @GetMapping("/item/refund/summary")
+    public Map<String, Object> refundSummary(
+            @RequestParam String startDate,
+            @RequestParam String endDate) {
+
+        resp = new HashMap<>();
+
+        List<Map<String, Object>> list = service.refundSummary(startDate, endDate);
+
+        resp.put("refundSummary", list);
 
         return resp;
     }

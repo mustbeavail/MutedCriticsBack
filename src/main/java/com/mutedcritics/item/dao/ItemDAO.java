@@ -30,6 +30,16 @@ public interface ItemDAO {
         @Param("align") String align);
 
     // 아이템 환불내역 조회 / 검색
-    List<Map<String, Object>> refundList(String startDate, String endDate, String align, int offset, String search);
+    List<Map<String, Object>> refundList(
+        @Param("startDate") String startDate,
+        @Param("endDate") String endDate,
+        @Param("align") String align,
+        @Param("offset") int offset,
+        @Param("search") String search);
+    
+    // 아이템 환불내역 요약 조회
+    List<Map<String, Object>> refundSummary(
+        @Param("startDate") String startDate,
+        @Param("endDate") String endDate);
 
 }
