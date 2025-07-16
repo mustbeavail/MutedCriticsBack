@@ -109,11 +109,11 @@ public class AiService {
     }
 
     // 상담사 지원용 AI 답변 생성
-    public String generateAiResponseForAgent(Integer inquiryId) {
-        log.info("AI 답변 생성 요청 (상담사 지원) - Inquiry ID: {}", inquiryId);
+    public String generateAiResponseForAgent(Integer inquiryIdx) {
+        log.info("AI 답변 생성 요청 (상담사 지원) - Inquiry ID: {}", inquiryIdx);
 
-        Inquiry inquiry = inquiryRepository.findById(inquiryId)
-                .orElseThrow(() -> new RuntimeException("문의/신고가 존재하지 않습니다. inquiryIdx: " + inquiryId));
+        Inquiry inquiry = inquiryRepository.findById(inquiryIdx)
+                .orElseThrow(() -> new RuntimeException("문의/신고가 존재하지 않습니다. inquiryIdx: " + inquiryIdx));
 
         return generateAiResponse(inquiry);
     }
@@ -122,8 +122,12 @@ public class AiService {
     @Transactional
     public String saveAgentResponse(ResponseDTO responseDTO) {
         Inquiry inquiry = inquiryRepository.findById(responseDTO.getInquiryIdx())
-                .orElseThrow(
-                        () -> new RuntimeException("문의/신고가 존재하지 않습니다. inquiryIdx: " + responseDTO.getInquiryIdx()));
+                .orElseThrow(() -> new RuntimeException("문의/신고가 존재하지 않습니다. inquiryIdx: " + responseDTO.getInquiryIdx()));
+
+        // 이미 답변이 완료된 경우 중복 답변 방지
+        if ("완료".equals(inquiry.getStatus())) {
+            throw new RuntimeException("이미 답변이 완료된 문의/신고입니다. inquiryIdx: " + responseDTO.getInquiryIdx());
+        }
 
         Member agent = memberRepository.findById(responseDTO.getAgentId())
                 .orElseThrow(() -> new RuntimeException("상담사가 존재하지 않습니다. agentId: " + responseDTO.getAgentId()));

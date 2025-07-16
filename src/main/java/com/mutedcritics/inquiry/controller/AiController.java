@@ -27,16 +27,16 @@ public class AiController {
     private final AiService service;
 
     // 상담사 지원용 AI 답변 생성
-    @GetMapping("/inquiry/{inquiryId}/ai-response")
-    public ResponseEntity<?> generateAiResponse(@PathVariable Integer inquiryId) {
+    @GetMapping("/inquiry/{inquiryIdx}/ai-response")
+    public ResponseEntity<?> generateAiResponse(@PathVariable Integer inquiryIdx) {
         Map<String, Object> result = new HashMap<>();
         try {
-            String aiResponse = service.generateAiResponseForAgent(inquiryId);
+            String aiResponse = service.generateAiResponseForAgent(inquiryIdx);
             result.put("success", true);
             result.put("response", aiResponse);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            log.error("AI 답변 생성 중 오류 발생 inquiryId={}", inquiryId, e);
+            log.error("AI 답변 생성 중 오류 발생 inquiryIdx={}", inquiryIdx, e);
             result.put("success", false);
             result.put("msg", "AI 답변 생성 중 오류가 발생했습니다: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
