@@ -1,5 +1,8 @@
 package com.mutedcritics.inquiry.repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -54,6 +57,12 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
             builder.and(inquiry.user.vipYn.eq(true));
         }
 
+        // 과거부터 오늘 날짜(현재 시간)까지 조회
+        LocalDateTime now = LocalDateTime.now(); // 현재 시간
+
+        // createdAt이 현재 시간보다 작거나 같은 조건
+        builder.and(inquiry.createdAt.loe(now));
+
         // 정렬 처리
         JPAQuery<Inquiry> query = factory.selectFrom(inquiry)
                 .leftJoin(inquiry.user, user).fetchJoin().where(builder);
@@ -103,6 +112,12 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
         if (status != null && !status.isEmpty()) {
             builder.and(inquiry.status.eq(status));
         }
+
+        // 과거부터 오늘 날짜(현재 시간)까지 조회
+        LocalDateTime now = LocalDateTime.now(); // 현재 시간
+
+        // createdAt이 현재 시간보다 작거나 같은 조건
+        builder.and(inquiry.createdAt.loe(now));
 
         // 정렬 처리
         JPAQuery<Inquiry> query = factory.selectFrom(inquiry)
