@@ -1,5 +1,6 @@
 package com.mutedcritics.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -21,6 +22,7 @@ public class InquiryReportDetailDTO {
     private String title;
     private String content;
     private String status;
+    private LocalDateTime createdAt;
 
     private List<ResponseDTO> responses;
 

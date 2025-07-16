@@ -104,6 +104,7 @@ public class InquiryService {
 				.title(inquiry.getTitle())
 				.content(inquiry.getContent())
 				.status(inquiry.getStatus())
+				.createdAt(inquiry.getCreatedAt())
 				.responses(responseDTOs)
 				.build();
 	}
