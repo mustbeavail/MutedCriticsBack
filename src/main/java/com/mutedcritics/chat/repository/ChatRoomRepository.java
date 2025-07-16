@@ -11,6 +11,6 @@ import com.mutedcritics.entity.ChatRoom;
 @Repository
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Integer>, ChatRoomRepositoryCustom {
 
-    @Query("SELECT c.memberId FROM ChatRoom c WHERE c.roomIdx = :roomIdx AND c.memberId != :memberId")
+    @Query("select m.memberId from ChatRoom cr join cr.chatMembers cm join cm.member m where cr.roomIdx = :roomIdx and m.memberId <> :memberId")
     Optional<String> findChatMemberByRoomIdx(int roomIdx, String memberId);
 }
