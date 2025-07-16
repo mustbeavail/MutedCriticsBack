@@ -93,7 +93,7 @@
     <!-- 아이템 리스트 조회 / 검색 -->
     <select id="itemList" resultType="map">
         WITH
-        item_list AS (
+        item_list_detail AS (
             SELECT
                 COALESCE(SUM(daily_sales_revenue), 0) AS period_revenue,
                 COALESCE(SUM(daily_sales_count), 0) AS period_sales_count,
@@ -105,45 +105,43 @@
                 il.sell_start_date,
                 COALESCE(il.sell_end_date, '9999-12-31') AS sell_end_date,
                 il.item_price
-            FROM stats_item_daily sid
-            LEFT JOIN item_list il
+            FROM item_list il
+            LEFT JOIN stats_item_daily sid
             ON il.item_idx = sid.item_idx
                 AND sid.stats_date BETWEEN #{startDate} AND #{endDate}
                 AND sid.item_cate = 'item'
             <if test="search != null and search != ''">
-                AND il.item_name LIKE CONCAT('%', #{search}, '%')
+                WHERE il.item_name LIKE CONCAT('%', #{search}, '%')
             </if>
             GROUP BY il.item_idx
         ),
-        bundle_list AS (
+        bundle_list_detail AS (
             SELECT
             COALESCE(SUM(daily_sales_revenue), 0) AS period_revenue,
             COALESCE(SUM(daily_sales_count), 0) AS period_sales_count,
             COALESCE(SUM(daily_paying_users), 0) AS period_paying_users,
-            bi.bundle_idx,
-            bi.bundle_name,
+            bi.bundle_idx AS item_idx,
+            bi.bundle_name AS item_name,
             bi.sell_type,
             'bundle' AS item_cate,
             bi.sell_start_date,
             COALESCE(bi.sell_end_date, '9999-12-31') AS sell_end_date,
             bi.bundle_price
-        FROM stats_item_daily sid
-        LEFT JOIN bundle_item bi
+        FROM bundle_item bi
+        LEFT JOIN stats_item_daily sid
         ON bi.bundle_idx = sid.item_idx
             AND sid.stats_date BETWEEN #{startDate} AND #{endDate}
             AND sid.item_cate = 'bundle'
         <if test="search != null and search != ''">
-            AND bi.bundle_name LIKE CONCAT('%', #{search}, '%')
+            WHERE bi.bundle_name LIKE CONCAT('%', #{search}, '%')
         </if>
         GROUP BY bi.bundle_idx
-        ),
-        all_items AS (
-            SELECT * FROM item_list
-            UNION ALL
-            SELECT * FROM bundle_list
         )
-        SELECT *
-        FROM all_items
+        SELECT * FROM (
+            SELECT * FROM item_list_detail il
+            UNION ALL
+            SELECT * FROM bundle_list_detail bl
+        ) AS full_item_list
         <choose>
             <when test="align == 'sellTypeASC'">ORDER BY sell_type ASC</when>
             <when test="align == 'sellTypeDESC'">ORDER BY sell_type DESC</when>
