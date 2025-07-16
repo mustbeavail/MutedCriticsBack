@@ -7,17 +7,21 @@ import java.time.LocalDate;
 
 @Mapper
 public interface UserGroupDAO {
-    void updateWithdrawnUsers(@Param("baseDate") LocalDate date);
+    void resetVipFlags();
 
-    void updateDormantUsers(@Param("baseDate") LocalDate date);
+    void setVipFlags(@Param("baseDate") LocalDate baseDate);
 
-    void updateLeaverUsers(@Param("baseDate") LocalDate date);
+    void updateWithdrawnUsers(@Param("baseDate") LocalDate baseDate);
 
-    void updateReturningUsers(@Param("baseDate") LocalDate date);
+    void updateDormantUsers(@Param("baseDate") LocalDate baseDate);
 
-    void updateReturningToNormal(@Param("baseDate") LocalDate date);
+    void updateReturningUsers(@Param("baseDate") LocalDate baseDate);
 
-    void updateNewUsers(@Param("baseDate") LocalDate date);
+    void updateReturningToNormal(@Param("baseDate") LocalDate baseDate);
 
-    void updateGeneralUsers(@Param("baseDate") LocalDate date);
+    void updateNewUsers(@Param("baseDate") LocalDate baseDate);
+
+    void updateLeaverUsers(@Param("baseDate") LocalDate baseDate);
+
+    void updateGeneralUsers(@Param("baseDate") LocalDate baseDate);
 }
