@@ -42,9 +42,9 @@ public class Noti {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // 외래키(user 테이블의 user_id)
+    // 외래키(Member 테이블의 member_id)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
 }
