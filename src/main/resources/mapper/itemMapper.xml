@@ -151,7 +151,9 @@
             <when test="align == 'periodPayingUsersDESC'">ORDER BY period_paying_users DESC</when>
             <otherwise>ORDER BY period_revenue DESC</otherwise>
         </choose>
-        LIMIT 10 OFFSET #{offset}
+        <if test="offset != null">
+            LIMIT 10 OFFSET #{offset}
+        </if>
     </select>
 
     <!-- 이벤트 아이템 리스트 조회 -->

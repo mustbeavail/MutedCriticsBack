@@ -1,7 +1,6 @@
 package com.mutedcritics.item.service;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,9 +33,12 @@ public class ItemService {
     }
 
     // 아이템 리스트 조회
-    public List<Map<String, Object>> itemList(String startDate, String endDate, String align, int page, String search) {
+    public List<Map<String, Object>> itemList(String startDate, String endDate, String align, Integer page, String search) {
 
-        int offset = (page - 1) * 10;
+        Integer offset = null;
+        if (page != null) {
+            offset = (page - 1) * 10;
+        }
 
         return dao.itemList(startDate, endDate, align, offset, search);
     }

@@ -1,13 +1,17 @@
 package com.mutedcritics.notice.service;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.chat.repository.ChatRoomRepository;
 import com.mutedcritics.entity.ChatMsg;
 import com.mutedcritics.entity.Noti;
+import com.mutedcritics.entity.Member;
 import com.mutedcritics.notice.repository.NoticeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -74,6 +78,85 @@ public class NoticeService {
         return notiList;
     }
 
+    // 매출 감소 알림 저장
+    public boolean saveRevenueDecreaseNotice(
+        long totalRevenue, long totalRevenue2, long totalRevenue3,
+        YearMonth YM, YearMonth YM2, YearMonth YM3) {
 
+        DateTimeFormatter YM_FMT = DateTimeFormatter.ofPattern("yyyy-MM");
+        String ym1Str = YM.format(YM_FMT);   // 전달
+        String ym2Str = YM2.format(YM_FMT);   // 전전달
+        String ym3Str = YM3.format(YM_FMT);  // 전전전달
 
+        String memberId = "admin";
+        String receiverId = "admin";
+        String contentPre = String.format(
+            "3개월 연속 매출 하락: %s %,d원 ↓ %s %,d원 ↓ %s %,d원.",
+            ym3Str, totalRevenue3,
+            ym2Str, totalRevenue2,
+            ym1Str, totalRevenue
+        );
+        int relatedIdx = 0;
+        boolean readYn = false;
+        LocalDateTime createdAt = LocalDateTime.now();
+        String notiType = "revenueDecreaseStat";
+
+        Noti noti = new Noti();
+        noti.getMember().setMemberId(memberId);
+        noti.getReceiver().setMemberId(receiverId);
+        noti.setContentPre(contentPre);
+        noti.setRelatedIdx(relatedIdx);
+        noti.setReadYn(readYn);
+        noti.setCreatedAt(createdAt);
+        noti.setNotiType(notiType);
+
+        boolean success = noticeRepo.save(noti) != null;
+
+        return success;
+    }
+
+    // 아이템 매출 편중 심화 알림 저장
+    public boolean saveConcentratedItemNotice(List<Map<String, Object>> concentratedItems) {
+
+        boolean success = false;
+        int successCount = 0;
+
+        for (Map<String, Object> item : concentratedItems) {
+            String itemName = (String) item.get("itemName");
+            long howManyTimes = (long) item.get("howManyTimes");
+            double itemRevenueRate = (double) item.get("itemRevenueRate");
+            String memberId = "admin";
+            String receiverId = "admin";
+            String contentPre = String.format(
+                "아이템 매출 편중 심화: %s 전체 매출의 %,d%% 평균매출액의 %,d%%",
+                itemName, (long) itemRevenueRate, howManyTimes
+            );
+            int relatedIdx = (int) item.get("itemIdx");
+            boolean readYn = false;
+            LocalDateTime createdAt = LocalDateTime.now();
+            String notiType = "concentratedItemStat";
+
+            Noti noti = new Noti();
+            Member member = new Member();
+            member.setMemberId(memberId);
+            noti.setMember(member);
+            Member receiver = new Member();
+            receiver.setMemberId(receiverId);
+            noti.setReceiver(receiver); 
+            noti.setContentPre(contentPre);
+            noti.setRelatedIdx(relatedIdx);
+            noti.setReadYn(readYn);
+            noti.setCreatedAt(createdAt);
+            noti.setNotiType(notiType);
+
+            success = noticeRepo.save(noti) != null;
+
+            if (success){
+                successCount++;
+            }else{
+                log.error("아이템 매출 편중 심화 알림 전송 실패: {}", itemName);
+            }
+        }
+        return successCount == concentratedItems.size();
+    }
 }

@@ -58,7 +58,7 @@ public class ItemController {
             @RequestParam String startDate,
             @RequestParam String endDate,
             @RequestParam String align,
-            @RequestParam int page,
+            @RequestParam Integer page,
             @RequestParam(required = false) String search) {
 
         resp = new HashMap<>();
