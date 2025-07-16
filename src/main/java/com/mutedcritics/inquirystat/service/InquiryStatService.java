@@ -88,6 +88,12 @@ public class InquiryStatService {
 
     // === 조회 메서드 ===
 
+    // 전체 신고/문의 건수 조회
+    public List<Map<String, Object>> getAllTicketStats() {
+        log.info("전체 신고/문의 건수 조회");
+        return dao.getAllTicketStats();
+    }
+
     // 기간별 일별 신고/문의 건수 조회 (그래프용)
     public List<Map<String, Object>> getTicketCountsByPeriod(LocalDate startDate, LocalDate endDate) {
         log.info("기간별 일별 신고/문의 건수 조회: {} ~ {}", startDate, endDate);

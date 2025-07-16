@@ -95,6 +95,19 @@
         WHERE stats_date = #{targetDate}
     </select>
 
+    <!-- 전체 신고/문의 건수 조회-->
+    <select id="getAllTicketStats" resultType="map">
+        SELECT
+            CASE
+                WHEN category IS NULL THEN '총합'
+                ELSE category
+            END AS cate,
+            SUM(daily_ticket_count) AS total
+        FROM stats_inquiry_daily
+        WHERE stats_date &lt;= CURDATE()
+        GROUP BY category WITH ROLLUP;
+    </select>
+
     <!-- 기간별 일별 신고/문의 건수 조회 (그래프용) -->
     <select id="getTicketCountsByPeriod" resultType="map">
         SELECT 

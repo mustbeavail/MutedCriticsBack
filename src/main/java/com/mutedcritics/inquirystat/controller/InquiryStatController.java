@@ -75,6 +75,16 @@ public class InquiryStatController {
 
     // === 조회 API ===
 
+    // 전체 신고/문의 건수 조회
+    @GetMapping("/inquiry/stats/all")
+    public Map<String, Object> getAllTicketStats() {
+        Map<String, Object> result = new HashMap<>();
+        List<Map<String, Object>> stats = service.getAllTicketStats();
+        result.put("success", true);
+        result.put("list", stats);
+        return result;
+    }
+
     // 기간별 일별 신고/문의 건수 조회 (그래프용)
     @GetMapping("/inquiry/stats")
     public Map<String, Object> getTicketStats(
@@ -92,12 +102,12 @@ public class InquiryStatController {
             result.put("data", stats);
             result.put("startDate", startDate);
             result.put("endDate", endDate);
-            result.put("message", "기간별 신고/문의 건수 조회가 완료되었습니다.");
+            result.put("msg", "기간별 신고/문의 건수 조회가 완료되었습니다.");
 
         } catch (Exception e) {
             log.error("기간별 신고/문의 건수 조회 실패: {} ~ {}", startDate, endDate, e);
             result.put("success", false);
-            result.put("message", "기간별 신고/문의 건수 조회 중 오류가 발생했습니다: " + e.getMessage());
+            result.put("msg", "기간별 신고/문의 건수 조회 중 오류가 발생했습니다: " + e.getMessage());
         }
 
         return result;

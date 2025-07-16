@@ -28,7 +28,13 @@ public interface InquiryStatDAO {
 
     // === 조회 메서드 ===
 
+    // 전체 신고/문의 건수 조회
+    List<Map<String, Object>> getAllTicketStats();
+
     // 기간별 일별 신고/문의 건수 조회 (그래프용)
     List<Map<String, Object>> getTicketCountsByPeriod(@Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+
+
 }
