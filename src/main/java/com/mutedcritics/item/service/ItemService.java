@@ -35,8 +35,23 @@ public class ItemService {
     // 아이템 리스트 조회
     public List<Map<String, Object>> itemList(String startDate, String endDate, String align, int page, String search) {
 
-        int offset = (page - 1) * 15;
+        int offset = (page - 1) * 10;
 
         return dao.itemList(startDate, endDate, align, offset, search);
+    }
+
+    // 이벤트 아이템 리스트 조회
+    public List<Map<String, Object>> eventItemList(String eventName, String align) {
+
+        return dao.eventItemList(eventName, align);
+    }
+
+    // 아이템 환불내역 조회 / 검색
+    public List<Map<String, Object>> refundList(String startDate, String endDate, String align, int page,
+            String search) {
+
+        int offset = (page - 1) * 10;
+
+        return dao.refundList(startDate, endDate, align, offset, search);
     }
 }

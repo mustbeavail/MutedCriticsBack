@@ -68,4 +68,35 @@ public class ItemController {
 
         return resp;
     }
+
+    // 이벤트 아이템 조회
+    @GetMapping("/item/event")
+    public Map<String, Object> eventItemList(
+            @RequestParam String eventName,
+            @RequestParam String align) {
+
+        resp = new HashMap<>();
+
+        List<Map<String, Object>> list = service.eventItemList(eventName, align);
+        resp.put("eventItemList", list);
+
+        return resp;
+    }
+
+    // 아이템 환불내역 조회 / 검색
+    @GetMapping("/item/refund")
+    public Map<String, Object> refundList(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam String align,
+            @RequestParam int page,
+            @RequestParam(required = false) String search) {
+
+        resp = new HashMap<>();
+
+        List<Map<String, Object>> list = service.refundList(startDate, endDate, align, page, search);
+        resp.put("refundList", list);
+
+        return resp;
+    }
 }

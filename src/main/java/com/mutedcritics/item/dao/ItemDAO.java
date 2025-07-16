@@ -24,4 +24,12 @@ public interface ItemDAO {
         @Param("offset") int offset,
         @Param("search") String search);
 
+    // 이벤트 아이템 리스트 조회
+    List<Map<String, Object>> eventItemList(
+        @Param("eventName") String eventName,
+        @Param("align") String align);
+
+    // 아이템 환불내역 조회 / 검색
+    List<Map<String, Object>> refundList(String startDate, String endDate, String align, int offset, String search);
+
 }

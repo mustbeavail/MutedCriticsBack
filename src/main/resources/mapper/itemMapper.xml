@@ -151,53 +151,63 @@
             <when test="align == 'periodPayingUsersDESC'">ORDER BY period_paying_users DESC</when>
             <otherwise>ORDER BY period_revenue DESC</otherwise>
         </choose>
-        LIMIT 15 OFFSET #{offset}
+        LIMIT 10 OFFSET #{offset}
     </select>
 
-    <!-- 아이템 검색 -->
-    <select id="itemSearch" resultType="map">
+    <!-- 이벤트 아이템 리스트 조회 -->
+    <select id="eventItemList" resultType="map">
         WITH
-        item_list AS (
+        item_list_detail AS (
             SELECT
-                COALESCE(SUM(daily_sales_revenue), 0) AS period_revenue,
-                COALESCE(SUM(daily_sales_count), 0) AS period_sales_count,
-                COALESCE(SUM(daily_paying_users), 0) AS period_paying_users,
+                COALESCE(SUM(sid.daily_sales_revenue), 0) AS period_revenue,
+                COALESCE(SUM(sid.daily_sales_count), 0) AS period_sales_count,
+                COALESCE(SUM(sid.daily_paying_users), 0) AS period_paying_users,
                 il.item_idx,
                 il.item_name,
                 il.sell_type,
                 il.item_cate AS item_cate,
                 il.sell_start_date,
-                COALESCE(il.sell_end_date, '9999-12-31') AS sell_end_date,
+                il.sell_end_date,
                 il.item_price
-            FROM stats_item_daily sid
-            LEFT JOIN item_list il
+            FROM item_list il
+            LEFT JOIN stats_item_daily sid
             ON il.item_idx = sid.item_idx
-            WHERE sid.stats_date BETWEEN #{startDate} AND #{endDate} AND sid.item_cate = 'item'
+                AND sid.stats_date BETWEEN il.sell_start_date AND il.sell_end_date
+                AND sid.item_cate = 'item'
+            WHERE il.sell_type = #{eventName}
             GROUP BY il.item_idx
         ),
-        bundle_list AS (
+        bundle_list_detail AS (
             SELECT
-            COALESCE(SUM(daily_sales_revenue), 0) AS period_revenue,
-            COALESCE(SUM(daily_sales_count), 0) AS period_sales_count,
-            COALESCE(SUM(daily_paying_users), 0) AS period_paying_users,
-            bi.bundle_idx,
-            bi.bundle_name,
+            COALESCE(SUM(sid.daily_sales_revenue), 0) AS period_revenue,
+            COALESCE(SUM(sid.daily_sales_count), 0) AS period_sales_count,
+            COALESCE(SUM(sid.daily_paying_users), 0) AS period_paying_users,
+            bi.bundle_idx AS item_idx,
+            bi.bundle_name AS item_name,
             bi.sell_type,
             'bundle' AS item_cate,
             bi.sell_start_date,
-            COALESCE(bi.sell_end_date, '9999-12-31') AS sell_end_date,
+            bi.sell_end_date,
             bi.bundle_price
-        FROM stats_item_daily sid
-        LEFT JOIN bundle_item bi
+        FROM bundle_item bi
+        LEFT JOIN stats_item_daily sid
         ON bi.bundle_idx = sid.item_idx
-        WHERE sid.stats_date BETWEEN #{startDate} AND #{endDate} AND sid.item_cate = 'bundle'
+            AND sid.stats_date BETWEEN bi.sell_start_date AND bi.sell_end_date
+            AND sid.item_cate = 'bundle'
+        WHERE bi.sell_type = #{eventName}
         GROUP BY bi.bundle_idx
         )
         SELECT * FROM (
-            SELECT * FROM item_list il
+            SELECT * FROM item_list_detail il
             UNION ALL
-            SELECT * FROM bundle_list bl
+            SELECT * FROM bundle_list_detail bl
         ) AS full_item_list
-        WHERE full_item_list.item_name LIKE CONCAT('%', #{search}, '%')
+        <choose>
+            <when test="align == 'periodRevenueASC'">ORDER BY period_revenue ASC</when>
+            <when test="align == 'periodRevenueDESC'">ORDER BY period_revenue DESC</when>
+            <when test="align == 'periodPayingUsersASC'">ORDER BY period_paying_users ASC</when>
+            <when test="align == 'periodPayingUsersDESC'">ORDER BY period_paying_users DESC</when>
+            <otherwise>ORDER BY period_revenue DESC</otherwise>
+        </choose>
     </select>
 </mapper>
