@@ -54,7 +54,7 @@ public class AiController {
             result.put("response", agentResponse);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            log.error("상담사 답변 생성 중 오류 발생 inquiryId={}", responseDTO.getInquiryIdx(), e);
+            log.error("상담사 답변 처리 중 오류 발생 inquiryId={}", responseDTO.getInquiryIdx(), e);
             result.put("success", false);
             result.put("msg", "상담사 답변 생성 중 오류가 발생했습니다: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
