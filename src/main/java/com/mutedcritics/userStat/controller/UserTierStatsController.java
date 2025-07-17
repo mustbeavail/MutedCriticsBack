@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 유저 티어 통계 관련 API 요청을 처리하는 컨트롤러 클래스.
  * 유저의 티어별 통계 및 분류 정보를 제공합니다.
  */
-@CrossOrigin
+
 @RestController
 @RequiredArgsConstructor
 public class UserTierStatsController {

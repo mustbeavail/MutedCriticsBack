@@ -37,8 +37,8 @@ public class IngameService {
         return dao.getHeroItemCount(sortOrder);
     }
 
-    public List<Map<String, Object>> getHeroPlaytimePotgItemCount(String sortOrder) {
-        return dao.getHeroPlaytimePotgItemCount(sortOrder);
+    public List<Map<String, Object>> getHeroPlaytimePotgItemCount(String sortOrder, String sortBy) {
+        return dao.getHeroPlaytimePotgItemCount(sortOrder, sortBy);
     }
 
     /**

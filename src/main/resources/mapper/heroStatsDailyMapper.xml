@@ -112,7 +112,19 @@
             GROUP BY heroes_idx
         ) i ON h.heroes_idx = i.heroes_idx
         <if test="sortOrder != null and sortOrder != ''">
-            ORDER BY totalPlayTime ${sortOrder}
+            ORDER BY
+            <choose>
+                <when test="sortBy == 'potg'">
+                    totalPotgCount
+                </when>
+                <when test="sortBy == 'itemCount'">
+                    itemCount
+                </when>
+                <otherwise>
+                    totalPlayTime
+                </otherwise>
+            </choose>
+            ${sortOrder}
         </if>
     </select>
 

@@ -24,7 +24,7 @@ import com.mutedcritics.ingame.service.IngameService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@CrossOrigin
+
 @RestController
 @Slf4j
 @RequiredArgsConstructor
@@ -34,6 +34,7 @@ public class IngameController {
 
     /**
      * 일일 영웅 통계 업데이트
+     *
      * @return 일일 통계 업데이트 문구 출력
      */
     @PostMapping("/insert/daily-hero-stats")
@@ -55,7 +56,7 @@ public class IngameController {
 
     /**
      * 영웅이 보유한 아이템 수
-     * 
+     *
      * @param sortOrder
      * @return
      */
@@ -67,21 +68,23 @@ public class IngameController {
 
     /**
      * 영웅별 총 플레이타임, potg, 아이템 개수
-     * 
+     *
      * @param sortOrder
+     * @param sortBy
      * @return
      */
     @GetMapping("/get/hero-playtime-potg-item-count")
     public ResponseEntity<?> getHeroPlaytimePotgItemCount(
-            @RequestParam(defaultValue = "DESC") String sortOrder) {
-        List<Map<String, Object>> list = service.getHeroPlaytimePotgItemCount(sortOrder);
+            @RequestParam(defaultValue = "DESC") String sortOrder,
+            @RequestParam(defaultValue = "totalPlayTime") String sortBy) {
+        List<Map<String, Object>> list = service.getHeroPlaytimePotgItemCount(sortOrder, sortBy);
         return ResponseEntity.ok(Map.of("list", list));
     }
 
     /**
      * 영웅별 전체 플레이타임 조회
      * 플레이타임 높은순, 낮은순으로 정렬 가능
-     * 
+     *
      * @param sortOrder DESC(높은순) 또는 ASC(낮은순)
      * @return
      */
@@ -94,7 +97,7 @@ public class IngameController {
     /**
      * 모드별 전체 플레이타임 조회
      * 플레이타임 높은순, 낮은순으로 정렬 가능
-     * 
+     *
      * @param sortOrder DESC(높은순) 또는 ASC(낮은순)
      * @return
      */
@@ -109,7 +112,7 @@ public class IngameController {
      * 높은순, 낮은순 정렬 가능
      * 기간 설정 가능
      * 티어별 승률 보기 가능
-     * 
+     *
      * @param startDate 시작일 (선택사항)
      * @param endDate   종료일 (선택사항)
      * @param tierName  티어명 (선택사항)
@@ -134,7 +137,7 @@ public class IngameController {
      * 영웅별 최고의 플레이 비중 조회
      * 영웅별 출전 횟수와 최고의 플레이 수, 출전 횟수 대비 최고의 플레이비율을 보여주는 기능
      * 높은순, 낮은순 정렬 가능
-     * 
+     *
      * @param startDate 시작일 (선택사항)
      * @param endDate   종료일 (선택사항)
      * @param sortOrder DESC(높은순) 또는 ASC(낮은순)
@@ -158,7 +161,7 @@ public class IngameController {
      * 전체 게임 횟수 대비 영웅의 밴 횟수와 픽 횟수 비율을 보여주는 기능
      * 높은순, 낮은순 정렬 가능
      * 기간 설정 가능
-     * 
+     *
      * @param startDate 시작일 (선택사항)
      * @param endDate   종료일 (선택사항)
      * @param sortOrder DESC(높은순) 또는 ASC(낮은순)

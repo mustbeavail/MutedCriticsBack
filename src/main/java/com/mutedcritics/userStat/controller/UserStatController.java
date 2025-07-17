@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
  * 유저 통계 관련 API 요청을 처리하는 컨트롤러 클래스.
  * 유저 대시보드 정보를 제공합니다.
  */
-@CrossOrigin
+
 @RestController
 @Slf4j
 @RequiredArgsConstructor

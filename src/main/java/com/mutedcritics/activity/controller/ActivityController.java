@@ -20,7 +20,7 @@ import com.mutedcritics.activity.service.ActivityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@CrossOrigin
+
 @RestController
 @Slf4j
 @RequiredArgsConstructor

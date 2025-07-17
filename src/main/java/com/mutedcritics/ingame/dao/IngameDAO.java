@@ -21,7 +21,7 @@ public interface IngameDAO {
 
     List<HeroItemCountDTO> getHeroItemCount(@Param("sortOrder") String sortOrder);
 
-    List<Map<String, Object>> getHeroPlaytimePotgItemCount(@Param("sortOrder") String sortOrder);
+    List<Map<String, Object>> getHeroPlaytimePotgItemCount(@Param("sortOrder") String sortOrder, @Param("sortBy") String sortBy);
 
     // 영웅별 전체 플레이타임 조회
     List<HeroPlayTimeDTO> getHeroPlayTime(@Param("sortOrder") String sortOrder);
