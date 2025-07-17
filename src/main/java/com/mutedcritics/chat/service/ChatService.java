@@ -64,8 +64,7 @@ public class ChatService {
             // 메시지 알림 저장하기
             notiService.saveChatNotification(chatMessage);
             return savedMessage;
-        }
-        else {
+        } else {
             throw new RuntimeException("메시지 저장 실패");
         }
 
@@ -104,8 +103,8 @@ public class ChatService {
 
     // 내 채팅방 목록 조회
     @Transactional(readOnly = true)
-    public Page<ChatRoomDTO> getMyChatRooms(String memberId, String searchKeyword, Pageable pageable) {
-        Page<ChatRoom> roomPage = chatRoomRepository.findMyChatRooms(memberId, searchKeyword, pageable);
+    public Page<ChatRoomDTO> getMyChatRooms(String memberId, String searchType, String searchKeyword, Pageable pageable) {
+        Page<ChatRoom> roomPage = chatRoomRepository.findMyChatRooms(memberId, searchType, searchKeyword, pageable);
 
         return roomPage.map(this::convertToRoomDTO);
     }

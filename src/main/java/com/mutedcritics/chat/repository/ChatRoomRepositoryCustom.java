@@ -11,7 +11,7 @@ public interface ChatRoomRepositoryCustom {
 
     Optional<ChatRoom> findExistingPrivateRoom(String memberId, String targetMemberId);
 
-    Page<ChatRoom> findMyChatRooms(String memberId, String searchKeyword, Pageable pageable);
+    Page<ChatRoom> findMyChatRooms(String memberId, String searchType, String searchKeyword, Pageable pageable);
 
     void updateRoomName(int roomIdx, String newRoomName);
 

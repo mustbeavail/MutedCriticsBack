@@ -42,7 +42,7 @@ public class ChatController {
     // 웹소켓 메시지 처리
     @MessageMapping("/chat/{roomIdx}")
     public void sendMessage(@DestinationVariable int roomIdx,
-            @Payload ChatMessageDTO chatMessage) {
+                            @Payload ChatMessageDTO chatMessage) {
 
         log.info("메시지 수신 - 방번호: {}, 발신자: {}, 내용: {}",
                 roomIdx, chatMessage.getSenderId(), chatMessage.getMsgContent());
@@ -74,9 +74,11 @@ public class ChatController {
             @RequestParam String memberId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String searchKeyword) {
+            @RequestParam(required = false) String searchType,
+            @RequestParam(required = false) String searchKeyword
+    ) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ChatRoomDTO> chatRooms = chatService.getMyChatRooms(memberId, searchKeyword, pageable);
+        Page<ChatRoomDTO> chatRooms = chatService.getMyChatRooms(memberId, searchType, searchKeyword, pageable);
         return ResponseEntity.ok(chatRooms);
     }
 
@@ -112,7 +114,7 @@ public class ChatController {
     // 채팅방 이름 변경(방장만 가능)(request : newRoomName, memberId)
     @PostMapping("/room/{roomIdx}/rename")
     public ResponseEntity<String> renameChatRoom(@PathVariable int roomIdx,
-            @RequestBody RenameChatRoomRequestDTO request) {
+                                                 @RequestBody RenameChatRoomRequestDTO request) {
         chatService.renameChatRoom(roomIdx, request);
         return ResponseEntity.ok("채팅방 이름이 변경되었습니다.");
     }

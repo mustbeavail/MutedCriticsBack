@@ -54,7 +54,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
     }
 
     @Override
-    public Page<ChatRoom> findMyChatRooms(String memberId, String searchKeyword, Pageable pageable) {
+    public Page<ChatRoom> findMyChatRooms(String memberId, String searchType, String searchKeyword, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder();
 
         // 내가 참여중인 채팅방
@@ -62,8 +62,13 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         builder.and(chatMember.activeYn.eq(true));
 
         // 검색 조건 (채팅방 이름으로 검색)
-        if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+        if (searchType != null && searchType.equals("roomName")) {
             builder.and(chatRoom.roomName.containsIgnoreCase(searchKeyword));
+        }
+
+        // 검색 조건 (채팅방 멤버로 검색)
+        if (searchType != null && searchType.equals("memberName")) {
+            builder.and(chatMember.member.memberName.containsIgnoreCase(searchKeyword));
         }
 
         // 총 개수 조회
