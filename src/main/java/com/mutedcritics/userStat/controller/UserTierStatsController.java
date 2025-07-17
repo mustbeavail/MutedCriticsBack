@@ -23,39 +23,31 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @CrossOrigin
 @RestController
-@RequiredArgsConstructor // Lombok을 사용하여 final 필드에 대한 생성자를 자동으로 생성합니다 (의존성 주입).
+@RequiredArgsConstructor
 public class UserTierStatsController {
 
-    private final UserTierStatsService service; // 유저 티어 통계 서비스 주입
+    private final UserTierStatsService service;
 
     /**
      * 유저 티어 통계 정보를 조회
-     *
+     * 유저 분류별 티어 통계
+     * 
      * @param params 티어 통계 조회에 필요한 요청 파라미터(시즌idx, 성별, 지역, vip, 메인 영웅, 티어)
      * @return 티어 통계 응답 DTO를 담고 있음.
      */
     @GetMapping("/user-tier-stats")
-    public ResponseEntity<TierStatsResponseDTO> getTierStatistics(TierStatsRequestDTO params) {
+    public ResponseEntity<TierStatsResponseDTO> getTierStatistics(TierStatsRequestDTO params,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        params.setPage(page);
+        params.setSize(size);
         TierStatsResponseDTO response = service.getTierStatistics(params);
         return ResponseEntity.ok(response);
     }
 
     /**
-     * 시즌별 티어 통계 정보를 조회
-     * 
-     * @return 시즌별 티어 통계 DTO 리스트를 담고 있음.
-     * 
-     */
-    @GetMapping("/season-tier-stats")
-    public ResponseEntity<List<SeasonTierStatsDTO>> getSeasonTierStats(
-            @RequestParam(required = false) int seasonIdx) {
-        List<SeasonTierStatsDTO> response = service.getSeasonTierStats(seasonIdx);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
      * 유저 카테고리 정보를 조회합니다.
-     *
+     * 유저 분류 통계
      * 요청 예시:
      * GET /get-user-category?category=신규&limit=10&offset=0
      *
@@ -71,4 +63,17 @@ public class UserTierStatsController {
         UserCategoryResponseDTO response = service.getUserCategory(params);
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * 시즌별 티어 통계 정보를 조회
+     *
+     * @return 시즌별 티어 통계 DTO 리스트를 담고 있음.
+     */
+    @GetMapping("/season-tier-stats")
+    public ResponseEntity<List<SeasonTierStatsDTO>> getSeasonTierStats(
+            @RequestParam(required = false) int seasonIdx) {
+        List<SeasonTierStatsDTO> response = service.getSeasonTierStats(seasonIdx);
+        return ResponseEntity.ok(response);
+    }
+
 }

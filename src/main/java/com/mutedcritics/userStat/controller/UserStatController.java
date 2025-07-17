@@ -21,11 +21,11 @@ import lombok.extern.slf4j.Slf4j;
  */
 @CrossOrigin
 @RestController
-@Slf4j // Lombok을 사용하여 로그(Logger)를 자동으로 생성합니다.
-@RequiredArgsConstructor // Lombok을 사용하여 final 필드에 대한 생성자를 자동으로 생성합니다 (의존성 주입).
+@Slf4j
+@RequiredArgsConstructor
 public class UserStatController {
 
-    private final UserStatService service; // 유저 통계 서비스 주입
+    private final UserStatService service;
 
     /**
      * 특정 유저의 대시보드 정보를 조회하는 GET 요청을 처리합니다.
@@ -47,7 +47,6 @@ public class UserStatController {
         if (startDate.isAfter(endDate))
             throw new IllegalArgumentException("startDate가 endDate보다 늦습니다.");
 
-        // 서비스 계층에서 대시보드 정보를 가져와 응답합니다.
         return ResponseEntity.ok(service.getUserStatsOverview(userId, startDate, endDate));
     }
 

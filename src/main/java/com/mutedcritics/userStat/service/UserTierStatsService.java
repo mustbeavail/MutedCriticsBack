@@ -1,5 +1,6 @@
 package com.mutedcritics.userstat.service;
 
+import com.mutedcritics.dto.PageDTO;
 import com.mutedcritics.dto.SeasonTierStatsDTO;
 import com.mutedcritics.dto.TierStatDTO;
 import com.mutedcritics.dto.TierStatsRequestDTO;
@@ -9,7 +10,6 @@ import com.mutedcritics.userstat.dao.UserTierStatsDAO;
 import com.mutedcritics.dto.UserCategoryDTO;
 import com.mutedcritics.dto.UserCategoryRequestDTO;
 import com.mutedcritics.dto.UserCategoryResponseDTO;
-
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,8 +25,18 @@ public class UserTierStatsService {
 
     public TierStatsResponseDTO getTierStatistics(TierStatsRequestDTO params) {
         List<TierStatDTO> tierStats = dao.getTierStatistics(params);
+
+        int totalCount = dao.getUsersByClassificationCount(params);
         List<UserClassificationDTO> userList = dao.getUsersByClassification(params);
-        return new TierStatsResponseDTO(tierStats, userList);
+
+        PageDTO<UserClassificationDTO> page = PageDTO.<UserClassificationDTO>builder()
+                .totalCount(totalCount)
+                .page(params.getPage())
+                .size(params.getSize())
+                .content(userList)
+                .build();
+
+        return new TierStatsResponseDTO(tierStats, page);
     }
 
     public List<SeasonTierStatsDTO> getSeasonTierStats(int seasonIdx) {

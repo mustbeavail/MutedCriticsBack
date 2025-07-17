@@ -9,5 +9,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class TierStatsResponseDTO {
     private List<TierStatDTO> tierStats;
-    private List<UserClassificationDTO> userList;
+    private PageDTO<UserClassificationDTO> userClassificationPage;
 }

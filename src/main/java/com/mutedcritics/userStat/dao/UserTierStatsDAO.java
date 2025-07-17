@@ -28,6 +28,14 @@ public interface UserTierStatsDAO {
     List<TierStatDTO> getTierStatistics(TierStatsRequestDTO params);
 
     /**
+     * 유저 분류 전체 개수를 조회합니다.
+     * 
+     * @param params 유저 분류 조회에 필요한 요청 파라미터
+     * @return 유저 분류 전체 개수
+     */
+    int getUsersByClassificationCount(TierStatsRequestDTO params);
+
+    /**
      * 유저 분류 정보를 조회합니다.
      *
      * @param params 유저 분류 조회에 필요한 요청 파라미터
