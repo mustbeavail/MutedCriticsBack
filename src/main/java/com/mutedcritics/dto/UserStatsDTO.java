@@ -14,7 +14,7 @@ public class UserStatsDTO {
     private int total_spending;
     private int total_play_time_돌격;
     private int total_play_time_공격;
-    private int total_play_time_수비;
+    private int total_play_time_지원;
     private int total_play_time_빠른대전;
     private int total_play_time_경쟁전;
     private int total_play_time_DVa;
