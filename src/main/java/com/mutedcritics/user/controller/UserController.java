@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mutedcritics.dto.UserStatsSeasonDTO;
 import com.mutedcritics.dto.UserStatsDTO;
+import com.mutedcritics.dto.UserStatsSeasonDTO;
 import com.mutedcritics.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
