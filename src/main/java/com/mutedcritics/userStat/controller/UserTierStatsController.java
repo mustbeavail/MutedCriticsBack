@@ -31,14 +31,14 @@ public class UserTierStatsController {
     /**
      * 유저 티어 통계 정보를 조회
      * 유저 분류별 티어 통계
-     * 
+     *
      * @param params 티어 통계 조회에 필요한 요청 파라미터(시즌idx, 성별, 지역, vip, 메인 영웅, 티어)
      * @return 티어 통계 응답 DTO를 담고 있음.
      */
     @GetMapping("/user-tier-stats")
     public ResponseEntity<TierStatsResponseDTO> getTierStatistics(TierStatsRequestDTO params,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
+                                                                  @RequestParam(defaultValue = "1") int page,
+                                                                  @RequestParam(defaultValue = "10") int size) {
         params.setPage(page);
         params.setSize(size);
         TierStatsResponseDTO response = service.getTierStatistics(params);
@@ -59,7 +59,11 @@ public class UserTierStatsController {
      * @return 유저 카테고리 DTO 리스트
      */
     @GetMapping("/get-user-category")
-    public ResponseEntity<UserCategoryResponseDTO> getUserCategory(UserCategoryRequestDTO params) {
+    public ResponseEntity<UserCategoryResponseDTO> getUserCategory(UserCategoryRequestDTO params,
+                                                                   @RequestParam(defaultValue = "1") int page,
+                                                                   @RequestParam(defaultValue = "10") int size) {
+        params.setPage(page);
+        params.setSize(size);
         UserCategoryResponseDTO response = service.getUserCategory(params);
         return ResponseEntity.ok(response);
     }

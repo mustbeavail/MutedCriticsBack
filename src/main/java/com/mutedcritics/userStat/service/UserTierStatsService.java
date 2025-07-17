@@ -46,7 +46,7 @@ public class UserTierStatsService {
 
     /**
      * 유저 카테고리 정보를 조회
-     * 
+     * 유저 분류 통계
      * @param params 유저 카테고리 조회에 필요한 요청 파라미터
      * @return 유저 카테고리 응답 DTO (데이터 + 페이징 정보)
      */
@@ -58,8 +58,8 @@ public class UserTierStatsService {
         List<UserCategoryDTO> data = dao.getUserCategory(params);
 
         // 페이징 계산
-        int pageSize = params.getLimit() != null ? params.getLimit() : 10;
-        int currentPage = params.getOffset() != null ? (params.getOffset() / pageSize) + 1 : 1;
+        int pageSize = params.getSize();
+        int currentPage = params.getPage();
         int totalPages = (int) Math.ceil((double) totalCount / pageSize);
 
         List<Map<String, Object>> statsList = dao.getUserCategoryStats();
