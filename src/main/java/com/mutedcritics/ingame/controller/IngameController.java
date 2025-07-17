@@ -34,10 +34,7 @@ public class IngameController {
 
     /**
      * 일일 영웅 통계 업데이트
-     * 
-     * @param startDate
-     * @param endDate
-     * @return
+     * @return 일일 통계 업데이트 문구 출력
      */
     @PostMapping("/insert/daily-hero-stats")
     public ResponseEntity<?> insertDailyHeroStats(@RequestBody Map<String, Object> param) {

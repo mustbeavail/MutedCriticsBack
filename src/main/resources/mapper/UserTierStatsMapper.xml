@@ -129,7 +129,59 @@
         <if test="heroId != null">
             AND main_hero.heroes_idx = #{heroId}
         </if>
+        ORDER BY u.user_id
+        LIMIT #{size}
+        OFFSET #{offset}
     </select>
+
+    <select id="getUsersByClassificationCount" parameterType="com.mutedcritics.dto.TierStatsRequestDTO" resultType="int">
+        SELECT COUNT(*)
+        FROM
+            user u
+        JOIN
+            tier t ON u.user_id = t.user_id
+        <if test="heroId != null">
+            JOIN (
+                SELECT
+                    user_id, heroes_idx
+                FROM (
+                    SELECT
+                        mr.user_id,
+                        mr.heroes_idx,
+                        ROW_NUMBER() OVER (PARTITION BY mr.user_id ORDER BY COUNT(mr.heroes_idx) DESC) AS rn
+                    FROM
+                        match_result mr
+                    JOIN
+                        match_table m ON mr.match_idx = m.match_idx
+                    WHERE
+                        m.match_date BETWEEN (SELECT start_date FROM season WHERE season_idx = #{seasonIdx})
+                                         AND (SELECT end_date FROM season WHERE season_idx = #{seasonIdx})
+                    GROUP BY
+                        mr.user_id, mr.heroes_idx
+                ) AS PlayCounts
+                WHERE rn = 1
+            ) AS main_hero ON u.user_id = main_hero.user_id
+        </if>
+        WHERE
+            t.season_idx = #{seasonIdx}
+        <if test="tierName != null and tierName != ''">
+            AND t.tier_name = #{tierName}
+        </if>
+        <if test="gender != null and gender != ''">
+            AND u.user_gender = #{gender}
+        </if>
+        <if test="region != null and region != ''">
+            AND u.region = #{region}
+        </if>
+        <if test="vip != null and vip == true">
+            AND u.vip_yn = b'1'
+        </if>
+        <if test="heroId != null">
+            AND main_hero.heroes_idx = #{heroId}
+        </if>
+    </select>
+    
+    
 
     <select id="getSeasonTierStats" parameterType="int" resultType="com.mutedcritics.dto.SeasonTierStatsDTO">
         SELECT 
