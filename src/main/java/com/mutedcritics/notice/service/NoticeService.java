@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.math.RoundingMode;
@@ -69,19 +71,65 @@ public class NoticeService {
     }
 
     // 채팅 알림 목록 조회
-    public List<Noti> getChatNoticeList(String memberId) {
+    public List<Map<String, Object>> getChatNoticeList(String memberId) {
 
         List<Noti> notiList = noticeRepo.findAllByReceiverId(memberId);
+        List<Map<String, Object>> resp = new ArrayList<>();
 
-        return notiList;
+        for (Noti noti : notiList) {
+            int notiIdx = noti.getNotiIdx();
+            String senderId = noti.getMember().getMemberId();
+            String receiverId = noti.getReceiver().getMemberId();
+            String contentPre = noti.getContentPre();
+            LocalDateTime createdAt = noti.getCreatedAt();
+            String notiType = noti.getNotiType();
+            int relatedIdx = noti.getRelatedIdx();
+            boolean readYn = noti.isReadYn();
+
+            Map<String, Object> notiMap = new HashMap<>();
+            notiMap.put("notiIdx", notiIdx);
+            notiMap.put("senderId", senderId);
+            notiMap.put("receiverId", receiverId);
+            notiMap.put("contentPre", contentPre);
+            notiMap.put("createdAt", createdAt);
+            notiMap.put("notiType", notiType);
+            notiMap.put("relatedIdx", relatedIdx);
+            notiMap.put("readYn", readYn);
+            resp.add(notiMap);
+        }
+
+        return resp;
     }
 
     // 통계 알림 목록 조회
-    public List<Noti> getStatNoticeList() {
+    public List<Map<String, Object>> getStatNoticeList() {
 
         List<Noti> notiList = noticeRepo.findAllByNotiType();
+        List<Map<String, Object>> resp = new ArrayList<>();
 
-        return notiList;
+        for (Noti noti : notiList) {
+            int notiIdx = noti.getNotiIdx();
+            String memberId = noti.getMember().getMemberId();
+            String receiverId = noti.getReceiver().getMemberId();
+            String contentPre = noti.getContentPre();
+            LocalDateTime createdAt = noti.getCreatedAt();
+            String notiType = noti.getNotiType();
+            int relatedIdx = noti.getRelatedIdx();
+            boolean readYn = noti.isReadYn();
+
+            Map<String, Object> notiMap = new HashMap<>();
+            notiMap.put("notiIdx", notiIdx);
+            notiMap.put("memberId", memberId);
+            notiMap.put("receiverId", receiverId);
+            notiMap.put("contentPre", contentPre);
+            notiMap.put("createdAt", createdAt);
+            notiMap.put("notiType", notiType);
+            notiMap.put("relatedIdx", relatedIdx);
+            notiMap.put("readYn", readYn);
+            resp.add(notiMap);
+        }
+
+        return resp;
     }
 
     // 매출 감소 알림 저장
