@@ -39,6 +39,12 @@
     <insert id="insertDailyActivity" parameterType="map">
         INSERT INTO stats_activity_daily (stats_date, dau, new_user_count, dormant_user_count, returning_user_count, withdrawn_user_count)
         VALUES (#{today}, #{DAU}, #{newUserCount}, #{dormantUserCount}, #{returningUserCount}, #{withdrawnUserCount})
+        ON DUPLICATE KEY UPDATE
+        dau = #{DAU},
+        new_user_count = #{newUserCount},
+        dormant_user_count = #{dormantUserCount},
+        returning_user_count = #{returningUserCount},
+        withdrawn_user_count = #{withdrawnUserCount}
     </insert>
 
     <!-- 기간별 일일 활성 이용자 수 -->
