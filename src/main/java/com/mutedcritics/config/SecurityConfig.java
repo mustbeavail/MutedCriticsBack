@@ -2,6 +2,7 @@ package com.mutedcritics.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,7 +11,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class SecurityConfig implements WebMvcConfigurer {
-
 
     //암호화 기능을 반환하는 빈을 등록
     @Bean
@@ -26,15 +26,35 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        // csrf 공격과 방어 방법
-        // csrf(Cross Site Request Forgery) : 본래 사이트가 아닌 다른사이트에서 사요자가 수행하지 않은 요청이 들어가는 행킹방법
-        // 그래서 이 요청이 진짜 해당 사이트에서 발생한 것이었는지 확인이 필요
-        // 이때 csrf 토큰을 통해 서버의 토큰값과 요청다의 토큰값을 비교하여 같은 사이트인지 확인한다.
-        // 이 방식은 jsp 에서 form 요청을 통해 보낼때 작동 된다.
-        // 그래서 토큰 값이 다르거나 없으면 403 에러를 낸다.
-        // 이 에러 발생을 막기 위해서는 jsp 페이지에 csrf 토큰을 심어주거나 해당 기능을 비활성화 하면 된다.
+        http
+                // ────────────────────────────────────────────────
+                // 1) CORS(교차 출처) 필터 활성화
+                //    - GlobalCorsConfig(WebMvcConfigurer)에서 정의한 정책을
+                //      Spring Security가 읽어 와서 적용하게 된다.
+                .cors(Customizer.withDefaults())
 
-        return http.httpBasic().disable().csrf().disable().build();
+                // ────────────────────────────────────────────────
+                // 2) CSRF(사이트 간 요청 위조) 보호 비활성화
+                //    - 세션 기반 폼 로그인·JSP 가 아니라 REST API(JWT·토큰)만 쓴다면
+                //      보통 꺼 두지만, Web → 서버 폼 전송이라면 유지해야 한다.
+                .csrf(csrf -> csrf.disable())
+
+                // ────────────────────────────────────────────────
+                // 3) HTTP Basic 인증 활성화
+                //    - 브라우저 팝업형 Basic Auth를 허용한다는 뜻.
+                //      필요 없으면 `.httpBasic(HttpSecurity::disable)` 로 끌 수 있다.
+                .httpBasic(Customizer.withDefaults())
+
+                // ────────────────────────────────────────────────
+                // 4) 인가(Authorization) 규칙
+                //    - 현재는 “모든 요청 → 무조건 허용”.
+                //      `/api/**` 는 인증 필요, 그 외 공개 등으로 세분화하려면
+                //      .authorizeHttpRequests(auth -> auth
+                //          .requestMatchers("/api/**").authenticated()
+                //          .anyRequest().permitAll());
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+
+        return http.build();
     }
 
 }
