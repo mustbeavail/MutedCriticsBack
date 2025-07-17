@@ -21,7 +21,7 @@ public interface ItemDAO {
         @Param("startDate") String startDate,
         @Param("endDate") String endDate,
         @Param("align") String align,
-        @Param("offset") int offset,
+        @Param("offset") Integer offset,
         @Param("search") String search);
 
     // 이벤트 아이템 리스트 조회

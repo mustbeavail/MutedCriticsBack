@@ -1,10 +1,12 @@
 package com.mutedcritics.notice.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.math.RoundingMode;
 
 import org.springframework.stereotype.Service;
 
@@ -40,9 +42,13 @@ public class NoticeService {
         String notiType = "chat";
 
         Noti noti = new Noti();
+        Member member = new Member();
+        member.setMemberId(memberId);
+        noti.setMember(member);
+        Member receiver = new Member();
+        receiver.setMemberId(receiverId);
+        noti.setReceiver(receiver);
         noti.setContentPre(contentPre);
-        noti.getMember().setMemberId(memberId);
-        noti.getReceiver().setMemberId(receiverId);
         noti.setCreatedAt(createdAt);
         noti.setRelatedIdx(relatedIdx);
         noti.setReadYn(readYn);
@@ -102,8 +108,12 @@ public class NoticeService {
         String notiType = "revenueDecreaseStat";
 
         Noti noti = new Noti();
-        noti.getMember().setMemberId(memberId);
-        noti.getReceiver().setMemberId(receiverId);
+        Member member = new Member();
+        member.setMemberId(memberId);
+        noti.setMember(member);
+        Member receiver = new Member();
+        receiver.setMemberId(receiverId);
+        noti.setReceiver(receiver);
         noti.setContentPre(contentPre);
         noti.setRelatedIdx(relatedIdx);
         noti.setReadYn(readYn);
@@ -123,13 +133,15 @@ public class NoticeService {
 
         for (Map<String, Object> item : concentratedItems) {
             String itemName = (String) item.get("itemName");
-            long howManyTimes = (long) item.get("howManyTimes");
-            double itemRevenueRate = (double) item.get("itemRevenueRate");
+            BigDecimal howManyTimes = (BigDecimal) item.get("howManyTimes");
+            BigDecimal itemRevenueRate = (BigDecimal) item.get("itemRevenueRate");
             String memberId = "admin";
             String receiverId = "admin";
+            long totalPct = itemRevenueRate.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.HALF_UP).longValue();
+            long avgPct = howManyTimes.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.HALF_UP).longValue();
             String contentPre = String.format(
                 "아이템 매출 편중 심화: %s 전체 매출의 %,d%% 평균매출액의 %,d%%",
-                itemName, (long) itemRevenueRate, howManyTimes
+                itemName, totalPct, avgPct
             );
             int relatedIdx = (int) item.get("itemIdx");
             boolean readYn = false;

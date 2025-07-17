@@ -59,6 +59,7 @@ public class ChatService {
 
         ChatMsg savedMessage = chatMsgRepository.save(chatMessage);
 
+
         if (savedMessage != null || savedMessage.getMsgIdx() > 0) {
             // 메시지 알림 저장하기
             notiService.saveChatNotification(chatMessage);
