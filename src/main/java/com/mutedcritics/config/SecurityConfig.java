@@ -2,17 +2,15 @@ package com.mutedcritics.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class SecurityConfig implements WebMvcConfigurer {
+
 
     //암호화 기능을 반환하는 빈을 등록
     @Bean
@@ -27,25 +25,16 @@ public class SecurityConfig implements WebMvcConfigurer {
     // 스프링 시큐리티의 기본기능을 끈 채로 빈을 등록
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .httpBasic().disable() // HTTP Basic 인증 비활성화
-                .csrf().disable() // CSRF 보호 비활성화 (SPA에서 흔히 사용)
-                .sessionManagement(session -> session
-                        // JWT 등을 사용할 경우 세션을 사용하지 않음 (Stateless)
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .authorizeHttpRequests(authorize -> authorize
-                        // ⭐⭐ OPTIONS 요청은 모든 경로에 대해 인증 없이 허용 ⭐⭐
-                        .requestMatchers(new AntPathRequestMatcher("/**", HttpMethod.OPTIONS.name())).permitAll()
-                        // ⭐⭐ 로그인/회원가입 등 인증이 필요 없는 경로 허용 ⭐⭐
-                        // 예시: .requestMatchers("/api/auth/**").permitAll()
-                        // ⭐⭐ 특정 API 경로에 대한 접근 권한 설정 (필요시) ⭐⭐
-                        // 예시: .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // 나머지 모든 요청은 인증 필요 (로그인한 사용자만 접근 가능)
-                        .anyRequest().authenticated() // 개발 시 .permitAll()로 두었다면, 이젠 .authenticated()로 변경 고려
-                );
 
-        return http.build();
+        // csrf 공격과 방어 방법
+        // csrf(Cross Site Request Forgery) : 본래 사이트가 아닌 다른사이트에서 사요자가 수행하지 않은 요청이 들어가는 행킹방법
+        // 그래서 이 요청이 진짜 해당 사이트에서 발생한 것이었는지 확인이 필요
+        // 이때 csrf 토큰을 통해 서버의 토큰값과 요청다의 토큰값을 비교하여 같은 사이트인지 확인한다.
+        // 이 방식은 jsp 에서 form 요청을 통해 보낼때 작동 된다.
+        // 그래서 토큰 값이 다르거나 없으면 403 에러를 낸다.
+        // 이 에러 발생을 막기 위해서는 jsp 페이지에 csrf 토큰을 심어주거나 해당 기능을 비활성화 하면 된다.
+
+        return http.httpBasic().disable().csrf().disable().build();
     }
 
 }
