@@ -1,11 +1,13 @@
 package com.mutedcritics.notice.component;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.math.RoundingMode;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -30,11 +32,12 @@ public class NoticeScheduler {
     private final ActivityService activityService;
     private final UserService userService;
 
-    LocalDate today = LocalDate.now();
+
 
     @Scheduled(cron = "0 0 0 1 * ?")
     public void sendMonthlyNotice() {
         log.info("월간 통계 알림 전송 시작");
+        LocalDate today = LocalDate.now();
 
         // 매출 급감 알림
         YearMonth YM = YearMonth.of(today.getYear(), today.getMonth()).minusMonths(1);
@@ -94,31 +97,31 @@ public class NoticeScheduler {
 
         // 아이템 매출 편중 심화 알림
         // 모든 아이템 정보
-        List<Map<String, Object>> itemList = itemService.itemList("1992-03-18", endDate.toString(), "desc", null, null);
+        List<Map<String, Object>> itemList = itemService.itemList("1992-03-18", endDate.toString(), "periodPayingUsersDESC", null, null);
         if (itemList == null || itemList.isEmpty()){
             throw new RuntimeException("아이템 리스트 조회 실패");
         }
         // 총 판매 금액
-        long totalItemRevenue = 0;
+        BigDecimal totalItemRevenue = BigDecimal.ZERO;
         for (Map<String, Object> item : itemList) {
-            long periodRevenue = (long) item.get("period_revenue");
-            totalItemRevenue += periodRevenue;
+            Number periodRevenue = (Number) item.get("period_revenue");
+            totalItemRevenue = totalItemRevenue.add(BigDecimal.valueOf(periodRevenue.longValue()));
         }
-        if (totalItemRevenue <= 0L) {
+        if (totalItemRevenue.compareTo(BigDecimal.ZERO) <= 0) {
             log.warn("오류 : 총매출 0 (집계기간 1992-03-18 ~ {})", endDate.toString());
             return;
         }
         // 아이템당 평균 판매 금액
-        double avgItemRevenue = (double) totalItemRevenue / itemList.size();
+        BigDecimal avgItemRevenue = totalItemRevenue.divide(BigDecimal.valueOf(itemList.size()), 2, RoundingMode.HALF_UP);
 
         // 각 아이템이 총 판매 금액의 5%이상을 차지하는지 확인
         List<Map<String, Object>> candidateItemList = new ArrayList<>();
         for (Map<String, Object> item : itemList) {
             int itemIdx = (int) item.get("item_idx");
             String itemName = (String) item.get("item_name");
-            long periodRevenue = (long) item.get("period_revenue");
-            double itemRevenueRate = (periodRevenue * 100.0) / totalItemRevenue;
-            if (itemRevenueRate >= 5.0){
+            Number periodRevenue = (Number) item.get("period_revenue");
+            BigDecimal itemRevenueRate = BigDecimal.valueOf(periodRevenue.longValue()).divide(totalItemRevenue, 2, RoundingMode.HALF_UP);
+            if (itemRevenueRate.compareTo(BigDecimal.valueOf(0.05)) >= 0){
                 Map<String, Object> result = new HashMap<>();
                 result.put("itemIdx", itemIdx);
                 result.put("itemName", itemName);
@@ -134,30 +137,28 @@ public class NoticeScheduler {
             List<Map<String, Object>> concentratedItems = new ArrayList<>();
 
             for (Map<String, Object> item : candidateItemList) {
-                long periodRevenue = (long) item.get("periodRevenue");
-                if (periodRevenue >= avgItemRevenue * 3){
-                    double howManyTimes = (periodRevenue * 100.0) / avgItemRevenue;
-                    long truncated = (long) howManyTimes;
+                Number periodRevenue = (Number) item.get("periodRevenue");
+                if (BigDecimal.valueOf(periodRevenue.longValue()).compareTo(avgItemRevenue.multiply(BigDecimal.valueOf(3))) >= 0){
+                    BigDecimal howManyTimes = BigDecimal.valueOf(periodRevenue.longValue()).divide(avgItemRevenue, 2, RoundingMode.HALF_UP);
                     Map<String, Object> result = new HashMap<>();
                     result.put("itemIdx", item.get("itemIdx"));
                     result.put("itemName", item.get("itemName"));
                     result.put("itemRevenueRate", item.get("itemRevenueRate"));
-                    result.put("howManyTimes", truncated);
+                    result.put("howManyTimes", howManyTimes);
                     concentratedItems.add(result);
                 }
             }
-            if (!concentratedItems.isEmpty()){
+            if (concentratedItems.isEmpty()) {
+                log.info("월간 아이템 매출 편중 심화 사항 없음 (5% 이상은 있었으나 3배 기준 미충족).");
+            } else {
                 boolean success = notiService.saveConcentratedItemNotice(concentratedItems);
-                if (!success){
+                if (!success) {
                     throw new RuntimeException("월간 아이템 매출 편중 심화 알림 전송 실패");
                 }
             }
         }else{
-            log.info("월간 아이템 매출 편중 심화 사항 없음");
+            log.info("월간 아이템 매출 편중 심화 사항 없음.");
         }
-
-
-
 
         // vip 유저 접속/구매 감소 알림
 

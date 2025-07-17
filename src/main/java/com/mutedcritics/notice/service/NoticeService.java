@@ -1,10 +1,14 @@
 package com.mutedcritics.notice.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.math.RoundingMode;
 
 import org.springframework.stereotype.Service;
 
@@ -40,9 +44,13 @@ public class NoticeService {
         String notiType = "chat";
 
         Noti noti = new Noti();
+        Member member = new Member();
+        member.setMemberId(memberId);
+        noti.setMember(member);
+        Member receiver = new Member();
+        receiver.setMemberId(receiverId);
+        noti.setReceiver(receiver);
         noti.setContentPre(contentPre);
-        noti.getMember().setMemberId(memberId);
-        noti.getReceiver().setMemberId(receiverId);
         noti.setCreatedAt(createdAt);
         noti.setRelatedIdx(relatedIdx);
         noti.setReadYn(readYn);
@@ -63,19 +71,65 @@ public class NoticeService {
     }
 
     // 채팅 알림 목록 조회
-    public List<Noti> getChatNoticeList(String memberId) {
+    public List<Map<String, Object>> getChatNoticeList(String memberId) {
 
         List<Noti> notiList = noticeRepo.findAllByReceiverId(memberId);
+        List<Map<String, Object>> resp = new ArrayList<>();
 
-        return notiList;
+        for (Noti noti : notiList) {
+            int notiIdx = noti.getNotiIdx();
+            String senderId = noti.getMember().getMemberId();
+            String receiverId = noti.getReceiver().getMemberId();
+            String contentPre = noti.getContentPre();
+            LocalDateTime createdAt = noti.getCreatedAt();
+            String notiType = noti.getNotiType();
+            int relatedIdx = noti.getRelatedIdx();
+            boolean readYn = noti.isReadYn();
+
+            Map<String, Object> notiMap = new HashMap<>();
+            notiMap.put("notiIdx", notiIdx);
+            notiMap.put("senderId", senderId);
+            notiMap.put("receiverId", receiverId);
+            notiMap.put("contentPre", contentPre);
+            notiMap.put("createdAt", createdAt);
+            notiMap.put("notiType", notiType);
+            notiMap.put("relatedIdx", relatedIdx);
+            notiMap.put("readYn", readYn);
+            resp.add(notiMap);
+        }
+
+        return resp;
     }
 
     // 통계 알림 목록 조회
-    public List<Noti> getStatNoticeList() {
+    public List<Map<String, Object>> getStatNoticeList() {
 
         List<Noti> notiList = noticeRepo.findAllByNotiType();
+        List<Map<String, Object>> resp = new ArrayList<>();
 
-        return notiList;
+        for (Noti noti : notiList) {
+            int notiIdx = noti.getNotiIdx();
+            String memberId = noti.getMember().getMemberId();
+            String receiverId = noti.getReceiver().getMemberId();
+            String contentPre = noti.getContentPre();
+            LocalDateTime createdAt = noti.getCreatedAt();
+            String notiType = noti.getNotiType();
+            int relatedIdx = noti.getRelatedIdx();
+            boolean readYn = noti.isReadYn();
+
+            Map<String, Object> notiMap = new HashMap<>();
+            notiMap.put("notiIdx", notiIdx);
+            notiMap.put("memberId", memberId);
+            notiMap.put("receiverId", receiverId);
+            notiMap.put("contentPre", contentPre);
+            notiMap.put("createdAt", createdAt);
+            notiMap.put("notiType", notiType);
+            notiMap.put("relatedIdx", relatedIdx);
+            notiMap.put("readYn", readYn);
+            resp.add(notiMap);
+        }
+
+        return resp;
     }
 
     // 매출 감소 알림 저장
@@ -102,8 +156,12 @@ public class NoticeService {
         String notiType = "revenueDecreaseStat";
 
         Noti noti = new Noti();
-        noti.getMember().setMemberId(memberId);
-        noti.getReceiver().setMemberId(receiverId);
+        Member member = new Member();
+        member.setMemberId(memberId);
+        noti.setMember(member);
+        Member receiver = new Member();
+        receiver.setMemberId(receiverId);
+        noti.setReceiver(receiver);
         noti.setContentPre(contentPre);
         noti.setRelatedIdx(relatedIdx);
         noti.setReadYn(readYn);
@@ -123,13 +181,15 @@ public class NoticeService {
 
         for (Map<String, Object> item : concentratedItems) {
             String itemName = (String) item.get("itemName");
-            long howManyTimes = (long) item.get("howManyTimes");
-            double itemRevenueRate = (double) item.get("itemRevenueRate");
+            BigDecimal howManyTimes = (BigDecimal) item.get("howManyTimes");
+            BigDecimal itemRevenueRate = (BigDecimal) item.get("itemRevenueRate");
             String memberId = "admin";
             String receiverId = "admin";
+            long totalPct = itemRevenueRate.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.HALF_UP).longValue();
+            long avgPct = howManyTimes.multiply(BigDecimal.valueOf(100)).setScale(0, RoundingMode.HALF_UP).longValue();
             String contentPre = String.format(
                 "아이템 매출 편중 심화: %s 전체 매출의 %,d%% 평균매출액의 %,d%%",
-                itemName, (long) itemRevenueRate, howManyTimes
+                itemName, totalPct, avgPct
             );
             int relatedIdx = (int) item.get("itemIdx");
             boolean readYn = false;

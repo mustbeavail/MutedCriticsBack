@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mutedcritics.entity.Noti;
 import com.mutedcritics.notice.service.NoticeService;
 
 import lombok.RequiredArgsConstructor;
@@ -47,7 +46,7 @@ public class NoticeController {
         @RequestParam String memberId){
 
         resp = new HashMap<>();
-        List<Noti> notiList = service.getChatNoticeList(memberId);
+        List<Map<String, Object>> notiList = service.getChatNoticeList(memberId);
 
         resp.put("notiList", notiList);
 
@@ -60,7 +59,7 @@ public class NoticeController {
 
         resp = new HashMap<>();
 
-        List<Noti> notiList = service.getStatNoticeList();
+        List<Map<String, Object>> notiList = service.getStatNoticeList();
 
         resp.put("notiList", notiList);
 
