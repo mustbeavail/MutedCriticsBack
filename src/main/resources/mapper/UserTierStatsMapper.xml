@@ -13,7 +13,7 @@
             season s ON t.season_idx = s.season_idx
         JOIN
             user u ON t.user_id = u.user_id
-        
+
         <if test="heroId != null">
             JOIN (
                 SELECT
@@ -180,11 +180,11 @@
             AND main_hero.heroes_idx = #{heroId}
         </if>
     </select>
-    
-    
+
+
 
     <select id="getSeasonTierStats" parameterType="int" resultType="com.mutedcritics.dto.SeasonTierStatsDTO">
-        SELECT 
+        SELECT
             s.season_idx AS seasonIdx,
             t.tier_name AS tierName,
             COUNT(DISTINCT t.user_id) AS userCount
@@ -305,26 +305,27 @@
     </select>
 
     <select id="getUserCategoryStats" resultType="map">
-        SELECT '신규' AS category, COUNT(*) AS count FROM user WHERE user_type = '신규' AND join_date &lt;= NOW()
+        SELECT '신규' AS category, COUNT(*) AS count FROM user WHERE user_type = '신규' AND join_date &lt; NOW()
         UNION ALL
-        SELECT '복귀', COUNT(*) AS count FROM user WHERE user_type = '복귀' AND join_date &lt;= NOW()
+        SELECT '복귀' AS category, COUNT(*) AS count FROM user WHERE user_type = '복귀' AND join_date &lt; NOW()
         UNION ALL
-        SELECT '일반', COUNT(*) AS count FROM user WHERE user_type = '일반' AND join_date &lt;= NOW()
+        SELECT '일반' AS category, COUNT(*) AS count FROM user WHERE user_type = '일반' AND join_date &lt; NOW()
         UNION ALL
-        SELECT 'vip', COUNT(*) AS count FROM user WHERE vip_yn = true AND join_date &lt;= NOW()
+        SELECT 'VIP' AS category, COUNT(*) AS count FROM user WHERE vip_yn = true AND join_date &lt; NOW()
         UNION ALL
-        SELECT 'receive_yes', COUNT(*) AS count FROM user WHERE receive_yn = true AND join_date &lt;= NOW()
+        SELECT '수신동의' AS category, COUNT(*) AS count FROM user WHERE receive_yn = true AND join_date &lt; NOW()
         UNION ALL
-        SELECT 'receive_no', COUNT(*) AS count FROM user WHERE receive_yn = false AND join_date &lt;= NOW()
+        SELECT '수신거부' AS category, COUNT(*) AS count FROM user WHERE receive_yn = false AND join_date &lt; NOW()
         UNION ALL
-        SELECT '휴면', COUNT(*) AS count FROM user WHERE user_type = '휴면' AND join_date &lt;= NOW()
+        SELECT '휴면' AS category, COUNT(*) AS count FROM user WHERE user_type = '휴면' AND join_date &lt; NOW()
         UNION ALL
-        SELECT '정지', COUNT(*) AS count FROM user WHERE user_type = '정지' AND join_date &lt;= NOW()
+        SELECT '정지' AS category, COUNT(*) AS count FROM user WHERE user_type = '정지' AND join_date &lt; NOW()
         UNION ALL
-        SELECT '탈퇴', COUNT(*) AS count FROM user WHERE user_type = '탈퇴' AND join_date &lt;= NOW()
+        SELECT '탈퇴' AS category, COUNT(*) AS count FROM user WHERE user_type = '탈퇴' AND join_date &lt; NOW()
         UNION ALL
-        SELECT '이탈 위험군', COUNT(*) AS count FROM user WHERE user_type = '이탈 위험군' AND join_date &lt;= NOW()
+        SELECT '이탈 위험군' AS category, COUNT(*) AS count FROM user WHERE user_type = '이탈 위험군' AND join_date &lt; NOW()
     </select>
+
 
     <!-- 영웅 정보 -->
     <select id="getHeroData" resultType="map">
