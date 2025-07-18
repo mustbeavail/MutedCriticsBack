@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.entity.Member;
@@ -18,35 +20,52 @@ public class MemberInfoService {
 
     private final MemberInfoRepository repo;
 
-    // 회원 리스트 조회 (페이징, 검색, 정렬)
+    // 회원 리스트 조회 (페이징, 검색, 정렬, 상태 필터)
     public Map<String, Object> memberList(
             int page, int size, String keyword, String sortField, String sortDirection,
-            String dept_name, String position) {
+            String deptName, String position, Boolean acceptYn) {
+
         Map<String, Object> result = new HashMap<>();
         int pageNumber = Math.max(0, page - 1);
+
+        // 상태 필터 처리
+        Boolean acceptYn2 = null;
+        if ("signUp".equals(acceptYn)) {
+            acceptYn2 = true;
+        } else if ("signUpWait".equals(acceptYn)) {
+            acceptYn2 = false;
+        }
+
+        // 필터 적용 여부 판단
+        boolean hasFilter = (keyword != null && !keyword.trim().isEmpty()) ||
+                (deptName != null && !"전체".equals(deptName)) ||
+                (position != null && !"전체".equals(position)) ||
+                (acceptYn != null);
 
         long totalCount;
         List<Member> members;
 
-        if ((keyword == null || keyword.trim().isEmpty()) &&
-                (dept_name == null || dept_name.equals("전체")) &&
-                (position == null || position.equals("전체"))) {
-            // 필터가 없으면 전체 회원 수 조회
+        if (!hasFilter) {
+            // 전체 조회
             totalCount = repo.countAllMembers();
-            members = repo.findAllWithPagingAndSorting(dept_name, position, keyword, pageNumber, size, sortField,
-                    sortDirection);
+            members = repo.findAllWithPagingAndSorting(
+                    null, null, null, pageNumber, size, sortField, sortDirection, acceptYn);
         } else {
-            // 필터가 있을 경우 필터에 맞는 회원 수 조회
-            totalCount = repo.countMembersByKeywordAndFilter(keyword, dept_name, position);
-            members = repo.findByKeywordWithPagingAndSorting(keyword, pageNumber, size, sortField, sortDirection,
-                    dept_name, position);
+            // 필터 적용된 조회
+            PageRequest pageable = PageRequest.of(pageNumber, size, repo.getSortByField(sortField, sortDirection));
+            Page<Member> pageResult = repo.findByKeywordWithPagingAndSortingAndFilter(
+                    keyword, deptName, position, acceptYn, pageable);
+            totalCount = pageResult.getTotalElements();
+            members = pageResult.getContent();
         }
 
+        // 결과 조립
         int totalPages = (int) Math.ceil((double) totalCount / size);
         result.put("members", members);
         result.put("currentPage", page);
         result.put("totalItems", totalCount);
         result.put("totalPages", totalPages);
+
         return result;
     }
 
@@ -93,11 +112,6 @@ public class MemberInfoService {
         repo.save(member);
         log.info("회원 정보 수정 성공: member_id={}, 요청자={}", member_id, requesterId);
         return true;
-    }
-
-    // 가입 대기 인원 리스트
-    public List<Member> waitingList() {
-        return repo.findAllByAcceptYn(false);
     }
 
 }

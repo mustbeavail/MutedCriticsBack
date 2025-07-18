@@ -1,7 +1,6 @@
 package com.mutedcritics.member;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mutedcritics.entity.Member;
 import com.mutedcritics.utils.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -37,6 +35,7 @@ public class MemberInfoController {
             @RequestParam(defaultValue = "asc") String sortDirection,
             @RequestParam(required = false) String dept_name,
             @RequestParam(required = false) String position,
+            @RequestParam(required = false) Boolean acceptYn,
             HttpServletRequest request) {
         
         // 토큰 검증
@@ -60,9 +59,9 @@ public class MemberInfoController {
         int pageNumber = page;
         int size = 10;
         
-        log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}, dept_name={}, position={}", 
-                pageNumber, keyword, sortField, sortDirection, dept_name, position);
-        return service.memberList(pageNumber, size, keyword, sortField, sortDirection, dept_name, position);
+        log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}, dept_name={}, position={}, acceptYn={}", 
+                pageNumber, keyword, sortField, sortDirection, dept_name, position, acceptYn);
+        return service.memberList(pageNumber, size, keyword, sortField, sortDirection, dept_name, position, acceptYn);
     }
 
     // 회원 정보 수정 (관리자만 가능)
@@ -109,46 +108,6 @@ public class MemberInfoController {
         } else {
             result.put("message", "회원 정보 수정에 실패했습니다.");
         }
-        return result;
-    }
-
-    // 가입 대기 인원 리스트
-    @GetMapping("/memberInfo/waitingList")
-    public Map<String, Object> waitingList(HttpServletRequest request) {
-        Map<String, Object> result = new HashMap<String, Object>();
-
-        // 토큰 검증
-        String token = request.getHeader("authorization");
-        if (token == null || token.isEmpty()) {
-            result.put("success", false);
-            result.put("message", "인증 토큰이 필요합니다.");
-            return result;
-        }
-        
-        Map<String, Object> payload = JwtUtil.readToken(token);
-        String memberId = (String) payload.get("member_id");
-        if (memberId == null || memberId.isEmpty()) {
-            result.put("success", false);
-            result.put("message", "유효하지 않은 토큰입니다.");
-            return result;
-        }
-
-        // 관리자 권한 확인
-        if (!service.isAdmin(memberId)) {
-            log.warn("가입 대기 인원 조회 실패: 요청자({})가 관리자가 아닙니다", memberId);
-            result.put("success", false);
-            result.put("message", "관리자 권한이 필요합니다.");
-            return result;
-        }
-
-        // 가입 대기 인원 조회
-        List<Member> waitingMembers = service.waitingList();
-        
-        result.put("success", true);
-        result.put("waitingList", waitingMembers);
-        result.put("count", waitingMembers.size());
-        
-        log.info("가입 대기 인원 조회 성공: {}명", waitingMembers.size());
         return result;
     }
 
