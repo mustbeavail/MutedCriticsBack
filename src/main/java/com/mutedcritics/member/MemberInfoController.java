@@ -35,6 +35,8 @@ public class MemberInfoController {
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "memberId") String sortField,
             @RequestParam(defaultValue = "asc") String sortDirection,
+            @RequestParam(required = false) String dept_name,
+            @RequestParam(required = false) String position,
             HttpServletRequest request) {
         
         // 토큰 검증
@@ -58,9 +60,9 @@ public class MemberInfoController {
         int pageNumber = page;
         int size = 10;
         
-        log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}", 
-                pageNumber, keyword, sortField, sortDirection);
-        return service.memberList(pageNumber, size, keyword, sortField, sortDirection);
+        log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}, dept_name={}, position={}", 
+                pageNumber, keyword, sortField, sortDirection, dept_name, position);
+        return service.memberList(pageNumber, size, keyword, sortField, sortDirection, dept_name, position);
     }
 
     // 회원 정보 수정 (관리자만 가능)
