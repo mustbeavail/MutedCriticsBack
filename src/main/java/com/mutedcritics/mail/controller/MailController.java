@@ -97,7 +97,7 @@ public class MailController {
             @RequestParam String search,
             @RequestParam String searchType,
             @RequestParam int page,
-            @RequestParam(required = false) String sort) {
+            @RequestParam String sort) {
 
         resp = new HashMap<>();
 
