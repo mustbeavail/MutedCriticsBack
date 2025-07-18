@@ -104,8 +104,8 @@
                     JOIN
                         match_table m ON mr.match_idx = m.match_idx
                     WHERE
-                        m.match_date BETWEEN (SELECT start_date FROM season WHERE season_idx = #{seasonId})
-                                     AND (SELECT end_date FROM season WHERE season_idx = #{seasonId})
+                        m.match_date BETWEEN (SELECT start_date FROM season WHERE season_idx = #{seasonIdx})
+                                     AND (SELECT end_date FROM season WHERE season_idx = #{seasonIdx})
                     GROUP BY
                         mr.user_id, mr.heroes_idx
                 ) AS PlayCounts
@@ -324,6 +324,11 @@
         SELECT '탈퇴', COUNT(*) AS count FROM user WHERE user_type = '탈퇴' AND join_date &lt;= NOW()
         UNION ALL
         SELECT '이탈 위험군', COUNT(*) AS count FROM user WHERE user_type = '이탈 위험군' AND join_date &lt;= NOW()
+    </select>
+
+    <!-- 영웅 정보 -->
+    <select id="getHeroData" resultType="map">
+        SELECT heroes_idx, heroes_name FROM heroes
     </select>
 
 

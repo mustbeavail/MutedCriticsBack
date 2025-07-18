@@ -29,7 +29,7 @@ public interface UserTierStatsDAO {
 
     /**
      * 유저 분류 전체 개수를 조회합니다.
-     * 
+     *
      * @param params 유저 분류 조회에 필요한 요청 파라미터
      * @return 유저 분류 전체 개수
      */
@@ -45,14 +45,14 @@ public interface UserTierStatsDAO {
 
     /**
      * 시즌별 티어 통계 정보를 조회합니다.
-     * 
+     *
      * @return 시즌별 티어 통계 DTO 리스트
      */
     List<SeasonTierStatsDTO> getSeasonTierStats(int seasonIdx);
 
     /**
      * 유저 카테고리 정보를 조회합니다.
-     * 
+     *
      * @param params 유저 카테고리 조회에 필요한 요청 파라미터
      * @return 유저 카테고리 DTO 리스트
      */
@@ -60,7 +60,7 @@ public interface UserTierStatsDAO {
 
     /**
      * 유저 카테고리 전체 개수를 조회합니다.
-     * 
+     *
      * @param params 유저 카테고리 조회에 필요한 요청 파라미터
      * @return 유저 카테고리 전체 개수
      */
@@ -68,9 +68,11 @@ public interface UserTierStatsDAO {
 
     /**
      * 카테고리별 유저 수를 조회합니다.
-     * 
+     *
      * @return 카테고리별 유저 수
      */
     List<Map<String, Object>> getUserCategoryStats();
+
+    List<Map<String, Object>> getHeroData();
 
 }

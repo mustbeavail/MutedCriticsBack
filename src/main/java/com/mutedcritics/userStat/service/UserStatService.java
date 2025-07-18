@@ -38,7 +38,7 @@ public class UserStatService {
         UserDashBoardDTO summary = dao.selectUsersummary(userId, startDate, endDate);
         // 조회된 요약 정보가 없으면 예외 발생
         if (summary == null)
-            throw new NoSuchElementException("유저 대시보드 정보를 찾을 수 없습니다.");
+            throw new NoSuchElementException("이 유저의 데이터가 없습니다.");
 
         // 2. 영웅별, 모드별 플레이타임 상세 정보 조회
         List<HeroModeTimeDTO> list = dao.selectHeroModeTime(userId, startDate, endDate);

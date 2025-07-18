@@ -47,6 +47,7 @@ public class UserTierStatsService {
     /**
      * 유저 카테고리 정보를 조회
      * 유저 분류 통계
+     *
      * @param params 유저 카테고리 조회에 필요한 요청 파라미터
      * @return 유저 카테고리 응답 DTO (데이터 + 페이징 정보)
      */
@@ -65,5 +66,9 @@ public class UserTierStatsService {
         List<Map<String, Object>> statsList = dao.getUserCategoryStats();
 
         return new UserCategoryResponseDTO(data, totalCount, totalPages, currentPage, pageSize, statsList);
+    }
+
+    public List<Map<String, Object>> getHeroData() {
+        return dao.getHeroData();
     }
 }

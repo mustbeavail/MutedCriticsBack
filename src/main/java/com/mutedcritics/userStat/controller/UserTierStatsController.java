@@ -10,6 +10,7 @@ import com.mutedcritics.userstat.service.UserTierStatsService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -78,6 +79,15 @@ public class UserTierStatsController {
             @RequestParam(required = false) int seasonIdx) {
         List<SeasonTierStatsDTO> response = service.getSeasonTierStats(seasonIdx);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 영웅 정보
+     */
+    @GetMapping("/get/hero-data")
+    public ResponseEntity<?> getHeroData() {
+        List<Map<String, Object>> result = service.getHeroData();
+        return ResponseEntity.ok(result);
     }
 
 }
