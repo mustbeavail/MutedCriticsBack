@@ -338,7 +338,8 @@ public class MailService {
     // 정기메일 목록 검색
     public Page<AutoSend> searchAutoSendList(String search, String searchType, int page) {
 
-        Pageable pageable = PageRequest.of(page - 1, 15, Sort.by("createdAt").descending());
+        Pageable pageable = null;
+        pageable = PageRequest.of(page - 1, 15, Sort.by("createdAt").descending());
         Page<AutoSend> autoSendList = null;
 
         if("mailSub".equals(searchType)) {
