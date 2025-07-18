@@ -45,6 +45,7 @@ public class MemberController {
         // 로그인 시도 (비밀번호 확인)
         boolean success = service.login(member_id, member_pw);
         result.put("success", success);
+        result.put("adminYn", member.isAdminYn());
         
         if (!success) {
             result.put("message", "비밀번호가 일치하지 않습니다.");
