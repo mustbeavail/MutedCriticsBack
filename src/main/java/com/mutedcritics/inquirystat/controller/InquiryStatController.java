@@ -3,6 +3,7 @@ package com.mutedcritics.inquirystat.controller;
 import com.mutedcritics.inquirystat.service.InquiryStatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +23,8 @@ public class InquiryStatController {
     // 일일 통계 일괄 생성
     @PostMapping("/inquiry/daily-stat-batch")
     public Map<String, Object> generateDailyStatsBatch(
-            @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate) {
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
         Map<String, Object> result = new HashMap<>();
 
         try {

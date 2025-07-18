@@ -39,7 +39,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         // 유저 id 검색
         if (userId != null && !userId.isEmpty()) {
-            builder.and(inquiry.user.userId.eq(userId));
+            builder.and(inquiry.user.userId.containsIgnoreCase(userId));
         }
 
         // 카테고리 검색
@@ -105,7 +105,7 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         // 유저 id 검색
         if (userId != null && !userId.isEmpty()) {
-            builder.and(inquiry.user.userId.eq(userId));
+            builder.and(inquiry.user.userId.containsIgnoreCase(userId));
         }
 
         // 상태 검색
