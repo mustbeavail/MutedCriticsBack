@@ -5,7 +5,6 @@ import lombok.Data;
 @Data
 public class HeroModeTimeDTO {
 
-    private String matchMode;
     private String heroName;
     private String role;
     private int playTime; // 분 단위

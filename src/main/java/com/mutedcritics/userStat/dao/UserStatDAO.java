@@ -3,6 +3,8 @@ package com.mutedcritics.userstat.dao;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.mutedcritics.dto.ModePlayTimeDTO;
+import com.mutedcritics.dto.ModeTimeDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.mutedcritics.dto.HeroModeTimeDTO;
@@ -35,4 +37,8 @@ public interface UserStatDAO {
      */
     List<HeroModeTimeDTO> selectHeroModeTime(String userId, LocalDate startDate, LocalDate endDate);
 
+    /** 모드별 총 플레이타임 */
+    List<ModeTimeDTO> selectModePlayTime(String userId,
+                                         LocalDate startDate,
+                                         LocalDate endDate);
 }
