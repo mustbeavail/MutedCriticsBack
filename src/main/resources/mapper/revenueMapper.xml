@@ -232,8 +232,11 @@
         SELECT
             AVG(
                 CASE
+                    WHEN u.dormant_date IS NULL AND u.withdraw_date IS NULL
+                            AND u.join_date &lt;= #{today}
+                        THEN DATEDIFF(#{today}, u.join_date)
                     WHEN u.dormant_date  IS NOT NULL
-                            AND u.dormant_date  &lt;= #{today}
+                            AND u.dormant_date &lt;= #{today}
                         THEN DATEDIFF(u.dormant_date , u.join_date)
                     WHEN u.withdraw_date IS NOT NULL
                             AND u.withdraw_date &lt;= #{today}

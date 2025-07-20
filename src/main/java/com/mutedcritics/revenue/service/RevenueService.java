@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 public class RevenueService {
 
     private final RevenueDAO dao;
-    Map<String, Object> resp = null;
 
     // 일일 총 매출
     public Integer dailyRevenue(LocalDate today) {
@@ -82,7 +81,7 @@ public class RevenueService {
     // 기간별 판매액 조회
     public Map<String, Object> getRevenuePeriod(String startDate, String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = dao.getRevenuePeriod(startDate, endDate);
 
@@ -93,7 +92,7 @@ public class RevenueService {
     // 기간별 ARPU 조회
     public Map<String, Object> getARPU(String startDate, String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = dao.getARPU(startDate, endDate);
 
@@ -104,7 +103,7 @@ public class RevenueService {
     // 기간별 ARPPU 조회
     public Map<String, Object> getARPPU(String startDate, String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = dao.getARPPU(startDate, endDate);
 
@@ -115,7 +114,7 @@ public class RevenueService {
     // 기간별 구매주기 조회
     public Map<String, Object> getPurchaseInterval(String startDate, String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = dao.getPurchaseInterval(startDate, endDate);
 
@@ -126,7 +125,7 @@ public class RevenueService {
     // 기간별 PU 조회
     public Map<String, Object> getPU(String startDate, String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = dao.getPU(startDate, endDate);
 
@@ -143,7 +142,7 @@ public class RevenueService {
     // LTV 조회
     public Map<String, Object> getLTV(String startDate, String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
         LocalDate today = LocalDate.now();
 
         // APV 구하기
