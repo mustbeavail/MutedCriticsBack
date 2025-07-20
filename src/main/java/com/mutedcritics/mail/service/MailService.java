@@ -2,10 +2,12 @@ package com.mutedcritics.mail.service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -20,7 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
+import org.springframework.util.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import com.mutedcritics.entity.AutoSend;
 import com.mutedcritics.entity.Mail;
@@ -83,9 +85,17 @@ public class MailService {
 
         // 메일 수신자 찾기
         if (!mail.getRecipient().contains("@")) {
-            recipients = userRepo.findUserIdsByUserType(mail.getRecipient());
+            if(mail.getRecipient().equals("전체")){
+                recipients = userRepo.findAllUserIds();
+            }else{
+                recipients = userRepo.findUserIdsByUserType(mail.getRecipient());
+            }
         } else {
-            recipients.add(mail.getRecipient());
+            String[] arr = StringUtils.commaDelimitedListToStringArray(mail.getRecipient());
+            recipients.addAll(Arrays.stream(arr)
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toList()));
         }
 
         // 메일 발송
@@ -189,9 +199,17 @@ public class MailService {
 
         // 메일 수신자 찾기
         if (!autoSend.getRecipient().contains("@")) {
-            recipients = userRepo.findUserIdsByUserType(autoSend.getRecipient());
+            if(autoSend.getRecipient().equals("전체")){
+                recipients = userRepo.findAllUserIds();
+            }else{
+                recipients = userRepo.findUserIdsByUserType(autoSend.getRecipient());
+            }
         } else {
-            recipients.add(autoSend.getRecipient());
+            String[] arr = StringUtils.commaDelimitedListToStringArray(autoSend.getRecipient());
+            recipients.addAll(Arrays.stream(arr)
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toList()));
         }
 
         // 예약 날짜가 있고 다음 발송일이 없다 == 최초 정기메일이자 예약메일, 메일 당장 안보내고 예약 날짜로 다음 발송일 설정
