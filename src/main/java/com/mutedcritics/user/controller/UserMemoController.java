@@ -2,7 +2,6 @@ package com.mutedcritics.user.controller;
 
 import com.mutedcritics.dto.UserMemoRequestDTO;
 import com.mutedcritics.dto.UserMemoResponseDTO;
-import com.mutedcritics.entity.Response;
 import com.mutedcritics.user.service.UserMemoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
