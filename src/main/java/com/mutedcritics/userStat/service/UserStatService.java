@@ -1,4 +1,4 @@
-package com.mutedcritics.userStat.service;
+package com.mutedcritics.userstat.service;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -6,13 +6,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import com.mutedcritics.dto.ModePlayTimeDTO;
-import com.mutedcritics.dto.ModeTimeDTO;
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.dto.HeroModeTimeDTO;
+import com.mutedcritics.dto.ModeTimeDTO;
 import com.mutedcritics.dto.UserDashBoardDTO;
-import com.mutedcritics.userStat.dao.UserStatDAO;
+import com.mutedcritics.userstat.dao.UserStatDAO;
 
 import lombok.RequiredArgsConstructor;
 

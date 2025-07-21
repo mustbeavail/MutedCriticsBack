@@ -29,13 +29,11 @@ public class MailController {
 
     private final MailService service;
 
-    private Map<String, Object> resp = null;
-
     // 메일 발송
     @PostMapping("/mail/send")
     public Map<String, Object> sendMail(@RequestBody Map<String, Object> params) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         boolean success = false;
 
@@ -55,7 +53,7 @@ public class MailController {
     @GetMapping("/mail/template")
     public Map<String, Object> getMailTemplate(@RequestParam int temIdx) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         if (temIdx > 0) {
             resp.put("template", service.getMailTemplate(temIdx));
@@ -73,7 +71,7 @@ public class MailController {
         @RequestParam int page,
         @RequestParam String align) {
     
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
     
         // 메일 발송 목록일경우
         if ("mailList".equals(sort)) {
@@ -98,7 +96,7 @@ public class MailController {
             @RequestParam int page,
             @RequestParam String sort) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         if (search.equals("") || search == null || searchType.equals("") || searchType == null || page <= 0) {
             resp.put("warning", "검색어와 검색 타입, 페이지 번호는 반드시 제공되어야 합니다.");
@@ -124,7 +122,7 @@ public class MailController {
             @RequestParam(required = false) Integer mailIdx,
             @RequestParam(required = false) Integer scheduleIdx) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         // 파라미터 유효성 검사
         if ((mailIdx == null || mailIdx <= 0) && (scheduleIdx == null || scheduleIdx <= 0)) {
@@ -154,7 +152,7 @@ public class MailController {
             @PathVariable int scheduleIdx,
             @RequestBody Map<String, Object> params) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         params.put("scheduleIdx", scheduleIdx);
 

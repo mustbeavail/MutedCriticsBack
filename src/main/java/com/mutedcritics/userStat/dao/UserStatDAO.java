@@ -1,13 +1,12 @@
-package com.mutedcritics.userStat.dao;
+package com.mutedcritics.userstat.dao;
 
 import java.time.LocalDate;
 import java.util.List;
 
-import com.mutedcritics.dto.ModePlayTimeDTO;
-import com.mutedcritics.dto.ModeTimeDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.mutedcritics.dto.HeroModeTimeDTO;
+import com.mutedcritics.dto.ModeTimeDTO;
 import com.mutedcritics.dto.UserDashBoardDTO;
 
 /**
