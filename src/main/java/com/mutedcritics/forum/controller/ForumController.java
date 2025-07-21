@@ -26,9 +26,6 @@ public class ForumController {
 
     private final ForumService service;
 
-    Map<String, Object> resp = null;
-
-
     // 포럼 게시글 불러오기
     @GetMapping("/forum/list")
     public Map<String, Object> getForumList(
@@ -36,7 +33,7 @@ public class ForumController {
         @RequestParam String topic,
         @RequestParam String align
         ) {
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         if (page > 0 &&
             ("경쟁전".equals(topic) || "일반".equals(topic)) &&
@@ -59,7 +56,7 @@ public class ForumController {
     // 포럼 게시글 상세보기, 해당하는 댓글 불러오기
     @GetMapping("/forum/detail/{postIdx}")
     public Map<String, Object> getForumDetail(@PathVariable int postIdx, @RequestParam int page) {
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         // 게시글 상세보기
         ForumPost forumPost = service.getForumPostDetail(postIdx);
@@ -81,7 +78,7 @@ public class ForumController {
         @RequestParam String searchType,
         @RequestParam int page,
         @RequestParam String topic) {
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         Page<ForumPost> forumPosts = service.searchForumPosts(search, searchType, page, topic);
         Page<ForumPostDTO> forumPostDTOs = forumPosts.map(post -> new ForumPostDTO(post));

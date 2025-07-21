@@ -28,8 +28,6 @@ public class ItemController {
     private final ItemService service;
     private final ItemHistoricalService historicalService;
 
-    private Map<String, Object> resp;
-
     // 이전 통계 일괄 저장
     @PostMapping("/item/historical")
     public ResponseEntity<String> calculateHistorical(
@@ -60,7 +58,7 @@ public class ItemController {
             @RequestParam Integer page,
             @RequestParam(required = false) String search) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = service.itemList(startDate, endDate, align, page, search);
         resp.put("itemList", list);
@@ -74,7 +72,7 @@ public class ItemController {
             @RequestParam String eventName,
             @RequestParam String align) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = service.eventItemList(eventName, align);
         resp.put("eventItemList", list);
@@ -91,7 +89,7 @@ public class ItemController {
             @RequestParam int page,
             @RequestParam(required = false) String search) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = service.refundList(startDate, endDate, align, page, search);
 
@@ -106,7 +104,7 @@ public class ItemController {
             @RequestParam String startDate,
             @RequestParam String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = service.refundSummary(startDate, endDate);
 
