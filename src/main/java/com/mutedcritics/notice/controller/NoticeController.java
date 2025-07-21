@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 public class NoticeController {
 
     private final NoticeService service;
-    Map<String, Object> resp = null;
 
     // 알림 읽음 처리
     @PutMapping("/notice/read")
@@ -44,7 +43,7 @@ public class NoticeController {
     public Map<String, Object> getChatNoticeList(
         @RequestParam String memberId){
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
         List<Map<String, Object>> notiList = service.getChatNoticeList(memberId);
 
         resp.put("notiList", notiList);
@@ -56,7 +55,7 @@ public class NoticeController {
     @GetMapping("/notice/stat/list")
     public Map<String, Object> getStatNoticeList(){
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> notiList = service.getStatNoticeList();
 

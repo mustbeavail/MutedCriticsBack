@@ -22,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 public class ActivityService {
 
     private final ActivityDAO dao;
-    Map<String, Object> resp = null;
 
     // 총 접속자 수
     public Map<String, Object> total_user() {
@@ -59,7 +58,7 @@ public class ActivityService {
     // 기간별 일일 활성 이용자 수
     public Map<String, Object> periodDailyUser(String startDate, String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = dao.periodDailyUser(startDate, endDate);
 
@@ -73,7 +72,7 @@ public class ActivityService {
     public Map<String, Object> periodWeeklyUser(
         int fromYear, int fromMonth, int fromWeek, int toYear, int toMonth, int toWeek) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
 
         // 1) 일요일 시작, minimalDaysInFirstWeek=1
@@ -126,7 +125,7 @@ public class ActivityService {
 
     public Map<String, Object> periodMonthlyUser(int fromYear, int fromMonth, int toYear, int toMonth) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         YearMonth startYM = YearMonth.of(fromYear, fromMonth);
         YearMonth endYM   = YearMonth.of(toYear,   toMonth);

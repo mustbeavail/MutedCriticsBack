@@ -26,7 +26,6 @@ public class RevenueController {
 
     private final RevenueService service;
     private final RevenueHistoricalService historicalService;
-    Map<String, Object> resp = null;
 
     // 이전 통계 일괄 저장
     @PostMapping("/revenue/historical")
@@ -56,7 +55,7 @@ public class RevenueController {
             @RequestParam String startDate,
             @RequestParam String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         resp = service.getRevenuePeriod(startDate, endDate);
 
@@ -69,7 +68,7 @@ public class RevenueController {
             @RequestParam String startDate,
             @RequestParam String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         resp = service.getARPU(startDate, endDate);
 
@@ -82,7 +81,7 @@ public class RevenueController {
             @RequestParam String startDate,
             @RequestParam String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         resp = service.getARPPU(startDate, endDate);
 
@@ -95,7 +94,7 @@ public class RevenueController {
             @RequestParam String startDate,
             @RequestParam String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         resp = service.getPurchaseInterval(startDate, endDate);
 
@@ -108,7 +107,7 @@ public class RevenueController {
             @RequestParam String startDate,
             @RequestParam String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         resp = service.getPU(startDate, endDate);
 
@@ -119,7 +118,7 @@ public class RevenueController {
     @GetMapping("/revenue/total")
     public Map<String, Object> getTotal() {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
         LocalDate today = LocalDate.now();
 
         resp = service.getTotal(today);
@@ -133,7 +132,7 @@ public class RevenueController {
             @RequestParam String startDate,
             @RequestParam String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         resp = service.getLTV(startDate, endDate);
 

@@ -23,14 +23,12 @@ public class UserService {
 
     private final UserDAO dao;
 
-    Map<String, Object> resp = null;
-
     // 유저 상세 정보
     public Map<String, Object> userDetail(String userId) {
 
         List<UserDTO> detail = dao.userDetail(userId);
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         resp.put("userDetail", detail);
 
@@ -85,7 +83,7 @@ public class UserService {
     // 유저 리스트 불러오기
     public Map<String, Object> getUserList(String searchType, String keyword, String sortBy, String sortOrder, int page,
             int size) {
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         // 페이징 계산
         int offset = (page - 1) * size;

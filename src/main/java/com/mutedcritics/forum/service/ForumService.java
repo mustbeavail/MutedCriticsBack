@@ -1,8 +1,5 @@
 package com.mutedcritics.forum.service;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +21,6 @@ public class ForumService {
 
     private final ForumPostRepository forumPostRepo;
     private final ForumCommentRepository forumCommentRepo;
-    Map<String, Object> resp = null;
 
     // 포럼 게시글, 댓글 불러오기
     public Page<ForumPost> getForumList(int page, String topic, String align) {

@@ -27,7 +27,6 @@ public class ActivityController {
 
     private final ActivityService service;
     private final ActivityHistoricalService historicalService;
-    Map<String, Object> resp = null;
 
     // 이전 통계 일괄 저장
     @PostMapping("/activity/historical")
@@ -55,7 +54,7 @@ public class ActivityController {
     @GetMapping("/activity/periodDailyUser/{startDate}/{endDate}")
     public Map<String, Object> periodDailyUser(@PathVariable String startDate, @PathVariable String endDate) {
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         resp = service.periodDailyUser(startDate, endDate);
 
@@ -74,7 +73,7 @@ public class ActivityController {
 
         log.info("{}년 {}월 {}주 부터 {}년 {}월 {}주 까지", fromYear, fromMonth, fromWeek, toYear, toMonth, toWeek);
 
-        resp = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
 
         resp = service.periodWeeklyUser(fromYear, fromMonth, fromWeek, toYear, toMonth, toWeek);
 
@@ -88,8 +87,13 @@ public class ActivityController {
             @RequestParam int fromMonth,
             @RequestParam int toYear,
             @RequestParam int toMonth) {
-                
+
         log.info("{}년 {}월 부터 {}년 {}월 까지", fromYear, fromMonth, toYear, toMonth);
-        return service.periodMonthlyUser(fromYear, fromMonth, toYear, toMonth);
+
+        Map<String, Object> resp = new HashMap<>();
+
+        resp = service.periodMonthlyUser(fromYear, fromMonth, toYear, toMonth);
+
+        return resp;
     }
 }

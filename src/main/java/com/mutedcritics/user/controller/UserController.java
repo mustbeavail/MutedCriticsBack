@@ -22,12 +22,10 @@ public class UserController {
 
     private final UserService service;
 
-    Map<String, Object> resp = null;
-
     // 유저 상세 정보
     @GetMapping("/user/detail")
     public Map<String, Object> userDetail(@RequestParam String userId) {
-        resp = new HashMap<String, Object>();
+        Map<String, Object> resp = new HashMap<>();
 
         resp = service.userDetail(userId);
 
@@ -39,7 +37,7 @@ public class UserController {
     public Map<String, Object> userStats(
             @RequestParam String userId) {
 
-        resp = new HashMap<String, Object>();
+        Map<String, Object> resp = new HashMap<>();
         UserStatsDTO userStats = service.userStats(userId);
 
         resp.put("userStats", userStats);
@@ -52,7 +50,7 @@ public class UserController {
     public Map<String, Object> userStatsSeason(
             @RequestParam String userId,
             @RequestParam int season) {
-        resp = new HashMap<String, Object>();
+        Map<String, Object> resp = new HashMap<>();
         UserStatsSeasonDTO userStatsSeason = service.userStatsSeason(userId, season);
 
         resp.put("userStatsSeason", userStatsSeason);
@@ -63,7 +61,7 @@ public class UserController {
     // 유저 지출 상세내역
     @GetMapping("/user/spending")
     public Map<String, Object> userSpending(@RequestParam String userId) {
-        resp = new HashMap<String, Object>();
+        Map<String, Object> resp = new HashMap<>();
         resp = service.userSpending(userId);
         return resp;
     }
