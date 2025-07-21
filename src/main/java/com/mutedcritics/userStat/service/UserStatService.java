@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+import com.mutedcritics.dto.ModePlayTimeDTO;
+import com.mutedcritics.dto.ModeTimeDTO;
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.dto.HeroModeTimeDTO;
@@ -14,15 +16,11 @@ import com.mutedcritics.userStat.dao.UserStatDAO;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * 유저 통계 관련 비즈니스 로직을 처리하는 서비스 클래스
- * 유저의 게임 플레이 데이터를 집계하고 대시보드 정보를 제공합니다.
- */
-@Service // 이 클래스가 Spring 서비스 컴포넌트임을 나타냅니다.
-@RequiredArgsConstructor // Lombok을 사용하여 final 필드에 대한 생성자를 자동으로 생성합니다 (의존성 주입).
+@Service
+@RequiredArgsConstructor
 public class UserStatService {
 
-    private final UserStatDAO dao; // UserStatDAO 의존성 주입
+    private final UserStatDAO dao;
 
     /**
      * 유저 대시보드 정보를 조회하고 집계하는 메서드입니다.
@@ -41,12 +39,12 @@ public class UserStatService {
             throw new NoSuchElementException("이 유저의 데이터가 없습니다.");
 
         // 2. 영웅별, 모드별 플레이타임 상세 정보 조회
-        List<HeroModeTimeDTO> list = dao.selectHeroModeTime(userId, startDate, endDate);
+        List<HeroModeTimeDTO> heroModeTime = dao.selectHeroModeTime(userId, startDate, endDate);
         // 조회된 영웅/모드별 플레이타임 리스트를 summary DTO에 설정
-        summary.setHeroTimes(list);
+        summary.setHeroTimes(heroModeTime);
 
         // 3. 주 역할군 계산 (가장 많이 플레이한 역할군 결정)
-        var mainRole = list.stream()
+        String mainRole = heroModeTime.stream()
                 // 역할군(role)별로 그룹화하고, 각 그룹의 플레이타임을 합산합니다.
                 // 예: {"돌격": 100, "지원": 80, "공격": 50}
                 .collect(Collectors.groupingBy(HeroModeTimeDTO::getRole,
@@ -62,13 +60,12 @@ public class UserStatService {
         // 계산된 주 역할군을 summary DTO에 설정
         summary.setMainRole(mainRole);
 
-        // 4. 모드별 플레이타임 계산 (빠른대전, 경쟁전 등 각 모드별 총 플레이타임)
-        Map<String, Integer> modePlayTimes = list.stream()
-                // 매치모드(matchMode)별로 그룹화하고, 각 그룹의 플레이타임을 합산합니다.
-                // 예: {"빠른대전": 120, "경쟁전": 90}
-                .collect(Collectors.groupingBy(HeroModeTimeDTO::getMatchMode,
-                        Collectors.summingInt(HeroModeTimeDTO::getPlayTime)));
-        // 계산된 모드별 플레이타임을 summary DTO에 설정
+        // 4. 모드별 총 플레이타임
+        Map<String, Integer> modePlayTimes = dao.selectModePlayTime(userId, startDate, endDate)
+                .stream()
+                .collect(Collectors.toMap(
+                        ModeTimeDTO::getMatchMode,
+                        ModeTimeDTO::getPlayTime));
         summary.setModePlayTimes(modePlayTimes);
 
         // 최종적으로 완성된 대시보드 정보를 반환합니다.

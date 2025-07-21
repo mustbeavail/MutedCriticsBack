@@ -4,44 +4,44 @@
 <mapper namespace="com.mutedcritics.userStat.dao.UserStatDAO">
 
     <select id="selectUsersummary" resultType="com.mutedcritics.dto.UserDashBoardDTO">
-        SELECT
-            mr.user_id AS userId,
-            SUM(mr.match_play_time) AS totalPlay,
-            SUM(mr.victory_or_defeat = 'victory') AS wins,
-            SUM(mr.victory_or_defeat = 'defeat') AS losses,
-            ROUND(SUM(mr.victory_or_defeat = 'victory') / COUNT(*) * 100, 1) AS winRate
-        FROM
-            match_result mr
-        JOIN match_table mt ON
+        SELECT mr.user_id                                                       AS userId,
+               SUM(mr.match_play_time)                                          AS totalPlay,
+               SUM(mr.victory_or_defeat = 'victory')                            AS wins,
+               SUM(mr.victory_or_defeat = 'defeat')                             AS losses,
+               ROUND(SUM(mr.victory_or_defeat = 'victory') / COUNT(*) * 100, 1) AS winRate
+        FROM match_result mr
+                 JOIN match_table mt ON
             mt.match_idx = mr.match_idx
-        WHERE
-            mr.user_id = #{userId}
-            AND mt.match_date BETWEEN #{startDate} AND #{endDate}
-        GROUP BY
-            mr.user_id
+        WHERE mr.user_id = #{userId}
+          AND mt.match_date BETWEEN #{startDate} AND #{endDate}
+        GROUP BY mr.user_id
     </select>
 
     <select id="selectHeroModeTime" resultType="com.mutedcritics.dto.HeroModeTimeDTO">
-        SELECT
-            mt.match_mode AS matchMode,
-            h.heroes_name AS heroName,
-            h.role AS role,
-            SUM(mr.match_play_time) AS playTime,
-            COUNT(*) AS matches
-        FROM
-            match_result mr
-        JOIN match_table mt ON
+        SELECT h.heroes_name           AS heroName,
+               h.role                  AS role,
+               SUM(mr.match_play_time) AS playTime,
+               COUNT(*)                AS matches
+        FROM match_result mr
+                 JOIN match_table mt ON
             mt.match_idx = mr.match_idx
-        JOIN heroes h ON
+                 JOIN heroes h ON
             h.heroes_idx = mr.heroes_idx
-        WHERE
-            mr.user_id = #{userId}
-            AND mt.match_date BETWEEN #{startDate} AND #{endDate}
-        GROUP BY
-            mt.match_mode,
-            h.heroes_idx
-        ORDER BY
-            playTime DESC
+        WHERE mr.user_id = #{userId}
+          AND mt.match_date BETWEEN #{startDate} AND #{endDate}
+        GROUP BY h.heroes_idx
+        ORDER BY playTime DESC
+    </select>
+
+    <select id="selectModePlayTime"
+            resultType="com.mutedcritics.dto.ModeTimeDTO">
+        SELECT mt.match_mode AS matchMode,
+               SUM(mr.match_play_time) AS playTime
+        FROM match_result mr
+                 JOIN match_table mt ON mt.match_idx = mr.match_idx
+        WHERE mr.user_id = #{userId}
+          AND mt.match_date BETWEEN #{startDate} AND #{endDate}
+        GROUP BY mt.match_mode
     </select>
 
 </mapper>

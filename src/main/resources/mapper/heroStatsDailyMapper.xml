@@ -151,12 +151,7 @@
     <select id="getModePlayTime" resultType="com.mutedcritics.dto.ModePlayTimeDTO">
         SELECT
             s.match_mode AS matchMode,
-            SUM(s.total_play_time) AS totalPlayTime,
-            SUM(s.pick_count) AS matchCount,
-            CASE 
-                WHEN SUM(s.pick_count) > 0 THEN ROUND(SUM(s.total_play_time) / SUM(s.pick_count), 2)
-                ELSE 0 
-            END AS avgPlayTimePerMatch
+            SUM(s.total_play_time) AS totalPlayTime
         FROM stats_hero_daily s
         GROUP BY s.match_mode
         <if test="sortOrder != null and sortOrder != ''">
