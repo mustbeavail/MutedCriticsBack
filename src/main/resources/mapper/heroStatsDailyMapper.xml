@@ -324,7 +324,7 @@
             GROUP BY mh.heroes_idx
         ) b ON h.heroes_idx = b.heroes_idx
         <if test="sortOrder != null and sortOrder != ''">
-            ORDER BY pickRate ${sortOrder}
+            ORDER BY banRate ${sortOrder}
         </if>
     </select>
 </mapper>
