@@ -136,12 +136,23 @@
             WHERE bi.bundle_name LIKE CONCAT('%', #{search}, '%')
         </if>
         GROUP BY bi.bundle_idx
+        ),
+        total_count AS (
+            SELECT COUNT(*) AS total_count FROM (
+                SELECT * FROM item_list_detail il
+                UNION ALL
+                SELECT * FROM bundle_list_detail bl
+            ) AS full_item_list
         )
-        SELECT * FROM (
+        SELECT 
+            CEIL(tc.total_count/10.0) AS total_page,
+            fil.*
+        FROM (
             SELECT * FROM item_list_detail il
             UNION ALL
             SELECT * FROM bundle_list_detail bl
-        ) AS full_item_list
+        ) AS fil
+        CROSS JOIN total_count tc
         <choose>
             <when test="align == 'sellTypeASC'">ORDER BY sell_type ASC</when>
             <when test="align == 'sellTypeDESC'">ORDER BY sell_type DESC</when>
@@ -176,7 +187,12 @@
             ON il.item_idx = sid.item_idx
                 AND sid.stats_date BETWEEN il.sell_start_date AND il.sell_end_date
                 AND sid.item_cate = 'item'
-            WHERE il.sell_type = #{eventName}
+            <if test="eventName != null and eventName != ''">
+                WHERE il.sell_type = #{eventName}
+            </if>
+            <if test="eventName == null or eventName == ''">
+                WHERE il.sell_type != '상시' AND il.sell_type != '한정' AND il.sell_start_date &lt;= #{today}
+            </if>
             GROUP BY il.item_idx
         ),
         bundle_list_detail AS (
@@ -196,7 +212,12 @@
         ON bi.bundle_idx = sid.item_idx
             AND sid.stats_date BETWEEN bi.sell_start_date AND bi.sell_end_date
             AND sid.item_cate = 'bundle'
-        WHERE bi.sell_type = #{eventName}
+        <if test="eventName != null and eventName != ''">
+            WHERE bi.sell_type = #{eventName}
+        </if>
+        <if test="eventName == null or eventName == ''">
+            WHERE bi.sell_type != '상시' AND bi.sell_type != '한정' AND bi.sell_start_date &lt;= #{today}
+        </if>
         GROUP BY bi.bundle_idx
         )
         SELECT * FROM (
@@ -232,8 +253,10 @@
                 COALESCE(SUM(sid.daily_refund_count), 0) AS most_item_refund_count
             FROM stats_item_daily sid
             WHERE sid.stats_date BETWEEN #{startDate} AND #{endDate}
+                AND sid.daily_refund_count > 0
             GROUP BY sid.item_name
-            ORDER BY most_item_refund_count DESC
+            HAVING SUM(sid.daily_refund_count) > 0
+            ORDER BY most_item_refund_count DESC, sid.item_name ASC
             LIMIT 1
         )
         SELECT 
@@ -250,23 +273,43 @@
         UNION ALL
         SELECT 
             'MOST_REFUND_ITEM' AS metric_type,
-            mri.item_name AS metric_label,
-            mri.most_item_refund_count AS metric_value
-        FROM most_refund_item mri
+            COALESCE(mri.item_name, '해당 없음') AS metric_label,
+            COALESCE(mri.most_item_refund_count, 0) AS metric_value
+        FROM (SELECT NULL) AS dummy
+        LEFT JOIN most_refund_item mri ON 1=1
     </select>
 
     <!-- 아이템 환불내역 조회 / 검색 -->
     <select id="refundList" resultType="map">
+        WITH total_count AS (
+            SELECT COUNT(*) AS total_count
+            FROM refund_list rl
+                LEFT JOIN order_list ol
+                ON rl.order_idx = ol.order_idx
+            WHERE rl.refund_date BETWEEN #{startDate} AND #{endDate}
+            <if test="search != null and search != ''">
+                AND ol.user_id LIKE CONCAT('%', #{search}, '%')
+            </if>
+        )
         SELECT
+            CEIL(tc.total_count/10.0) AS total_page,
             rl.refund_idx,
             rl.refund_amt,
             rl.refund_date,
             rl.why,
             rl.order_idx,
-            ol.user_id
+            ol.user_id,
+            COALESCE(il.item_name, bi.bundle_name) AS item_name
         FROM refund_list rl
             LEFT JOIN order_list ol
             ON rl.order_idx = ol.order_idx
+            LEFT JOIN item_list il
+            ON ol.item_idx = il.item_idx
+                AND ol.item_cate = 'item'
+            LEFT JOIN bundle_item bi
+            ON ol.item_idx = bi.bundle_idx
+                AND ol.item_cate = 'bundle'
+            CROSS JOIN total_count tc
         WHERE rl.refund_date BETWEEN #{startDate} AND #{endDate}
         <if test="search != null and search != ''">
             AND ol.user_id LIKE CONCAT('%', #{search}, '%')

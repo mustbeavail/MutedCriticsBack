@@ -44,9 +44,9 @@ public class ItemService {
     }
 
     // 이벤트 아이템 리스트 조회
-    public List<Map<String, Object>> eventItemList(String eventName, String align) {
+    public List<Map<String, Object>> eventItemList(String eventName, String align, LocalDate today) {
 
-        return dao.eventItemList(eventName, align);
+        return dao.eventItemList(eventName, align, today);
     }
 
     // 아이템 환불내역 조회 / 검색

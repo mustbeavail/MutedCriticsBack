@@ -27,7 +27,8 @@ public interface ItemDAO {
     // 이벤트 아이템 리스트 조회
     List<Map<String, Object>> eventItemList(
         @Param("eventName") String eventName,
-        @Param("align") String align);
+        @Param("align") String align,
+        @Param("today") LocalDate today);
 
     // 아이템 환불내역 조회 / 검색
     List<Map<String, Object>> refundList(

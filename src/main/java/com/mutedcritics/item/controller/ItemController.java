@@ -58,6 +58,8 @@ public class ItemController {
             @RequestParam Integer page,
             @RequestParam(required = false) String search) {
 
+        log.info("아이템 리스트 조회 - startDate: {}, endDate: {}, align: {}, page: {}, search: {}", startDate, endDate, align, page, search);
+
         Map<String, Object> resp = new HashMap<>();
 
         List<Map<String, Object>> list = service.itemList(startDate, endDate, align, page, search);
@@ -74,7 +76,9 @@ public class ItemController {
 
         Map<String, Object> resp = new HashMap<>();
 
-        List<Map<String, Object>> list = service.eventItemList(eventName, align);
+        LocalDate today = LocalDate.now();
+
+        List<Map<String, Object>> list = service.eventItemList(eventName, align, today);
         resp.put("eventItemList", list);
 
         return resp;
