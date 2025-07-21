@@ -1,4 +1,4 @@
-package com.mutedcritics.member;
+package com.mutedcritics.member.repository;
 
 import java.util.List;
 

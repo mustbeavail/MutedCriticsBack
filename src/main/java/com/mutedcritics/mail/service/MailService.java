@@ -32,7 +32,7 @@ import com.mutedcritics.mail.repository.AutoSendRepository;
 import com.mutedcritics.mail.repository.MailRepository;
 import com.mutedcritics.mail.repository.MailTemplateRepository;
 import com.mutedcritics.mail.repository.UserRepository;
-import com.mutedcritics.member.MemberRepository;
+import com.mutedcritics.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

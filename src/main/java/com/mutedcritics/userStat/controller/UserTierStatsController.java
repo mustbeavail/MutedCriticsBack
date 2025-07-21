@@ -1,11 +1,11 @@
-package com.mutedcritics.userstat.controller;
+package com.mutedcritics.userStat.controller;
 
 import com.mutedcritics.dto.SeasonTierStatsDTO;
 import com.mutedcritics.dto.TierStatsRequestDTO;
 import com.mutedcritics.dto.TierStatsResponseDTO;
 import com.mutedcritics.dto.UserCategoryRequestDTO;
 import com.mutedcritics.dto.UserCategoryResponseDTO;
-import com.mutedcritics.userstat.service.UserTierStatsService;
+import com.mutedcritics.userStat.service.UserTierStatsService;
 
 import lombok.RequiredArgsConstructor;
 

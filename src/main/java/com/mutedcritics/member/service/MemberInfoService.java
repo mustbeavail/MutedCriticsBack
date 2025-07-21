@@ -1,4 +1,4 @@
-package com.mutedcritics.member;
+package com.mutedcritics.member.service;
 
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.entity.Member;
+import com.mutedcritics.member.repository.MemberInfoRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

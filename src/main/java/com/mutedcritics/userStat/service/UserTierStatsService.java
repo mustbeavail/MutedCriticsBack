@@ -1,4 +1,4 @@
-package com.mutedcritics.userstat.service;
+package com.mutedcritics.userStat.service;
 
 import com.mutedcritics.dto.PageDTO;
 import com.mutedcritics.dto.SeasonTierStatsDTO;
@@ -6,7 +6,7 @@ import com.mutedcritics.dto.TierStatDTO;
 import com.mutedcritics.dto.TierStatsRequestDTO;
 import com.mutedcritics.dto.TierStatsResponseDTO;
 import com.mutedcritics.dto.UserClassificationDTO;
-import com.mutedcritics.userstat.dao.UserTierStatsDAO;
+import com.mutedcritics.userStat.dao.UserTierStatsDAO;
 import com.mutedcritics.dto.UserCategoryDTO;
 import com.mutedcritics.dto.UserCategoryRequestDTO;
 import com.mutedcritics.dto.UserCategoryResponseDTO;

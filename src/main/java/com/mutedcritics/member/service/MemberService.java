@@ -1,4 +1,4 @@
-package com.mutedcritics.member;
+package com.mutedcritics.member.service;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.entity.Member;
+import com.mutedcritics.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -6,7 +6,7 @@ import com.mutedcritics.entity.Member;
 import com.mutedcritics.entity.User;
 import com.mutedcritics.entity.UserMemo;
 import com.mutedcritics.mail.repository.UserRepository;
-import com.mutedcritics.member.MemberRepository;
+import com.mutedcritics.member.repository.MemberRepository;
 import com.mutedcritics.user.repository.UserMemoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

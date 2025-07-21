@@ -25,7 +25,7 @@ import com.mutedcritics.entity.Member;
 import com.mutedcritics.entity.Response;
 import com.mutedcritics.inquiry.repository.InquiryRepository;
 import com.mutedcritics.inquirystat.service.InquiryStatService;
-import com.mutedcritics.member.MemberRepository;
+import com.mutedcritics.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

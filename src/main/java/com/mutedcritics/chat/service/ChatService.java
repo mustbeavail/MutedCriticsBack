@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mutedcritics.chat.repository.ChatMemberRepository;
 import com.mutedcritics.chat.repository.ChatMsgRepository;
 import com.mutedcritics.chat.repository.ChatRoomRepository;
-import com.mutedcritics.member.MemberRepository;
 import com.mutedcritics.dto.ChatMemberDTO;
 import com.mutedcritics.dto.ChatMessageDTO;
 import com.mutedcritics.dto.ChatRoomDTO;
@@ -26,6 +25,7 @@ import com.mutedcritics.entity.ChatMemberId;
 import com.mutedcritics.entity.ChatMsg;
 import com.mutedcritics.entity.ChatRoom;
 import com.mutedcritics.entity.Member;
+import com.mutedcritics.member.repository.MemberRepository;
 import com.mutedcritics.notice.service.NoticeService;
 
 import lombok.RequiredArgsConstructor;
