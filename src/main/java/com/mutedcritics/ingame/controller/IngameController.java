@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import com.mutedcritics.dto.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,12 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mutedcritics.dto.HeroBanPickRateDTO;
-import com.mutedcritics.dto.HeroItemCountDTO;
-import com.mutedcritics.dto.HeroPlayTimeDTO;
-import com.mutedcritics.dto.HeroPotgRateDTO;
-import com.mutedcritics.dto.HeroWinRateDTO;
-import com.mutedcritics.dto.ModePlayTimeDTO;
 import com.mutedcritics.ingame.service.IngameService;
 
 import lombok.RequiredArgsConstructor;
@@ -109,26 +104,12 @@ public class IngameController {
     /**
      * 영웅별 승률 조회
      * 높은순, 낮은순 정렬 가능
-     * 기간 설정 가능
      * 티어별 승률 보기 가능
-     *
-     * @param startDate 시작일 (선택사항)
-     * @param endDate   종료일 (선택사항)
-     * @param tierName  티어명 (선택사항)
-     * @param sortOrder DESC(높은순) 또는 ASC(낮은순)
-     * @return
      */
     @GetMapping("/get/hero-winrate")
-    public ResponseEntity<?> getHeroWinRate(
-            @RequestParam(required = false) String startDate,
-            @RequestParam(required = false) String endDate,
-            @RequestParam(required = false) String tierName,
-            @RequestParam(defaultValue = "DESC") String sortOrder) {
+    public ResponseEntity<?> getHeroWinRate(HeroWinRateRequestDTO request) {
 
-        LocalDate start = startDate != null ? LocalDate.parse(startDate) : null;
-        LocalDate end = endDate != null ? LocalDate.parse(endDate) : null;
-
-        List<HeroWinRateDTO> list = service.getHeroWinRate(start, end, tierName, sortOrder);
+        List<HeroWinRateResponseDTO> list = service.getHeroWinRate(request);
         return ResponseEntity.ok(Map.of("list", list));
     }
 

@@ -83,16 +83,15 @@ public class UserService {
     }
 
     // 유저 리스트 불러오기
-    public Map<String, Object> getUserList(String searchType, String keyword, String sortBy, String sortOrder, int page,
-            int size) {
+    public Map<String, Object> getUserList(String searchType, String keyword, String region, String userType, String sortBy, String sortOrder, int page, int size) {
         resp = new HashMap<>();
 
         // 페이징 계산
         int offset = (page - 1) * size;
 
         // 데이터 조회
-        List<UserListDTO> userList = dao.getUserList(searchType, keyword, sortBy, sortOrder, offset, size);
-        int totalCount = dao.getUserListCount(searchType, keyword);
+        List<UserListDTO> userList = dao.getUserList(searchType, keyword, region, userType, sortBy, sortOrder, offset, size);
+        int totalCount = dao.getUserListCount(searchType, keyword, region, userType);
 
         // 페이징 정보 계산
         int totalPages = (int) Math.ceil((double) totalCount / size);

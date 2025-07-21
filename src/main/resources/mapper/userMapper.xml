@@ -241,7 +241,9 @@
                 SELECT 
                     user_id,
                     SUM(match_play_time) AS total_play_time
-                FROM match_result
+                FROM match_result mr
+                JOIN match_table mt ON mr.match_idx = mt.match_idx
+                WHERE mt.match_date &lt;= CURDATE()
                 GROUP BY user_id
             ) play_time ON u.user_id = play_time.user_id
             LEFT JOIN (
@@ -257,6 +259,7 @@
                 FROM order_list ol
                 LEFT JOIN item_list il ON ol.item_idx = il.item_idx AND ol.item_cate = 'item'
                 LEFT JOIN bundle_item bi ON ol.item_idx = bi.bundle_idx AND ol.item_cate = 'bundle'
+                WHERE ol.order_date &lt;= CURDATE()
                 GROUP BY ol.user_id
             ) spending ON u.user_id = spending.user_id
             WHERE (u.withdraw_date IS NULL OR u.withdraw_date > CURDATE())
@@ -271,22 +274,25 @@
             total_spent AS totalSpent
         FROM user_stats
         WHERE total_spent > 0
-            <if test="searchType != null and keyword != null and keyword != ''">
-                <choose>
-                    <when test="searchType == 'userId'">
-                        AND user_id LIKE CONCAT('%', #{keyword}, '%')
-                    </when>
-                    <when test="searchType == 'userNick'">
-                        AND user_nick LIKE CONCAT('%', #{keyword}, '%')
-                    </when>
-                    <when test="searchType == 'region'">
-                        AND region = #{keyword}
-                    </when>
-                    <when test="searchType == 'userType'">
-                        AND user_type = #{keyword}
-                    </when>
-                </choose>
-            </if>
+        <!-- 검색 타입/검색어 -->
+        <if test="searchType == 'userId' and keyword != null and keyword != ''">
+            AND user_id LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="searchType == 'userNick' and keyword != null and keyword != ''">
+            AND user_nick LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+
+        <!-- 지역 드롭다운(값이 있으면) -->
+        <if test="region != null and region != ''">
+            AND region = #{region}
+        </if>
+
+        <if test="userType == 'VIP'">
+            AND vip_yn = true
+        </if>
+        <if test="userType != null and userType != '' and userType != '전체' and userType != 'VIP'">
+            AND user_type = #{userType}
+        </if>
         ORDER BY 
             <choose>
                 <when test="sortBy == 'totalSpent'">
@@ -314,6 +320,7 @@
                 u.user_nick,
                 u.region,
                 u.user_type,
+                u.vip_yn,
                 COALESCE(spending.total_spent, 0) AS total_spent
             FROM user u
             LEFT JOIN (
@@ -336,22 +343,25 @@
         SELECT COUNT(*)
         FROM user_stats
         WHERE total_spent > 0
-            <if test="searchType != null and keyword != null and keyword != ''">
-                <choose>
-                    <when test="searchType == 'userId'">
-                        AND user_id LIKE CONCAT('%', #{keyword}, '%')
-                    </when>
-                    <when test="searchType == 'userNick'">
-                        AND user_nick LIKE CONCAT('%', #{keyword}, '%')
-                    </when>
-                    <when test="searchType == 'region'">
-                        AND region = #{keyword}
-                    </when>
-                    <when test="searchType == 'userType'">
-                        AND user_type = #{keyword}
-                    </when>
-                </choose>
-            </if>
+        <!-- 검색 타입/검색어 -->
+        <if test="searchType == 'userId' and keyword != null and keyword != ''">
+            AND user_id LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        <if test="searchType == 'userNick' and keyword != null and keyword != ''">
+            AND user_nick LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+
+        <!-- 지역 드롭다운 -->
+        <if test="region != null and region != ''">
+            AND region = #{region}
+        </if>
+
+        <if test="userType == 'VIP'">
+            AND vip_yn = true
+        </if>
+        <if test="userType != null and userType != '' and userType != '전체' and userType != 'VIP'">
+            AND user_type = #{userType}
+        </if>
     </select>
 
 </mapper>

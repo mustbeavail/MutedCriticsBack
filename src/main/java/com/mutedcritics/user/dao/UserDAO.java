@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import com.mutedcritics.dto.UserDTO;
 import com.mutedcritics.dto.UserListDTO;
@@ -23,15 +22,9 @@ public interface UserDAO {
     List<Map<String, Object>> userSpending(String userId);
 
     // 유저 리스트 조회
-    List<UserListDTO> getUserList(@Param("searchType") String searchType,
-            @Param("keyword") String keyword,
-            @Param("sortBy") String sortBy,
-            @Param("sortOrder") String sortOrder,
-            @Param("offset") int offset,
-            @Param("size") int size);
+    List<UserListDTO> getUserList(String searchType, String keyword, String region, String userType, String sortBy, String sortOrder, int offset, int size);
 
-    // 유저 리스트 전체 개수 조회
-    int getUserListCount(@Param("searchType") String searchType,
-            @Param("keyword") String keyword);
+    // 유저 리스트 개수 조회
+    int getUserListCount(String searchType, String keyword, String region, String userType);
 
 }

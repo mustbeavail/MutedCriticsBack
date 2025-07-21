@@ -73,14 +73,16 @@ public class UserController {
     public Map<String, Object> getUserList(
             @RequestParam(required = false) String searchType,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) String userType,
             @RequestParam(defaultValue = "totalSpent") String sortBy,
             @RequestParam(defaultValue = "desc") String sortOrder,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        log.info("유저 리스트 조회 - searchType: {}, keyword: {}, sortBy: {}, sortOrder: {}, page: {}, size: {}",
-                searchType, keyword, sortBy, sortOrder, page, size);
+        log.info("유저 리스트 조회 - searchType: {}, keyword: {}, region: {}, userType: {}, sortBy: {}, sortOrder: {}, page: {}, size: {}",
+                searchType, keyword, region, userType, sortBy, sortOrder, page, size);
 
-        return service.getUserList(searchType, keyword, sortBy, sortOrder, page, size);
+        return service.getUserList(searchType, keyword, region, userType, sortBy, sortOrder, page, size);
     }
 
 }

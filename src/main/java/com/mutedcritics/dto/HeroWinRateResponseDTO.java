@@ -3,8 +3,7 @@ package com.mutedcritics.dto;
 import lombok.Data;
 
 @Data
-public class HeroWinRateDTO {
-
+public class HeroWinRateResponseDTO {
     private String heroName;
     private String role;
     private String tierName;
@@ -12,5 +11,4 @@ public class HeroWinRateDTO {
     private int loseCount;
     private int totalMatches;
     private double winRate;
-
 }

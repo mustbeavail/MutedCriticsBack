@@ -6,17 +6,12 @@ import java.util.Map;
 
 import javax.transaction.Transactional;
 
+import com.mutedcritics.dto.*;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import com.mutedcritics.dto.HeroBanPickRateDTO;
-import com.mutedcritics.dto.HeroItemCountDTO;
-import com.mutedcritics.dto.HeroPlayTimeDTO;
-import com.mutedcritics.dto.HeroPotgRateDTO;
-import com.mutedcritics.dto.HeroWinRateDTO;
-import com.mutedcritics.dto.ModePlayTimeDTO;
 import com.mutedcritics.ingame.dao.IngameDAO;
 
 @Service
@@ -60,10 +55,9 @@ public class IngameService {
     /**
      * 영웅별 승률 조회 (기간별, 티어별 필터링)
      */
-    public List<HeroWinRateDTO> getHeroWinRate(LocalDate startDate, LocalDate endDate, String tierName,
-            String sortOrder) {
-        log.info("영웅별 승률 조회 - 기간: {} ~ {}, 티어: {}, 정렬: {}", startDate, endDate, tierName, sortOrder);
-        return dao.getHeroWinRate(startDate, endDate, tierName, sortOrder);
+    public List<HeroWinRateResponseDTO> getHeroWinRate(HeroWinRateRequestDTO request) {
+        log.info("영웅별 승률 조회 - 시즌: {}, 티어명: {}, 정렬: {}", request.getSeasonIdx(), request.getTierName(), request.getSortOrder());
+        return dao.getHeroWinRate(request);
     }
 
     /**

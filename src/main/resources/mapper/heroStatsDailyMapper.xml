@@ -160,51 +160,43 @@
     </select>
 
     <!-- 영웅별 승률 조회 -->
-    <select id="getHeroWinRate" resultType="com.mutedcritics.dto.HeroWinRateDTO">
+    <select id="getHeroWinRate" resultType="com.mutedcritics.dto.HeroWinRateResponseDTO">
         SELECT
-            h.heroes_name AS heroName,
-            h.role AS role,
-            <choose>
-                <when test="tierName != null and tierName != ''">
-                    #{tierName} AS tierName,
-                </when>
-                <otherwise>
-                    'ALL' AS tierName,
-                </otherwise>
-            </choose>
-            SUM(CASE WHEN mr.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) AS winCount,
-            SUM(CASE WHEN mr.victory_or_defeat = 'defeat' THEN 1 ELSE 0 END) AS loseCount,
-            COUNT(*) AS totalMatches,
-            CASE 
-                WHEN COUNT(*) > 0 THEN ROUND(SUM(CASE WHEN mr.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2)
-                ELSE 0 
-            END AS winRate
+        h.heroes_name AS heroName,
+        h.role AS role,
+        <choose>
+            <when test="tierName != null and tierName != ''">
+                t.tier_name AS tierName,
+            </when>
+            <otherwise>
+                'ALL' AS tierName,
+            </otherwise>
+        </choose>
+        SUM(CASE WHEN mr.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) AS winCount,
+        SUM(CASE WHEN mr.victory_or_defeat = 'defeat' THEN 1 ELSE 0 END) AS loseCount,
+        COUNT(*) AS totalMatches,
+        ROUND(SUM(CASE WHEN mr.victory_or_defeat = 'victory' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS winRate
         FROM match_result mr
         JOIN match_table mt ON mr.match_idx = mt.match_idx
+        JOIN match_heroes mh ON mh.match_idx = mt.match_idx
         JOIN heroes h ON mr.heroes_idx = h.heroes_idx
+        JOIN (
+        SELECT tt.user_id, tt.season_idx, tt.tier_name
+        FROM tier tt
+        JOIN (
+        SELECT user_id, season_idx, MAX(tier_date) AS max_date
+        FROM tier
+        GROUP BY user_id, season_idx
+        ) latest
+        ON latest.user_id = tt.user_id
+        AND latest.season_idx = tt.season_idx
+        AND latest.max_date = tt.tier_date
+        ) t ON mr.user_id = t.user_id AND mh.season_idx = t.season_idx
+        WHERE mh.season_idx = #{seasonIdx}
         <if test="tierName != null and tierName != ''">
-            LEFT JOIN (
-                SELECT DISTINCT
-                    tt.user_id,
-                    tt.tier_name,
-                    tt.tier_date
-                FROM tier tt
-                WHERE tt.tier_date = (
-                    SELECT MAX(tt2.tier_date)
-                    FROM tier tt2
-                    WHERE tt2.user_id = tt.user_id
-                      AND tt2.tier_date &lt;= #{endDate}
-                )
-            ) t ON mr.user_id = t.user_id
+            AND t.tier_name = #{tierName}
         </if>
-        <where>
-            <if test="startDate != null and endDate != null">
-                mt.match_date BETWEEN #{startDate} AND #{endDate}
-            </if>
-            <if test="tierName != null and tierName != ''">
-                AND t.tier_name = #{tierName}
-            </if>
-        </where>
+
         <choose>
             <when test="tierName != null and tierName != ''">
                 GROUP BY h.heroes_idx, h.heroes_name, h.role, t.tier_name
@@ -213,10 +205,14 @@
                 GROUP BY h.heroes_idx, h.heroes_name, h.role
             </otherwise>
         </choose>
+
         <if test="sortOrder != null and sortOrder != ''">
             ORDER BY winRate ${sortOrder}
         </if>
     </select>
+
+
+
 
     <!-- 영웅별 최고의 플레이 비중 조회 -->
     <select id="getHeroPotgRate" resultType="com.mutedcritics.dto.HeroPotgRateDTO">
