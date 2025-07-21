@@ -45,7 +45,7 @@
         ON la.user_id = u.user_id
         SET u.user_type   = '휴면',
         u.dormant_date = #{baseDate}
-        WHERE u.user_type != '탈퇴'
+        WHERE u.user_type NOT IN('탈퇴', '휴면')
         AND (
         la.last_access &lt; DATE_SUB(#{baseDate}, INTERVAL 6 MONTH)
         OR (la.last_access IS NULL
