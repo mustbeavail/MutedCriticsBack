@@ -1,11 +1,13 @@
 package com.mutedcritics.member.service;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.mutedcritics.dto.MemberInfoDTO;
 import com.mutedcritics.dto.MemberInfoRequestDTO;
+import com.mutedcritics.dto.MemberWithdrawDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -135,5 +137,29 @@ public class MemberInfoService {
                 .officePhone(member.getOfficePhone())
                 .mobilePhone(member.getMobilePhone())
                 .build();
+    }
+
+    public Map<String, Object> withdrawMember(MemberWithdrawDTO request) {
+        Map<String, Object> result = new HashMap<>();
+
+        // 관리자 권한 체크
+        Member admin = repo.findById(request.getRequesterId())
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 관리자입니다."));
+
+        if (!admin.isAdminYn()) {
+            throw new RuntimeException("관리자 권한이 없습니다.");
+        }
+
+        // 탈퇴 대상 회원 조회
+        Member member = repo.findById(request.getMemberId())
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+
+        // 탈퇴 처리
+        member.setWithdrawDate(LocalDate.now());
+        repo.save(member);
+
+        result.put("success", true);
+        result.put("msg", "정상적으로 탈퇴 처리되었습니다.");
+        return result;
     }
 }
