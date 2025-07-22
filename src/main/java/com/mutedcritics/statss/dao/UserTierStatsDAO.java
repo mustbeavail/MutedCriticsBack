@@ -1,4 +1,4 @@
-package com.mutedcritics.userstat.dao;
+package com.mutedcritics.statss.dao;
 
 import java.util.List;
 import java.util.Map;
