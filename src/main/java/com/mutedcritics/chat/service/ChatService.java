@@ -1,5 +1,6 @@
 package com.mutedcritics.chat.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -175,7 +176,7 @@ public class ChatService {
         chatMember.setChatRoom(room);
         chatMember.setMember(member);
         chatMember.setActiveYn(true);
-        chatMember.setJoinAt(LocalDateTime.now());
+        chatMember.setJoinAt(LocalDate.now());
 
         chatMemberRepository.save(chatMember);
     }

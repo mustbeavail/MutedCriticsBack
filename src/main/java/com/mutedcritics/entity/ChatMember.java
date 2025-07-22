@@ -1,5 +1,6 @@
 package com.mutedcritics.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -37,10 +38,10 @@ public class ChatMember {
 
     @Column(name = "join_at")
     @CreationTimestamp
-    private LocalDateTime joinAt;
+    private LocalDate joinAt;
 
     @Column(name = "left_at")
-    private LocalDateTime leftAt;
+    private LocalDate leftAt;
 
     @Column(name = "active_yn")
     private boolean activeYn;
