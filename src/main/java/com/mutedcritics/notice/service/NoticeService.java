@@ -1,6 +1,7 @@
 package com.mutedcritics.notice.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -8,14 +9,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.math.RoundingMode;
 
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.chat.repository.ChatRoomRepository;
 import com.mutedcritics.entity.ChatMsg;
-import com.mutedcritics.entity.Noti;
 import com.mutedcritics.entity.Member;
+import com.mutedcritics.entity.Noti;
 import com.mutedcritics.notice.repository.NoticeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -102,9 +102,9 @@ public class NoticeService {
     }
 
     // 통계 알림 목록 조회
-    public List<Map<String, Object>> getStatNoticeList() {
+    public List<Map<String, Object>> getStatNoticeList(LocalDateTime firstDayOfMonth, LocalDateTime lastDayOfMonth) {
 
-        List<Noti> notiList = noticeRepo.findAllByNotiType();
+        List<Noti> notiList = noticeRepo.findAllByNotiType(firstDayOfMonth, lastDayOfMonth);
         List<Map<String, Object>> resp = new ArrayList<>();
 
         for (Noti noti : notiList) {

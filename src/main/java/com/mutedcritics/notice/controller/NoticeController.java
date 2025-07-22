@@ -1,5 +1,6 @@
 package com.mutedcritics.notice.controller;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,20 @@ public class NoticeController {
 
         Map<String, Object> resp = new HashMap<>();
 
-        List<Map<String, Object>> notiList = service.getStatNoticeList();
+        LocalDateTime firstDayOfMonth = LocalDateTime.now()
+        .withDayOfMonth(1)
+        .withHour(0)
+        .withMinute(0)
+        .withSecond(0)
+        .withNano(0);
+        LocalDateTime lastDayOfMonth = LocalDateTime.now()
+        .withDayOfMonth(LocalDateTime.now().getMonth().length(LocalDateTime.now().toLocalDate().isLeapYear()))
+        .withHour(23)
+        .withMinute(59)
+        .withSecond(59)
+        .withNano(999999999);
+
+        List<Map<String, Object>> notiList = service.getStatNoticeList(firstDayOfMonth, lastDayOfMonth);
 
         resp.put("notiList", notiList);
 
