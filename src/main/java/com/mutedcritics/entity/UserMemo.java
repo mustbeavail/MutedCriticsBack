@@ -40,11 +40,11 @@ public class UserMemo {
     @Column(name = "content", length = 1000)
     private String content;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", insertable = false)
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
