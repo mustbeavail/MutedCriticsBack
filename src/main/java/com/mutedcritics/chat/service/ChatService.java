@@ -232,6 +232,7 @@ public class ChatService {
         dto.setDepartment(chatMember.getMember().getDeptName());
         dto.setPosition(chatMember.getMember().getPosition());
         dto.setJoinAt(chatMember.getJoinAt());
+        dto.setWithdrawalAt(chatMember.getMember().getWithdrawDate());
         dto.setActiveYn(chatMember.isActiveYn());
         return dto;
     }
