@@ -91,7 +91,7 @@ public class MemberInfoController {
     // 관리자가 회원을 탈퇴시키는 기능
     @PostMapping("/memberInfo/withdraw")
     public ResponseEntity<?> withdrawMember(@RequestBody MemberWithdrawDTO request) {
-        log.info("회원 탈퇴 요청 : {}", request.getMemberId());
+        log.info("관리자 ID: {}가 회원 ID: {} 탈퇴를 요청했습니다.", request.getRequesterId(), request.getMemberId());
         Map<String, Object> result = service.withdrawMember(request);
         return ResponseEntity.ok(result);
     }
@@ -99,8 +99,7 @@ public class MemberInfoController {
     // 회원(본인) 정보 보기
     @PostMapping("/memberInfo")
     public ResponseEntity<?> getMemberInfo(@RequestBody MemberInfoRequestDTO request) {
-        log.info("memberId: {}", request.getMemberId());
-        log.info("requesterId: {}", request.getRequesterId());
+        log.info("내 정보 열람 : {}", request.getMemberId());
         MemberInfoDTO memberInfo = service.getMemberInfo(request);
         return ResponseEntity.ok(memberInfo);
     }

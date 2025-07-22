@@ -119,6 +119,37 @@ public class MemberInfoService {
         return true;
     }
 
+    // 관리자가 회원을 탈퇴시키는 기능
+    public Map<String, Object> withdrawMember(MemberWithdrawDTO request) {
+        Map<String, Object> result = new HashMap<>();
+
+        Member admin = repo.findById(request.getRequesterId())
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 관리자입니다."));
+        
+        // 관리자 권한 체크
+        if (!admin.isAdminYn()) {
+            throw new RuntimeException("관리자 권한이 없습니다.");
+        }
+
+        // 자기 자신은 탈퇴 불가능
+        if (request.getRequesterId().equals(request.getMemberId())) {
+            throw new RuntimeException("자기 자신은 탈퇴할 수 없습니다.");
+        }
+
+        // 탈퇴 대상 회원 조회
+        Member member = repo.findById(request.getMemberId())
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+
+        // 탈퇴 처리
+        member.setWithdrawDate(LocalDate.now());
+        repo.save(member);
+
+        result.put("success", true);
+        result.put("msg", "정상적으로 탈퇴 처리되었습니다.");
+        return result;
+    }
+
+    // 회원(본인) 정보 보기
     public MemberInfoDTO getMemberInfo(MemberInfoRequestDTO request) {
         // 본인이 본인 것 확인하는지 확인
         if (!request.getRequesterId().equals(request.getMemberId())) {
@@ -139,27 +170,4 @@ public class MemberInfoService {
                 .build();
     }
 
-    public Map<String, Object> withdrawMember(MemberWithdrawDTO request) {
-        Map<String, Object> result = new HashMap<>();
-
-        // 관리자 권한 체크
-        Member admin = repo.findById(request.getRequesterId())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 관리자입니다."));
-
-        if (!admin.isAdminYn()) {
-            throw new RuntimeException("관리자 권한이 없습니다.");
-        }
-
-        // 탈퇴 대상 회원 조회
-        Member member = repo.findById(request.getMemberId())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
-
-        // 탈퇴 처리
-        member.setWithdrawDate(LocalDate.now());
-        repo.save(member);
-
-        result.put("success", true);
-        result.put("msg", "정상적으로 탈퇴 처리되었습니다.");
-        return result;
-    }
 }
