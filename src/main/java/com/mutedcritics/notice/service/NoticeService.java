@@ -13,6 +13,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.chat.repository.ChatRoomRepository;
+import com.mutedcritics.dto.NotiListDTO;
 import com.mutedcritics.entity.ChatMsg;
 import com.mutedcritics.entity.Member;
 import com.mutedcritics.entity.Noti;
@@ -73,18 +74,19 @@ public class NoticeService {
     // 채팅 알림 목록 조회
     public List<Map<String, Object>> getChatNoticeList(String memberId) {
 
-        List<Noti> notiList = noticeRepo.findAllByReceiverId(memberId);
+        List<NotiListDTO> notiList = noticeRepo.findAllByReceiverId(memberId);
         List<Map<String, Object>> resp = new ArrayList<>();
 
-        for (Noti noti : notiList) {
+        for (NotiListDTO noti : notiList) {
             int notiIdx = noti.getNotiIdx();
-            String senderId = noti.getMember().getMemberId();
-            String receiverId = noti.getReceiver().getMemberId();
+            String senderId = noti.getMemberId();
+            String receiverId = noti.getReceiverId();
             String contentPre = noti.getContentPre();
             LocalDateTime createdAt = noti.getCreatedAt();
             String notiType = noti.getNotiType();
             int relatedIdx = noti.getRelatedIdx();
             boolean readYn = noti.isReadYn();
+            String memberName = noti.getMemberName();
 
             Map<String, Object> notiMap = new HashMap<>();
             notiMap.put("notiIdx", notiIdx);
@@ -95,6 +97,7 @@ public class NoticeService {
             notiMap.put("notiType", notiType);
             notiMap.put("relatedIdx", relatedIdx);
             notiMap.put("readYn", readYn);
+            notiMap.put("memberName", memberName);
             resp.add(notiMap);
         }
 
@@ -116,6 +119,7 @@ public class NoticeService {
             String notiType = noti.getNotiType();
             int relatedIdx = noti.getRelatedIdx();
             boolean readYn = noti.isReadYn();
+            String memberName = noti.getReceiver().getMemberName();
 
             Map<String, Object> notiMap = new HashMap<>();
             notiMap.put("notiIdx", notiIdx);
@@ -126,6 +130,7 @@ public class NoticeService {
             notiMap.put("notiType", notiType);
             notiMap.put("relatedIdx", relatedIdx);
             notiMap.put("readYn", readYn);
+            notiMap.put("memberName", memberName);
             resp.add(notiMap);
         }
 

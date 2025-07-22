@@ -27,14 +27,18 @@ public class NoticeController {
 
     // 알림 읽음 처리
     @PutMapping("/notice/read")
-    public ResponseEntity<String> readNotice(@RequestBody int notiIdx) {
+    public ResponseEntity<String> readNotice(@RequestBody Map<String, Integer> param) {
+
+        int notiIdx = param.get("notiIdx");
 
         boolean success = service.readNotice(notiIdx);
 
         if (success) {
+            log.info("success: {}", success);
             return ResponseEntity.ok("알림 읽음 처리 완료");
         }
         else {
+            log.info("success: {}", success);
             return ResponseEntity.badRequest().body("알림 읽음 처리 실패");
         }
     }
@@ -43,6 +47,8 @@ public class NoticeController {
     @GetMapping("/notice/chat/list")
     public Map<String, Object> getChatNoticeList(
         @RequestParam String memberId){
+
+        log.info("memberId: {}", memberId);
 
         Map<String, Object> resp = new HashMap<>();
         List<Map<String, Object>> notiList = service.getChatNoticeList(memberId);
