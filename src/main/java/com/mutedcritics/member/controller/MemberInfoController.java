@@ -1,6 +1,7 @@
 package com.mutedcritics.member.controller;
 
 import com.mutedcritics.dto.MemberInfoDTO;
+import com.mutedcritics.dto.MemberInfoRequestDTO;
 import com.mutedcritics.member.service.MemberInfoService;
 import com.mutedcritics.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.websocket.OnClose;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -89,15 +91,17 @@ public class MemberInfoController {
     // 관리자가 회원을 탈퇴시키는 기능
     @PostMapping("/memberInfo/withdraw/{memberId}")
     public ResponseEntity<?> withdrawMember(@PathVariable String memberId) {
+        log.info("");
         return null;
     }
 
 
     // 회원(본인) 정보 보기
-    @GetMapping("/memberInfo/{memberId}")
-    public ResponseEntity<?> getMemberInfo(@PathVariable String memberId) {
-        log.info("memberId: {}", memberId);
-        MemberInfoDTO memberInfo = service.getMemberInfo(memberId);
+    @GetMapping("/memberInfo")
+    public ResponseEntity<?> getMemberInfo(@RequestBody MemberInfoRequestDTO request) {
+        log.info("memberId: {}", request.getMemberId());
+        log.info("requesterId: {}", request.getRequesterId());
+        MemberInfoDTO memberInfo = service.getMemberInfo(request);
         return ResponseEntity.ok(memberInfo);
     }
 

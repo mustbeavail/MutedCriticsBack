@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.mutedcritics.dto.MemberInfoDTO;
+import com.mutedcritics.dto.MemberInfoRequestDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -116,9 +117,14 @@ public class MemberInfoService {
         return true;
     }
 
-    public MemberInfoDTO getMemberInfo(String memberId) {
-        Member member = repo.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다." + memberId));
+    public MemberInfoDTO getMemberInfo(MemberInfoRequestDTO request) {
+        // 본인이 본인 것 확인하는지 확인
+        if (!request.getRequesterId().equals(request.getMemberId())) {
+            throw new RuntimeException("본인만 조회할 수 있습니다.");
+        }
+
+        Member member = repo.findById(request.getMemberId())
+                .orElseThrow(() -> new RuntimeException("회원 정보가 없습니다."));
 
         return MemberInfoDTO.builder()
                 .memberName(member.getMemberName())
