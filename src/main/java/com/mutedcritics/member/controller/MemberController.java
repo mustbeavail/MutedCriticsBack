@@ -143,7 +143,7 @@ public class MemberController {
 
     // 관리자 권한 부여
     @GetMapping("/admin/{member_id}")
-    public Map<String, Object> grant_admin(@PathVariable String member_id, HttpServletRequest request) {
+    public Map<String, Object> grant_admin(@PathVariable String member_id) {
         Map<String, Object> result = new HashMap<String, Object>();
 
         boolean success = service.grant_admin(member_id);
@@ -154,7 +154,7 @@ public class MemberController {
 
     // 관리자 권한 박탈
     @GetMapping("/admin/revoke/{member_id}")
-    public Map<String, Object> revoke_admin(@PathVariable String member_id, HttpServletRequest request) {
+    public Map<String, Object> revoke_admin(@PathVariable String member_id) {
         Map<String, Object> result = new HashMap<String, Object>();
 
         boolean success = service.revoke_admin(member_id);
@@ -164,7 +164,7 @@ public class MemberController {
     
     // 계정 승인
     @GetMapping("/admin/accept/{member_id}")
-    public Map<String, Object> acceptMember(@PathVariable String member_id, HttpServletRequest request) {
+    public Map<String, Object> acceptMember(@PathVariable String member_id) {
         Map<String, Object> result = new HashMap<String, Object>();
 
         // 계정 승인 처리
@@ -189,7 +189,7 @@ public class MemberController {
     
     // 계정 승인 거절
     @GetMapping("/admin/reject/{member_id}")
-    public Map<String, Object> rejectMember(@PathVariable String member_id, HttpServletRequest request) {
+    public Map<String, Object> rejectMember(@PathVariable String member_id) {
         Map<String, Object> result = new HashMap<String, Object>();
 
         // 계정 승인 거절 처리

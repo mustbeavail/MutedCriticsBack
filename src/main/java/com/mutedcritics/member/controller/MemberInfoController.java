@@ -1,23 +1,16 @@
 package com.mutedcritics.member.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
-// import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.mutedcritics.dto.MemberInfoDTO;
 import com.mutedcritics.member.service.MemberInfoService;
 import com.mutedcritics.utils.JwtUtil;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -37,11 +30,11 @@ public class MemberInfoController {
             @RequestParam(required = false) String dept_name,
             @RequestParam(required = false) String position,
             @RequestParam(required = false) Boolean acceptYn) {
-        
+
         int pageNumber = page;
         int size = 10;
-        
-        log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}, dept_name={}, position={}, acceptYn={}", 
+
+        log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}, dept_name={}, position={}, acceptYn={}",
                 pageNumber, keyword, sortField, sortDirection, dept_name, position, acceptYn);
         return service.memberList(pageNumber, size, keyword, sortField, sortDirection, dept_name, position, acceptYn);
     }
@@ -65,7 +58,7 @@ public class MemberInfoController {
             result.put("message", "유효하지 않은 토큰입니다.");
             return result;
         }
-        
+
         // 관리자 권한 확인
         if (!service.isAdmin(requesterId)) {
             log.warn("회원 정보 수정 실패: 요청자({})가 관리자가 아닙니다", requesterId);
@@ -73,7 +66,7 @@ public class MemberInfoController {
             result.put("message", "관리자 권한이 필요합니다.");
             return result;
         }
-        
+
         log.info("회원 정보 수정 요청 파라미터: {}", params);
         String email = params.get("email");
         String member_name = params.get("member_name");
@@ -84,7 +77,7 @@ public class MemberInfoController {
 
         boolean success = service.updateMember(member_id, email, member_name, office_phone, mobile_phone, position, dept_name, requesterId);
         result.put("success", success);
-        
+
         if (success) {
             result.put("message", "회원 정보가 수정되었습니다.");
         } else {
@@ -93,5 +86,12 @@ public class MemberInfoController {
         return result;
     }
 
+    // 회원(본인) 정보 보기
+    @GetMapping("/memberInfo/{memberId}")
+    public ResponseEntity<?> getMemberInfo(@PathVariable String memberId) {
+        log.info("memberId: {}", memberId);
+        MemberInfoDTO memberInfo = service.getMemberInfo(memberId);
+        return ResponseEntity.ok(memberInfo);
+    }
 
 }

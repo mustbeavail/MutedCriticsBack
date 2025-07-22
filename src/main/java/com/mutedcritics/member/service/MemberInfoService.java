@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mutedcritics.dto.MemberInfoDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -81,7 +82,7 @@ public class MemberInfoService {
 
     // 회원 정보 수정 (관리자만 가능)
     public boolean updateMember(String member_id, String email, String member_name, String office_phone,
-            String mobile_phone, String position, String dept_name, String requesterId) {
+                                String mobile_phone, String position, String dept_name, String requesterId) {
         // 요청자가 관리자인지 확인
         Member requester = repo.findById(requesterId).orElse(null);
         if (requester == null || !requester.isAdminYn()) {
@@ -115,4 +116,18 @@ public class MemberInfoService {
         return true;
     }
 
+    public MemberInfoDTO getMemberInfo(String memberId) {
+        Member member = repo.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다." + memberId));
+
+        return MemberInfoDTO.builder()
+                .memberName(member.getMemberName())
+                .memberId(member.getMemberId())
+                .deptName(member.getDeptName())
+                .positionName(member.getPosition())
+                .email(member.getEmail())
+                .officePhone(member.getOfficePhone())
+                .mobilePhone(member.getMobilePhone())
+                .build();
+    }
 }
