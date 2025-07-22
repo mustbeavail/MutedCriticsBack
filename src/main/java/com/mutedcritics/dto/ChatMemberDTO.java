@@ -1,9 +1,8 @@
 package com.mutedcritics.dto;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 import lombok.Data;
+
+import java.time.LocalDate;
 
 @Data
 public class ChatMemberDTO {
@@ -15,7 +14,7 @@ public class ChatMemberDTO {
     private String personalPhone;
     private String department;
     private String position;
-    private LocalDateTime joinAt;
+    private LocalDate joinAt;
     private LocalDate withdrawalAt;
     private boolean activeYn;
 
