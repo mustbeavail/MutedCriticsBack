@@ -1,4 +1,4 @@
-package com.mutedcritics.statss.dao;
+package com.mutedcritics.userstat.dao;
 
 import java.time.LocalDate;
 import java.util.List;
