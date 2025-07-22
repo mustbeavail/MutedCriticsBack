@@ -146,25 +146,6 @@ public class MemberController {
     public Map<String, Object> grant_admin(@PathVariable String member_id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<String, Object>();
 
-        // 토큰 검증
-        // String token = request.getHeader("authorization");
-        // if (token == null || token.isEmpty()) {
-        //     result.put("success", false);
-        //     return result;
-        // }
-        // Map<String, Object> payload = JwtUtil.readToken(token);
-        // String requesterId = (String) payload.get("member_id");
-        // if (requesterId == null || requesterId.isEmpty()) {
-        //     result.put("success", false);
-        //     return result;
-        // }
-
-        // if (!service.isAdmin(requesterId)) {
-        //     log.info("관리자 권한 부여 실패: 요청자({})가 관리자가 아닙니다", requesterId);
-        //     result.put("success", false);
-        //     return result;
-        // }
-
         boolean success = service.grant_admin(member_id);
         result.put("success", success);
         return result;
@@ -175,25 +156,6 @@ public class MemberController {
     @GetMapping("/admin/revoke/{member_id}")
     public Map<String, Object> revoke_admin(@PathVariable String member_id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<String, Object>();
-        
-        // 토큰 검증
-        // String token = request.getHeader("authorization");
-        // if (token == null || token.isEmpty()) {
-        //     result.put("success", false);
-        //     return result;
-        // }
-        // Map<String, Object> payload = JwtUtil.readToken(token);
-        // String requesterId = (String) payload.get("member_id");
-        // if (requesterId == null || requesterId.isEmpty()) {
-        //     result.put("success", false);
-        //     return result;
-        // }
-
-        // if (!service.isAdmin(requesterId)) {
-        //     log.info("관리자 권한 부여 실패: 요청자({})가 관리자가 아닙니다", requesterId);
-        //     result.put("success", false);
-        //     return result;
-        // }
 
         boolean success = service.revoke_admin(member_id);
         result.put("success", success);
@@ -204,29 +166,6 @@ public class MemberController {
     @GetMapping("/admin/accept/{member_id}")
     public Map<String, Object> acceptMember(@PathVariable String member_id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<String, Object>();
-        
-        // 토큰 검증
-        // String token = request.getHeader("authorization");
-        // if (token == null || token.isEmpty()) {
-        //     result.put("success", false);
-        //     result.put("message", "인증 토큰이 필요합니다.");
-        //     return result;
-        // }
-        
-        // Map<String, Object> payload = JwtUtil.readToken(token);
-        // String requesterId = (String) payload.get("member_id");
-        // if (requesterId == null || requesterId.isEmpty()) {
-        //     result.put("success", false);
-        //     result.put("message", "유효하지 않은 토큰입니다.");
-        //     return result;
-        // }
-
-        // if (!service.isAdmin(requesterId)) {
-        //     log.info("계정 승인 실패: 요청자({})가 관리자가 아닙니다", requesterId);
-        //     result.put("success", false);
-        //     result.put("message", "관리자 권한이 필요합니다.");
-        //     return result;
-        // }
 
         // 계정 승인 처리
         Member member = service.getMemberById(member_id);
@@ -252,28 +191,6 @@ public class MemberController {
     @GetMapping("/admin/reject/{member_id}")
     public Map<String, Object> rejectMember(@PathVariable String member_id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<String, Object>();
-        
-        // 토큰 검증
-        // String token = request.getHeader("authorization");
-        // if (token == null || token.isEmpty()) {
-        //     result.put("success", false);
-        //     result.put("message", "인증 토큰이 필요합니다.");
-        //     return result;
-        // }
-        
-        // Map<String, Object> payload = JwtUtil.readToken(token);
-        // String requesterId = (String) payload.get("member_id");
-        // if (requesterId == null || requesterId.isEmpty()) {
-        //     result.put("success", false);
-        //     result.put("message", "유효하지 않은 토큰입니다.");
-        //     return result;
-        // }
-
-        // if (!service.isAdmin(requesterId)) {
-        //     result.put("success", false);
-        //     result.put("message", "관리자 권한이 필요합니다.");
-        //     return result;
-        // }
 
         // 계정 승인 거절 처리
         boolean success = service.rejectMember(member_id);

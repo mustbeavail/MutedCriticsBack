@@ -36,26 +36,7 @@ public class MemberInfoController {
             @RequestParam(defaultValue = "asc") String sortDirection,
             @RequestParam(required = false) String dept_name,
             @RequestParam(required = false) String position,
-            @RequestParam(required = false) Boolean acceptYn,
-            HttpServletRequest request) {
-        
-        // 토큰 검증
-        String token = request.getHeader("authorization");
-        if (token == null || token.isEmpty()) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", false);
-            result.put("message", "인증 토큰이 필요합니다.");
-            return result;
-        }
-        Map<String, Object> payload = JwtUtil.readToken(token);
-        String memberId = (String) payload.get("member_id");
-        
-        if (memberId == null || memberId.isEmpty()) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", false);
-            result.put("message", "유효하지 않은 토큰입니다.");
-            return result;
-        }
+            @RequestParam(required = false) Boolean acceptYn) {
         
         int pageNumber = page;
         int size = 10;
@@ -69,7 +50,7 @@ public class MemberInfoController {
     @PostMapping("/memberInfo/update/{member_id}")
     public Map<String, Object> updateMember(@PathVariable String member_id, @RequestBody Map<String, String> params, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<String, Object>();
-        
+
         // 토큰 검증
         String token = request.getHeader("authorization");
         if (token == null || token.isEmpty()) {
