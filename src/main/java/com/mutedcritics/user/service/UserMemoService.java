@@ -58,7 +58,7 @@ public class UserMemoService {
                         .userId(memo.getUser().getUserId())
                         .memoContent(memo.getContent())
                         .createdAt(memo.getCreatedAt().toString())
-                        .updatedAt(memo.getUpdatedAt().toString())
+                        .updatedAt(memo.getUpdatedAt() != null ? memo.getUpdatedAt().toString() : "")
                         .build())
                 .collect(Collectors.toList()); // list 로 반환
     }
