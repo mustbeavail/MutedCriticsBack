@@ -1,5 +1,7 @@
 package com.mutedcritics.forum.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +25,7 @@ public class ForumService {
     private final ForumCommentRepository forumCommentRepo;
 
     // 포럼 게시글, 댓글 불러오기
-    public Page<ForumPost> getForumList(int page, String topic, String align) {
+    public Page<ForumPost> getForumList(int page, String topic, String align, LocalDateTime today) {
 
         Pageable pageable = null;
         Page<ForumPost> forumPosts = null;
@@ -49,9 +51,9 @@ public class ForumService {
         }
 
         if ("일반".equals(topic)) {
-            forumPosts = forumPostRepo.findByTopic("일반", pageable);
+            forumPosts = forumPostRepo.findByTopic("일반", pageable, today);
         } else if ("경쟁전".equals(topic)) {
-            forumPosts = forumPostRepo.findByTopic("경쟁전", pageable);
+            forumPosts = forumPostRepo.findByTopic("경쟁전", pageable, today);
         }
 
         if (forumPosts == null || forumPosts.isEmpty()) {
@@ -71,10 +73,10 @@ public class ForumService {
     }
 
     // 포럼 댓글 불러오기
-    public Page<ForumComment> getForumComments(int postIdx, int page) {
+    public Page<ForumComment> getForumComments(int postIdx, int page, LocalDateTime today) {
 
         Pageable pageable = PageRequest.of(page - 1, 15, Sort.by("createdAt").descending());
-        Page<ForumComment> forumComments = forumCommentRepo.findByForumPostPostIdx(postIdx, pageable);
+        Page<ForumComment> forumComments = forumCommentRepo.findByForumPostPostIdx(postIdx, pageable, today);
 
         if (forumComments == null || forumComments.isEmpty()) {
             forumComments = Page.empty();
@@ -84,7 +86,7 @@ public class ForumService {
     }
 
     // 포럼 게시글 검색하기
-    public Page<ForumPost> searchForumPosts(String search, String searchType, int page, String topic) {
+    public Page<ForumPost> searchForumPosts(String search, String searchType, int page, String topic, LocalDateTime today) {
 
         if (search == null || search.trim().isEmpty()) {
             return Page.empty();
@@ -94,11 +96,11 @@ public class ForumService {
         Page<ForumPost> forumPosts = null;
 
         if("title".equals(searchType)) {
-            forumPosts = forumPostRepo.findByTitleContaining(search, topic, pageable);
+            forumPosts = forumPostRepo.findByTitleContaining(search, topic, pageable, today);
         } else if("content".equals(searchType)) {
-            forumPosts = forumPostRepo.findByContentContaining(search, topic, pageable);
+            forumPosts = forumPostRepo.findByContentContaining(search, topic, pageable, today);
         } else if("userId".equals(searchType)) {
-            forumPosts = forumPostRepo.findByUserIdContaining(search, topic, pageable);
+            forumPosts = forumPostRepo.findByUserIdContaining(search, topic, pageable, today);
         }
 
         if (forumPosts == null || forumPosts.isEmpty()) {

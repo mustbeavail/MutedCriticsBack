@@ -1,5 +1,6 @@
 package com.mutedcritics.forum.controller;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ForumController {
 
     private final ForumService service;
+    private final LocalDateTime today = LocalDateTime.now();
 
     // 포럼 게시글 불러오기
     @GetMapping("/forum/list")
@@ -41,7 +43,7 @@ public class ForumController {
             "hitDesc".equals(align) || "hitAsc".equals(align) ||
             "likesDesc".equals(align) || "likesAsc".equals(align))) {
 
-            Page<ForumPost> forumPosts = service.getForumList(page, topic, align);
+            Page<ForumPost> forumPosts = service.getForumList(page, topic, align, today);
     
             Page<ForumPostDTO> forumPostDTOs = forumPosts.map(post -> new ForumPostDTO(post));
             
@@ -64,7 +66,7 @@ public class ForumController {
         resp.put("forumPost", forumPostDTO);
 
         // 댓글 불러오기
-        Page<ForumComment> forumComments = service.getForumComments(postIdx, page);
+        Page<ForumComment> forumComments = service.getForumComments(postIdx, page, today);
         Page<ForumCommentDTO> forumCommentDTOs = forumComments.map(comment -> new ForumCommentDTO(comment));
         resp.put("forumComments", forumCommentDTOs);
 
@@ -80,7 +82,7 @@ public class ForumController {
         @RequestParam String topic) {
         Map<String, Object> resp = new HashMap<>();
 
-        Page<ForumPost> forumPosts = service.searchForumPosts(search, searchType, page, topic);
+        Page<ForumPost> forumPosts = service.searchForumPosts(search, searchType, page, topic, today);
         Page<ForumPostDTO> forumPostDTOs = forumPosts.map(post -> new ForumPostDTO(post));
         resp.put("forumPosts", forumPostDTOs);
 
