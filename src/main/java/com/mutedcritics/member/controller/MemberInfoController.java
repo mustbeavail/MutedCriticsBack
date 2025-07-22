@@ -89,15 +89,15 @@ public class MemberInfoController {
     }
 
     // 관리자가 회원을 탈퇴시키는 기능
-    @PostMapping("/memberInfo/withdraw/{memberId}")
-    public ResponseEntity<?> withdrawMember(@PathVariable String memberId) {
+    @PostMapping("/memberInfo/withdraw")
+    public ResponseEntity<?> withdrawMember(@RequestBody) {
         log.info("");
         return null;
     }
 
 
     // 회원(본인) 정보 보기
-    @GetMapping("/memberInfo")
+    @PostMapping("/memberInfo")
     public ResponseEntity<?> getMemberInfo(@RequestBody MemberInfoRequestDTO request) {
         log.info("memberId: {}", request.getMemberId());
         log.info("requesterId: {}", request.getRequesterId());
