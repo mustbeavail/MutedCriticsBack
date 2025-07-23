@@ -273,7 +273,11 @@
             total_play_time AS totalPlayTime,
             total_spent AS totalSpent
         FROM user_stats
-        WHERE total_spent > 0
+        <where>
+        <!-- 기본: userType이 없거나 전체일 때만 결제 유저만 -->
+        <if test="userType == null or userType == '' or userType == '전체'">
+            AND total_spent > 0
+        </if>
         <!-- 검색 타입/검색어 -->
         <if test="searchType == 'userId' and keyword != null and keyword != ''">
             AND user_id LIKE CONCAT('%', #{keyword}, '%')
@@ -293,6 +297,7 @@
         <if test="userType != null and userType != '' and userType != '전체' and userType != 'VIP'">
             AND user_type = #{userType}
         </if>
+        </where>
         ORDER BY 
             <choose>
                 <when test="sortBy == 'totalSpent'">
@@ -343,7 +348,11 @@
         )
         SELECT COUNT(*)
         FROM user_stats
-        WHERE total_spent > 0
+        <where>
+        <!-- 기본: userType이 없거나 전체일 때만 결제 유저만 -->
+        <if test="userType == null or userType == '' or userType == '전체'">
+            AND total_spent > 0
+        </if>
         <!-- 검색 타입/검색어 -->
         <if test="searchType == 'userId' and keyword != null and keyword != ''">
             AND user_id LIKE CONCAT('%', #{keyword}, '%')
@@ -363,6 +372,7 @@
         <if test="userType != null and userType != '' and userType != '전체' and userType != 'VIP'">
             AND user_type = #{userType}
         </if>
+        </where>
     </select>
 
 </mapper>

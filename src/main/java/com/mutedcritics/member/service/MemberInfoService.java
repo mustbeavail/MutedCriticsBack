@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.mutedcritics.dto.MemberInfoDTO;
-import com.mutedcritics.dto.MemberInfoRequestDTO;
 import com.mutedcritics.dto.MemberWithdrawDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -130,7 +129,7 @@ public class MemberInfoService {
 
         Member admin = repo.findById(request.getRequesterId())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 관리자입니다."));
-        
+
         // 관리자 권한 체크
         if (!admin.isAdminYn()) {
             throw new RuntimeException("관리자 권한이 없습니다.");
@@ -145,6 +144,11 @@ public class MemberInfoService {
         Member member = repo.findById(request.getMemberId())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
 
+        // 이미 탈퇴 처리 되었는지 확인
+        if (member.getWithdrawDate() != null) {
+            throw new RuntimeException("이미 탈퇴 처리된 회원입니다.");
+        }
+
         // 탈퇴 처리
         member.setWithdrawDate(LocalDate.now());
         repo.save(member);
@@ -155,13 +159,9 @@ public class MemberInfoService {
     }
 
     // 회원(본인) 정보 보기
-    public MemberInfoDTO getMemberInfo(MemberInfoRequestDTO request) {
-        // 본인이 본인 것 확인하는지 확인
-        if (!request.getRequesterId().equals(request.getMemberId())) {
-            throw new RuntimeException("본인만 조회할 수 있습니다.");
-        }
+    public MemberInfoDTO getMemberInfo(String member_id) {
 
-        Member member = repo.findById(request.getMemberId())
+        Member member = repo.findById(member_id)
                 .orElseThrow(() -> new RuntimeException("회원 정보가 없습니다."));
 
         return MemberInfoDTO.builder()

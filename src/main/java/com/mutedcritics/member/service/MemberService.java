@@ -221,11 +221,16 @@ public class MemberService {
     }
 
     // 관리자 권한 박탈
-    public boolean revoke_admin(String member_id) {
-        Member member = repo.findById(member_id).orElse(null);
-        if (member == null) {
-            return false;
+    public boolean revoke_admin(Map<String, String> request) {
+        // 대상 회원이 존재하는지 확인
+        Member member = repo.findById(request.get("memberId"))
+                .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+
+        // 관리자 본인은 스스로 권한 박탈 불가능
+        if (member.getMemberId().equals(request.get("requesterId"))) {
+            throw new RuntimeException("자기 자신은 권한 박탈이 불가능합니다.");
         }
+
         member.setAdminYn(false);
         repo.save(member);
         return true;
@@ -239,7 +244,7 @@ public class MemberService {
         }
         return member.isAdminYn();
     }
-    
+
     // 계정 승인 거절
     public boolean rejectMember(String member_id) {
         try {
@@ -248,7 +253,7 @@ public class MemberService {
                 log.warn("회원 삭제 실패: 존재하지 않는 계정 - {}", member_id);
                 return false;
             }
-            
+
             // 회원 삭제
             repo.deleteById(member_id);
             log.info("회원 삭제 성공: {}", member_id);
@@ -258,5 +263,5 @@ public class MemberService {
             return false;
         }
     }
-    
+
 }

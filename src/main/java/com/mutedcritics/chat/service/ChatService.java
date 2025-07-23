@@ -104,8 +104,8 @@ public class ChatService {
 
     // 내 채팅방 목록 조회
     @Transactional(readOnly = true)
-    public Page<ChatRoomDTO> getMyChatRooms(String memberId, String searchType, String searchKeyword, Pageable pageable) {
-        Page<ChatRoom> roomPage = chatRoomRepository.findMyChatRooms(memberId, searchType, searchKeyword, pageable);
+    public Page<ChatRoomDTO> getMyChatRooms(String memberId, String searchType, String searchKeyword, String sortBy, Pageable pageable) {
+        Page<ChatRoom> roomPage = chatRoomRepository.findMyChatRooms(memberId, searchType, searchKeyword, sortBy, pageable);
 
         return roomPage.map(this::convertToRoomDTO);
     }

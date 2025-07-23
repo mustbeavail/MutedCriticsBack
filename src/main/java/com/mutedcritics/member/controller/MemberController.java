@@ -4,11 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.mutedcritics.entity.Member;
 import com.mutedcritics.member.service.MemberService;
@@ -57,6 +53,13 @@ public class MemberController {
         if (!member.isAcceptYn()) {
             result.put("success", false);
             result.put("message", "승인되지 않은 계정입니다. 관리자 승인 후 이용 가능합니다.");
+            return result;
+        }
+
+        // 계정 탈퇴 여부 확인
+        if (member.getWithdrawDate() != null) {
+            result.put("success", false);
+            result.put("message", "탈퇴한 계정입니다.");
             return result;
         }
 
@@ -153,11 +156,12 @@ public class MemberController {
     }
 
     // 관리자 권한 박탈
-    @GetMapping("/admin/revoke/{member_id}")
-    public Map<String, Object> revoke_admin(@PathVariable String member_id) {
+    @PostMapping("/admin/revoke")
+    public Map<String, Object> revoke_admin(@RequestBody Map<String, String> request) {
         Map<String, Object> result = new HashMap<String, Object>();
+        log.info("관리자 권한 박탈 요청 : {}, {}", request.get("requesterId"), request.get("memberId"));
 
-        boolean success = service.revoke_admin(member_id);
+        boolean success = service.revoke_admin(request);
         result.put("success", success);
         return result;
     }

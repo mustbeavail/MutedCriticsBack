@@ -1,7 +1,6 @@
 package com.mutedcritics.member.controller;
 
 import com.mutedcritics.dto.MemberInfoDTO;
-import com.mutedcritics.dto.MemberInfoRequestDTO;
 import com.mutedcritics.dto.MemberWithdrawDTO;
 import com.mutedcritics.member.service.MemberInfoService;
 import com.mutedcritics.utils.JwtUtil;
@@ -97,10 +96,10 @@ public class MemberInfoController {
     }
 
     // 회원(본인) 정보 보기
-    @PostMapping("/memberInfo")
-    public ResponseEntity<?> getMemberInfo(@RequestBody MemberInfoRequestDTO request) {
-        log.info("내 정보 열람 : {}", request.getMemberId());
-        MemberInfoDTO memberInfo = service.getMemberInfo(request);
+    @GetMapping("/memberInfo")
+    public ResponseEntity<?> getMemberInfo(@RequestParam String member_id) {
+        log.info("내 정보 열람 : {}", member_id);
+        MemberInfoDTO memberInfo = service.getMemberInfo(member_id);
         return ResponseEntity.ok(memberInfo);
     }
 

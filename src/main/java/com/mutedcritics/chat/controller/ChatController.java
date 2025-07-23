@@ -74,10 +74,11 @@ public class ChatController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String searchType,
-            @RequestParam(required = false) String searchKeyword
+            @RequestParam(required = false) String searchKeyword,
+            @RequestParam(defaultValue = "dateDESC") String sortBy
     ) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<ChatRoomDTO> chatRooms = chatService.getMyChatRooms(memberId, searchType, searchKeyword, pageable);
+        Page<ChatRoomDTO> chatRooms = chatService.getMyChatRooms(memberId, searchType, searchKeyword, sortBy, pageable);
         return ResponseEntity.ok(chatRooms);
     }
 
