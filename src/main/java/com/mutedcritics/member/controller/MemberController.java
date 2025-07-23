@@ -60,6 +60,13 @@ public class MemberController {
             return result;
         }
 
+        // 계정 탈퇴 여부 확인
+        if (member.getWithdrawDate() != null) {
+            result.put("success", false);
+            result.put("message", "탈퇴한 계정입니다.");
+            return result;
+        }
+
         // 로그인 성공 시 JWT 토큰 생성
         if (success) {
             Map<String, Object> tokenData = new HashMap<>();
