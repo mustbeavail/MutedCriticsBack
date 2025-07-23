@@ -3,6 +3,7 @@ package com.mutedcritics.chat.repository.impl;
 import java.util.List;
 import java.util.Optional;
 
+import com.querydsl.core.types.OrderSpecifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -54,7 +55,7 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
     }
 
     @Override
-    public Page<ChatRoom> findMyChatRooms(String memberId, String searchType, String searchKeyword, Pageable pageable) {
+    public Page<ChatRoom> findMyChatRooms(String memberId, String searchType, String searchKeyword, String sortBy, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder();
 
         // 내가 참여중인 채팅방
@@ -78,13 +79,22 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
                 .where(builder)
                 .fetchOne();
 
+
+        // 정렬 기준 동적 결정
+        OrderSpecifier<?> orderSpecifier;
+        if ("dateASC".equalsIgnoreCase(sortBy)) {
+            orderSpecifier = chatRoom.createdAt.asc(); // 생성일 오름차순
+        } else {
+            orderSpecifier = chatRoom.createdAt.desc(); // 기본 : 생성일 내림차순 (dateDESC)
+        }
+
         // 채팅방 목록 조회
         List<ChatRoom> rooms = factory.select(chatRoom)
                 .distinct()
                 .from(chatRoom)
                 .join(chatMember).on(chatMember.chatRoom.roomIdx.eq(chatRoom.roomIdx))
                 .where(builder)
-                .orderBy(chatRoom.createdAt.desc())
+                .orderBy(orderSpecifier)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
