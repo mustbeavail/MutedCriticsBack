@@ -211,17 +211,21 @@
             u.user_type AS userType,
             u.user_gender AS userGender,
             u.region,
-            (SELECT SUM(mr.match_play_time)
+            (SELECT COALESCE(SUM(mr.match_play_time),0)
                 FROM match_result mr
                 WHERE mr.user_id = u.user_id) AS totalPlayTime,
-            (SELECT SUM(il.item_price)
-                FROM order_list ol
-                JOIN item_list il ON ol.item_idx = il.item_idx
-                WHERE ol.user_id = u.user_id
-                    AND ol.order_date &lt;= CURDATE()
-                ) AS totalPayment
-        FROM
-            user u
+            (SELECT COALESCE(SUM(
+                             CASE ol.item_cate
+                             WHEN 'item' THEN il.item_price
+                             WHEN 'bundle' THEN bi.bundle_price
+                             ELSE 0
+                        END
+        ),0)
+            FROM order_list ol
+            LEFT JOIN item_list il ON ol.item_idx = il.item_idx AND ol.item_cate = 'item'
+            LEFT JOIN bundle_item bi ON ol.item_idx = bi.bundle_idx AND ol.item_cate = 'bundle'
+            WHERE ol.user_id = u.user_id AND ol.order_date &lt;= CURDATE()) AS totalPayment
+        FROM user u
         <where>
             u.join_date &lt;= CURDATE()
             <if test="category != null and category != ''">
