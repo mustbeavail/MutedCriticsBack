@@ -222,7 +222,7 @@
         FROM order_list ol
         LEFT JOIN item_list   il ON  ol.item_cate = 'item' AND il.item_idx   = ol.item_idx
         LEFT JOIN bundle_item bi ON  ol.item_cate = 'bundle' AND bi.bundle_idx = ol.item_idx
-        WHERE ol.user_id = #{userId}
+        WHERE ol.user_id = #{userId} AND ol.order_date &lt;= CURDATE()
     </select>
 
     <!-- 유저 리스트 조회 -->
