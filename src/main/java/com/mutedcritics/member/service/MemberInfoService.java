@@ -52,6 +52,11 @@ public class MemberInfoService {
 
         if (!hasFilter) {
             // 전체 조회
+            if(pageNumber == 0) {
+                List<Member> totalMembers = repo.findAll();
+                result.put("members", totalMembers);
+                return result;
+            }
             totalCount = repo.countAllMembers();
             members = repo.findAllWithPagingAndSorting(
                     null, null, null, pageNumber, size, sortField, sortDirection, acceptYn);

@@ -67,5 +67,4 @@ public interface MemberInfoRepository extends JpaRepository<Member, String> {
             @Param("position") String position,
             @Param("acceptYn") Boolean acceptYn,
             Pageable pageable);
-
 }
