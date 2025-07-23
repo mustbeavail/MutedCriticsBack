@@ -1,6 +1,7 @@
 package com.mutedcritics.chat.repository.impl;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+// import java.time.LocalDateTime;
 import java.util.List;
 
 import com.mutedcritics.chat.repository.ChatMemberRepositoryCustom;
@@ -43,7 +44,7 @@ public class ChatMemberRepositoryImpl implements ChatMemberRepositoryCustom {
     public void leaveChatRoom(int roomIdx, String memberId) {
         factory.update(chatMember)
                 .set(chatMember.activeYn, false)
-                .set(chatMember.leftAt, LocalDateTime.now())
+                .set(chatMember.leftAt, LocalDate.now())
                 .where(chatMember.chatRoom.roomIdx.eq(roomIdx).and(chatMember.member.memberId.eq(memberId)))
                 .execute();
     }
