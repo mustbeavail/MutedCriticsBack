@@ -341,7 +341,7 @@
                 FROM order_list ol
                 LEFT JOIN item_list il ON ol.item_idx = il.item_idx AND ol.item_cate = 'item'
                 LEFT JOIN bundle_item bi ON ol.item_idx = bi.bundle_idx AND ol.item_cate = 'bundle'
-                WHERE ol.order_date &lt; CURDATE()
+                WHERE ol.order_date &lt;= CURDATE()
                 GROUP BY ol.user_id
             ) spending ON u.user_id = spending.user_id
             WHERE (u.withdraw_date IS NULL OR u.withdraw_date > CURDATE())

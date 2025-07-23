@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.jpa.JPAExpressions;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -62,14 +63,24 @@ public class ChatRoomRepositoryImpl implements ChatRoomRepositoryCustom {
         builder.and(chatMember.member.memberId.eq(memberId));
         builder.and(chatMember.activeYn.eq(true));
 
-        // 검색 조건 (채팅방 이름으로 검색)
-        if (searchType != null && searchType.equals("roomName")) {
+        // 채팅방 이름 검색
+        if ("roomName".equals(searchType) && searchKeyword != null && !searchKeyword.isEmpty()) {
             builder.and(chatRoom.roomName.containsIgnoreCase(searchKeyword));
         }
 
-        // 검색 조건 (채팅방 멤버로 검색)
-        if (searchType != null && searchType.equals("memberName")) {
-            builder.and(chatMember.member.memberName.containsIgnoreCase(searchKeyword));
+        // 멤버 이름 검색
+        if ("memberName".equals(searchType) && searchKeyword != null && !searchKeyword.isEmpty()) {
+            QChatMember cm2 = new QChatMember("cm2");
+            builder.and(JPAExpressions
+                    .selectOne()
+                    .from(cm2)
+                    .where(
+                            cm2.chatRoom.roomIdx.eq(chatRoom.roomIdx),
+                            cm2.member.memberName.containsIgnoreCase(searchKeyword),
+                            cm2.activeYn.eq(true)
+                    )
+                    .exists()
+            );
         }
 
         // 총 개수 조회

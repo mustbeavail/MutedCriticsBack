@@ -217,11 +217,13 @@
             (SELECT SUM(il.item_price)
                 FROM order_list ol
                 JOIN item_list il ON ol.item_idx = il.item_idx
-                WHERE ol.user_id = u.user_id) AS totalPayment
+                WHERE ol.user_id = u.user_id
+                    AND ol.order_date &lt;= CURDATE()
+                ) AS totalPayment
         FROM
             user u
         <where>
-            u.join_date &lt;= NOW()
+            u.join_date &lt;= CURDATE()
             <if test="category != null and category != ''">
                 <choose>
                     <when test="category == '신규'">
