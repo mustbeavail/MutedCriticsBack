@@ -125,7 +125,7 @@ public class MemberInfoService {
 
         Member admin = repo.findById(request.getRequesterId())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 관리자입니다."));
-        
+
         // 관리자 권한 체크
         if (!admin.isAdminYn()) {
             throw new RuntimeException("관리자 권한이 없습니다.");
@@ -139,6 +139,11 @@ public class MemberInfoService {
         // 탈퇴 대상 회원 조회
         Member member = repo.findById(request.getMemberId())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
+
+        // 이미 탈퇴 처리 되었는지 확인
+        if (member.getWithdrawDate() != null) {
+            throw new RuntimeException("이미 탈퇴 처리된 회원입니다.");
+        }
 
         // 탈퇴 처리
         member.setWithdrawDate(LocalDate.now());
