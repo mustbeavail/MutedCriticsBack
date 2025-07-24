@@ -17,7 +17,7 @@
         last_access AS (
                 SELECT COALESCE(CAST(MAX(access_time) AS DATETIME), '9999-12-31 23:59:59') AS last_access
                 FROM access_stats
-                WHERE user_id = #{userId}
+                WHERE user_id = #{userId} AND access_time &lt;= CURDATE()
         ),
         total_spending AS (
                 SELECT COALESCE(
@@ -31,7 +31,7 @@
                 FROM   order_list ol
                 LEFT   JOIN item_list   il ON il.item_idx   = ol.item_idx  AND ol.item_cate = 'item'
                 LEFT   JOIN bundle_item bi ON bi.bundle_idx = ol.item_idx  AND ol.item_cate = 'bundle'
-                WHERE ol.user_id = #{userId}
+                WHERE ol.user_id = #{userId} AND ol.order_date &lt;= CURDATE()
         ),
         play_stats AS (
             SELECT
@@ -87,7 +87,13 @@
             FROM   match_result mr
             JOIN   heroes      h  ON mr.heroes_idx = h.heroes_idx
             JOIN   match_table mt ON mr.match_idx  = mt.match_idx
-            WHERE mr.user_id = #{userId}
+            <if test="season != null and season != ''">
+                JOIN   season s ON mt.season_idx = #{season}
+                WHERE mr.user_id = #{userId} AND mt.match_date BETWEEN s.start_date AND s.end_date
+            </if>
+            <if test="season == null or season == ''">
+                WHERE mr.user_id = #{userId} AND mt.match_date &lt;= CURDATE()
+            </if>
         )
         SELECT  la.last_access,
                 ps.total_play_time,
@@ -148,24 +154,28 @@
     <!-- 유저 시즌별 통계 -->
     <select id="userStatsSeason" resultType="com.mutedcritics.dto.UserStatsSeasonDTO">
         WITH
-        season_dates AS (
-            SELECT start_date, end_date
-            FROM   season
-            WHERE  season_idx = #{season}
-        ),
         total_play_time_season AS (
             SELECT COALESCE(SUM(mr.match_play_time), 0) AS total_play_time_season
             FROM   match_result  mr
             JOIN   match_table   mt ON mr.match_idx = mt.match_idx
-            JOIN   season_dates  sd ON mt.match_date BETWEEN sd.start_date AND sd.end_date
-            WHERE  mr.user_id = #{userId}
+            <if test="season != null and season != ''">
+                JOIN   season s ON mt.season_idx = #{season}
+                WHERE mr.user_id = #{userId} AND mt.match_date BETWEEN s.start_date AND s.end_date
+            </if>
+            <if test="season == null or season == ''">
+                WHERE mr.user_id = #{userId} AND mt.match_date &lt;= CURDATE()
+            </if>
         ),
         user_orders_season AS (
             SELECT ol.item_idx, ol.item_cate
             FROM   order_list  ol
-            JOIN   season_dates sd
-                ON ol.order_date BETWEEN sd.start_date AND sd.end_date
-            WHERE  ol.user_id = #{userId}
+            <if test="season != null and season != ''">
+                JOIN   season s ON ol.season_idx = #{season}
+                WHERE ol.user_id = #{userId} AND ol.order_date BETWEEN s.start_date AND s.end_date
+            </if>
+            <if test="season == null or season == ''">
+                WHERE ol.user_id = #{userId} AND ol.order_date &lt;= CURDATE()
+            </if>
         ),
         total_item_price AS (
             SELECT COALESCE(SUM(il.item_price), 0) AS total_item_price
@@ -197,8 +207,13 @@
         tier_season AS (
                 SELECT COALESCE( MAX(t.tier_name), '티어정보 없음') AS tier_season
                 FROM tier t
-                JOIN season_dates  sd ON t.tier_date BETWEEN sd.start_date AND sd.end_date
-                WHERE t.user_id = #{userId}
+                <if test="season != null and season != ''">
+                    JOIN   season s ON t.season_idx = #{season}
+                    WHERE t.user_id = #{userId} AND t.tier_date BETWEEN s.start_date AND s.end_date
+                </if>
+                <if test="season == null or season == ''">
+                    WHERE t.user_id = #{userId} AND SELECT MAX(tier_date) FROM tier WHERE user_id = #{userId} &lt;= CURDATE()
+                </if>
         )
         SELECT  tp.total_play_time_season,
                 ip.total_item_price,
