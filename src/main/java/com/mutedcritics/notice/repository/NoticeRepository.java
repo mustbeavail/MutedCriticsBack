@@ -14,7 +14,7 @@ public interface NoticeRepository extends JpaRepository<Noti, Integer> {
 
     @Query("SELECT new com.mutedcritics.dto.NotiListDTO(" +
     "n.notiIdx, n.contentPre, n.relatedIdx, n.readYn, n.notiType, n.createdAt, " +
-    "n.member.memberId, n.receiver.memberId, n.receiver.memberName) " +
+    "n.member.memberId, n.member.memberId, n.member.memberName) " +
     "FROM Noti n WHERE n.receiver.memberId = :memberId AND n.notiType = 'chat' AND n.readYn = false ORDER BY n.createdAt DESC")
     List<NotiListDTO> findAllByReceiverId(@Param("memberId") String memberId);
 
