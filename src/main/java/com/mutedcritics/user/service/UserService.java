@@ -36,18 +36,28 @@ public class UserService {
     }
 
     // 유저 통계
-    public UserStatsDTO userStats(String userId) {
+    public UserStatsDTO userStats(String userId, Integer season) {
 
-        UserStatsDTO userStats = dao.userStats(userId);
+        UserStatsDTO userStats = dao.userStats(userId, season);
         userStats.setUser_id(userId);
 
         return userStats;
     }
 
     // 유저 시즌별 통계
-    public UserStatsSeasonDTO userStatsSeason(String userId, int season) {
+    public UserStatsSeasonDTO userStatsSeason(String userId, Integer season) {
 
         UserStatsSeasonDTO userStatsSeason = dao.userStatsSeason(userId, season);
+
+        if (userStatsSeason == null) {
+            userStatsSeason = new UserStatsSeasonDTO();
+
+            userStatsSeason.setTotal_play_time_season(0);
+            userStatsSeason.setTotal_item_price(0);
+            userStatsSeason.setTotal_bundle_price(0);
+            userStatsSeason.setTotal_spending_season(0);
+            userStatsSeason.setTier_season("티어정보 없음");
+        }
         userStatsSeason.setUser_id(userId);
         userStatsSeason.setSeason(season);
 
@@ -81,14 +91,16 @@ public class UserService {
     }
 
     // 유저 리스트 불러오기
-    public Map<String, Object> getUserList(String searchType, String keyword, String region, String userType, String sortBy, String sortOrder, int page, int size) {
+    public Map<String, Object> getUserList(String searchType, String keyword, String region, String userType,
+            String sortBy, String sortOrder, int page, int size) {
         Map<String, Object> resp = new HashMap<>();
 
         // 페이징 계산
         int offset = (page - 1) * size;
 
         // 데이터 조회
-        List<UserListDTO> userList = dao.getUserList(searchType, keyword, region, userType, sortBy, sortOrder, offset, size);
+        List<UserListDTO> userList = dao.getUserList(searchType, keyword, region, userType, sortBy, sortOrder, offset,
+                size);
         int totalCount = dao.getUserListCount(searchType, keyword, region, userType);
 
         // 페이징 정보 계산

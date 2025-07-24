@@ -15,9 +15,9 @@ public interface UserDAO {
 
     List<UserDTO> userDetail(String userId);
 
-    UserStatsSeasonDTO userStatsSeason(String userId, int season);
+    UserStatsSeasonDTO userStatsSeason(String userId, Integer season);
 
-    UserStatsDTO userStats(String userId);
+    UserStatsDTO userStats(String userId, Integer season);
 
     List<Map<String, Object>> userSpending(String userId);
 

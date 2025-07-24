@@ -6,7 +6,7 @@ import lombok.Data;
 public class UserStatsSeasonDTO {
 
     private String user_id;
-    private int season;
+    private Integer season;
 
     private int total_play_time_season;
     private int total_item_price;

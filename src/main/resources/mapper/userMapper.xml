@@ -14,6 +14,16 @@
     <!-- 유저 통계 -->
     <select id="userStats" resultType="com.mutedcritics.dto.UserStatsDTO">
         WITH
+        season_dates AS (
+            SELECT MIN(start_date) AS start_date, MAX(end_date) AS end_date
+            FROM   season
+            <if test="season != null and season != ''">
+                WHERE  season_idx = #{season}
+            </if>
+            <if test="season == null or season == ''">
+                WHERE  start_date &lt;= CURDATE()
+            </if>
+        ),
         last_access AS (
                 SELECT COALESCE(CAST(MAX(access_time) AS DATETIME), '9999-12-31 23:59:59') AS last_access
                 FROM access_stats
@@ -88,8 +98,10 @@
             JOIN   heroes      h  ON mr.heroes_idx = h.heroes_idx
             JOIN   match_table mt ON mr.match_idx  = mt.match_idx
             <if test="season != null and season != ''">
-                JOIN   season s ON mt.season_idx = #{season}
-                WHERE mr.user_id = #{userId} AND mt.match_date BETWEEN s.start_date AND s.end_date
+                JOIN   season_dates sd
+                WHERE mr.user_id = #{userId}
+                AND mt.match_date BETWEEN sd.start_date AND sd.end_date
+                AND mt.match_date &lt;= CURDATE()
             </if>
             <if test="season == null or season == ''">
                 WHERE mr.user_id = #{userId} AND mt.match_date &lt;= CURDATE()
@@ -154,24 +166,38 @@
     <!-- 유저 시즌별 통계 -->
     <select id="userStatsSeason" resultType="com.mutedcritics.dto.UserStatsSeasonDTO">
         WITH
+        season_dates AS (
+            SELECT MIN(start_date) AS start_date, MAX(end_date) AS end_date
+            FROM   season
+            <if test="season != null and season != ''">
+                WHERE  season_idx = #{season}
+            </if>
+            <if test="season == null or season == ''">
+                WHERE  start_date &lt;= CURDATE()
+            </if>
+        ),
         total_play_time_season AS (
             SELECT COALESCE(SUM(mr.match_play_time), 0) AS total_play_time_season
             FROM   match_result  mr
             JOIN   match_table   mt ON mr.match_idx = mt.match_idx
             <if test="season != null and season != ''">
-                JOIN   season s ON mt.season_idx = #{season}
-                WHERE mr.user_id = #{userId} AND mt.match_date BETWEEN s.start_date AND s.end_date
+                JOIN   season_dates sd
+                WHERE mr.user_id = #{userId}
+                AND mt.match_date BETWEEN sd.start_date AND sd.end_date
+                AND mt.match_date &lt;= CURDATE()
             </if>
             <if test="season == null or season == ''">
                 WHERE mr.user_id = #{userId} AND mt.match_date &lt;= CURDATE()
             </if>
         ),
         user_orders_season AS (
-            SELECT ol.item_idx, ol.item_cate
+            SELECT COALESCE(ol.item_idx, 0) AS item_idx, COALESCE(ol.item_cate, 'noItem') AS item_cate
             FROM   order_list  ol
             <if test="season != null and season != ''">
-                JOIN   season s ON ol.season_idx = #{season}
-                WHERE ol.user_id = #{userId} AND ol.order_date BETWEEN s.start_date AND s.end_date
+                JOIN   season_dates sd
+                WHERE ol.user_id = #{userId}
+                AND ol.order_date BETWEEN sd.start_date AND sd.end_date
+                AND ol.order_date &lt;= CURDATE()
             </if>
             <if test="season == null or season == ''">
                 WHERE ol.user_id = #{userId} AND ol.order_date &lt;= CURDATE()
@@ -205,15 +231,19 @@
             LEFT   JOIN bundle_item bi ON bi.bundle_idx = uos.item_idx  AND uos.item_cate = 'bundle'
         ),
         tier_season AS (
-                SELECT COALESCE( MAX(t.tier_name), '티어정보 없음') AS tier_season
+                SELECT COALESCE(t.tier_name, '티어정보 없음') AS tier_season
                 FROM tier t
                 <if test="season != null and season != ''">
-                    JOIN   season s ON t.season_idx = #{season}
-                    WHERE t.user_id = #{userId} AND t.tier_date BETWEEN s.start_date AND s.end_date
+                    JOIN   season_dates sd
+                    WHERE t.user_id = #{userId} 
+                    AND t.tier_date BETWEEN sd.start_date AND sd.end_date
+                    AND t.tier_date &lt;= CURDATE()
                 </if>
                 <if test="season == null or season == ''">
-                    WHERE t.user_id = #{userId} AND SELECT MAX(tier_date) FROM tier WHERE user_id = #{userId} &lt;= CURDATE()
+                    WHERE t.user_id = #{userId} AND t.tier_date &lt;= CURDATE()
                 </if>
+                ORDER BY t.tier_date DESC
+                LIMIT 1
         )
         SELECT  tp.total_play_time_season,
                 ip.total_item_price,

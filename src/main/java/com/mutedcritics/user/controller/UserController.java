@@ -35,10 +35,11 @@ public class UserController {
     // 유저 통계
     @GetMapping("/user/stats")
     public Map<String, Object> userStats(
-            @RequestParam String userId) {
+            @RequestParam String userId,
+            @RequestParam(required = false) Integer season) {
 
         Map<String, Object> resp = new HashMap<>();
-        UserStatsDTO userStats = service.userStats(userId);
+        UserStatsDTO userStats = service.userStats(userId, season);
 
         resp.put("userStats", userStats);
 
@@ -49,7 +50,7 @@ public class UserController {
     @GetMapping("/user/stats/season")
     public Map<String, Object> userStatsSeason(
             @RequestParam String userId,
-            @RequestParam int season) {
+            @RequestParam(required = false) Integer season) {
         Map<String, Object> resp = new HashMap<>();
         UserStatsSeasonDTO userStatsSeason = service.userStatsSeason(userId, season);
 
