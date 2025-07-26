@@ -51,11 +51,4 @@ public class JwtUtil {
 		return result;
 	}
 
-	// 토큰 확인 메소드
-
-//	String loginId = (String) JwtUtil.readToken(header.get("authorization")).get("user_id");
-//	if (loginId.equals("")) {
-//		/*코드입력*/
-//	}
-
 }

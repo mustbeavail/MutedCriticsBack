@@ -61,7 +61,7 @@ public class Inquiry {
     private LocalDateTime createdAt;
 
     // 응답 목록
-    @OneToOne(mappedBy = "inquiry", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "inquiry", cascade = CascadeType.ALL)
     @ToString.Exclude // 롬복 @Data 사용시, 양방향 매핑 시 무한 루프 방지
     private Response response;
 

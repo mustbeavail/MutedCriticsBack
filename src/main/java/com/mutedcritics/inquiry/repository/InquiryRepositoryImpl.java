@@ -1,23 +1,19 @@
 package com.mutedcritics.inquiry.repository;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Repository;
-
 import com.mutedcritics.entity.Inquiry;
 import com.mutedcritics.entity.QInquiry;
 import com.mutedcritics.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -146,16 +142,5 @@ public class InquiryRepositoryImpl implements InquiryRepositoryCustom {
 
         return new PageImpl<>(content, pageable, totalCount);
 
-    }
-
-    @Override
-    public List<Inquiry> findUnansweredInquiries() {
-        QInquiry inquiry = QInquiry.inquiry;
-
-        // 답변이 없는 문의/신고 조회(response 필드가 null인 경우)
-        return factory.selectFrom(inquiry)
-                .where(inquiry.response.isNull()) // response 필드가 null인 경우
-                .orderBy(inquiry.createdAt.asc()) // 오래된 순서대로 처리
-                .fetch();
     }
 }

@@ -1,14 +1,5 @@
 package com.mutedcritics.inquiry.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.mutedcritics.dto.InquiryDTO;
 import com.mutedcritics.dto.InquiryReportDetailDTO;
 import com.mutedcritics.dto.ReportDTO;
@@ -16,97 +7,123 @@ import com.mutedcritics.dto.ResponseDTO;
 import com.mutedcritics.entity.Inquiry;
 import com.mutedcritics.entity.Response;
 import com.mutedcritics.inquiry.repository.InquiryRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class InquiryService {
 
-	private final InquiryRepository repository;
+    private final InquiryRepository repository;
 
-	// 문의 리스트 조회
-	@Transactional(readOnly = true)
-	public Page<InquiryDTO> getInquiriesWithConditions(String userId, String category, String status, boolean isVip,
-			String sortBy,
-			String sortOrder, Pageable pageable) {
-		Page<Inquiry> inquiryPage = repository.findInquiriesWithConditions(userId, category, status, isVip, sortBy,
-				sortOrder, pageable);
+    // 문의 리스트 조회
+    @Transactional(readOnly = true)
+    public Page<InquiryDTO> getInquiriesWithConditions(String userId, String category, String status, boolean isVip,
+                                                       String sortBy,
+                                                       String sortOrder, Pageable pageable) {
+        Page<Inquiry> inquiryPage = repository.findInquiriesWithConditions(userId, category, status, isVip, sortBy,
+                sortOrder, pageable);
 
-		List<Inquiry> inquiryList = inquiryPage.getContent();
-		List<InquiryDTO> dtoList = new ArrayList<>();
+        return inquiryPage.map(this::convertToInquiryDTO);
+    }
 
-		for (Inquiry inquiry : inquiryList) {
-			InquiryDTO dto = new InquiryDTO(inquiry);
-			dtoList.add(dto);
-		}
+    // 신고 리스트 조회
+    @Transactional(readOnly = true)
+    public Page<ReportDTO> getReportsWithConditions(String userId, String status, String sortBy, String sortOrder,
+                                                    Pageable pageable) {
+        Page<Inquiry> reportPage = repository.findByReportsWithConditions(userId, status, sortBy, sortOrder, pageable);
 
-		return new PageImpl<>(dtoList, pageable, inquiryPage.getTotalElements());
-	}
+        return reportPage.map(this::convertToReportDTO);
+    }
 
-	// 신고 리스트 조회
-	@Transactional(readOnly = true)
-	public Page<ReportDTO> getReportsWithConditions(String userId, String status, String sortBy, String sortOrder,
-			Pageable pageable) {
-		Page<Inquiry> reportPage = repository.findByReportsWithConditions(userId, status, sortBy, sortOrder, pageable);
+    // 문의 상세 조회
+    @Transactional(readOnly = true)
+    public InquiryReportDetailDTO getInquiryDetail(int inquiryIdx) {
+        Inquiry inquiry = repository.findById(inquiryIdx)
+                .orElseThrow(() -> new RuntimeException("문의 상세 조회 실패 : 문의 번호가 존재하지 않습니다."));
 
-		List<Inquiry> reportList = reportPage.getContent();
-		List<ReportDTO> dtoList = new ArrayList<>();
+        return convertToDetailDTO(inquiry);
+    }
 
-		for (Inquiry inquiry : reportList) {
-			ReportDTO dto = new ReportDTO(inquiry);
-			dtoList.add(dto);
-		}
+    // 신고 상세 조회
+    @Transactional(readOnly = true)
+    public InquiryReportDetailDTO getReportDetail(int inquiryIdx) {
+        Inquiry inquiry = repository.findById(inquiryIdx)
+                .orElseThrow(() -> new RuntimeException("신고 상세 조회 실패 : 신고 번호가 존재하지 않습니다."));
 
-		return new PageImpl<>(dtoList, pageable, reportPage.getTotalElements());
-	}
+        return convertToDetailDTO(inquiry);
+    }
 
-	// 문의 상세 조회
-	@Transactional(readOnly = true)
-	public InquiryReportDetailDTO getInquiryDetail(int inquiryIdx) {
-		Inquiry inquiry = repository.findById(inquiryIdx)
-				.orElseThrow(() -> new RuntimeException("문의 상세 조회 실패 : 문의 번호가 존재하지 않습니다."));
+    // Inquiry 엔티티를 InquiryReportDetailDTO로 변환하는 메서드
+    private InquiryReportDetailDTO convertToDetailDTO(Inquiry inquiry) {
+        List<ResponseDTO> responseDTOs = new ArrayList<>();
 
-		return convertToDetailDTO(inquiry);
-	}
+        Response response = inquiry.getResponse();
+        if (response != null) {
+            ResponseDTO responseDTO = ResponseDTO.builder()
+                    .responseIdx(response.getResponseIdx())
+                    .inquiryIdx(response.getInquiry().getInquiryIdx())
+                    .agentId(response.getAgent() != null ? response.getAgent().getMemberId() : null)
+                    .content(response.getContent())
+                    .createdAt(response.getCreatedAt())
+                    .build();
+            responseDTOs.add(responseDTO);
+        }
 
-	// 신고 상세 조회
-	@Transactional(readOnly = true)
-	public InquiryReportDetailDTO getReportDetail(int inquiryIdx) {
-		Inquiry inquiry = repository.findById(inquiryIdx)
-				.orElseThrow(() -> new RuntimeException("신고 상세 조회 실패 : 신고 번호가 존재하지 않습니다."));
+        return InquiryReportDetailDTO.builder()
+                .inquiryIdx(inquiry.getInquiryIdx())
+                .userId(inquiry.getUser() != null ? inquiry.getUser().getUserId() : null)
+                .reportedUserId(inquiry.getReportedUser() != null ? inquiry.getReportedUser().getUserId() : null)
+                .type(inquiry.getType())
+                .category(inquiry.getCategory())
+                .title(inquiry.getTitle())
+                .content(inquiry.getContent())
+                .status(inquiry.getStatus())
+                .createdAt(inquiry.getCreatedAt())
+                .responses(responseDTOs)
+                .build();
+    }
 
-		return convertToDetailDTO(inquiry);
-	}
+    // 엔티티 -> DTO 변환 메서드(문의 리스트)
+    private InquiryDTO convertToInquiryDTO(Inquiry inquiry) {
+        String userId = inquiry.getUser() != null ? inquiry.getUser().getUserId() : null;
+        String reportedUserId = inquiry.getReportedUser() != null ? inquiry.getReportedUser().getUserId() : null;
 
-	// Inquiry 엔티티를 InquiryReportDetailDTO로 변환하는 메서드
-	private InquiryReportDetailDTO convertToDetailDTO(Inquiry inquiry) {
-		List<ResponseDTO> responseDTOs = new ArrayList<>();
+        return InquiryDTO.builder()
+                .inquiryIdx(inquiry.getInquiryIdx())
+                .userId(userId)
+                .reportedUserId(reportedUserId)
+                .type(inquiry.getType())
+                .category(inquiry.getCategory())
+                .title(inquiry.getTitle())
+                .content(inquiry.getContent())
+                .status(inquiry.getStatus())
+                .createdAt(inquiry.getCreatedAt())
+                .build();
+    }
 
-		Response response = inquiry.getResponse();
-		if (response != null) {
-			ResponseDTO responseDTO = ResponseDTO.builder()
-					.responseIdx(response.getResponseIdx())
-					.inquiryIdx(response.getInquiry().getInquiryIdx())
-					.agentId(response.getAgent() != null ? response.getAgent().getMemberId() : null)
-					.content(response.getContent())
-					.createdAt(response.getCreatedAt())
-					.build();
-			responseDTOs.add(responseDTO);
-		}
+    // 엔티티 -> DTO 변환 메서드(신고 리스트)
+    private ReportDTO convertToReportDTO(Inquiry inquiry) {
+        String userId = inquiry.getUser() != null ? inquiry.getUser().getUserId() : null;
+        String reportedUserId = inquiry.getReportedUser() != null ? inquiry.getReportedUser().getUserId() : null;
 
-		return InquiryReportDetailDTO.builder()
-				.inquiryIdx(inquiry.getInquiryIdx())
-				.userId(inquiry.getUser() != null ? inquiry.getUser().getUserId() : null)
-				.reportedUserId(inquiry.getReportedUser() != null ? inquiry.getReportedUser().getUserId() : null)
-				.type(inquiry.getType())
-				.category(inquiry.getCategory())
-				.title(inquiry.getTitle())
-				.content(inquiry.getContent())
-				.status(inquiry.getStatus())
-				.createdAt(inquiry.getCreatedAt())
-				.responses(responseDTOs)
-				.build();
-	}
+        return ReportDTO.builder()
+                .inquiryIdx(inquiry.getInquiryIdx())
+                .userId(userId)
+                .reportedUserId(reportedUserId)
+                .type(inquiry.getType())
+                .category(inquiry.getCategory())
+                .title(inquiry.getTitle())
+                .content(inquiry.getContent())
+                .status(inquiry.getStatus())
+                .createdAt(inquiry.getCreatedAt())
+                .build();
+    }
 
 }
