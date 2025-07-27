@@ -43,6 +43,22 @@ public class NoticeController {
         }
     }
 
+    // 채팅방 입장시 해당 알림들 일괄 읽음처리
+    @PutMapping("/notice/read/all")
+    public ResponseEntity<String> readAllNotice(@RequestBody Map<String, Object> param) {
+        String memberId = (String) param.get("memberId");
+        int roomIdx = (int) param.get("roomIdx");
+        boolean success = service.readAllNotice(memberId, roomIdx);
+        if (success) {
+            log.info("success: {}", success);
+            return ResponseEntity.ok("알림 읽음 처리 완료");
+        }
+        else {
+            log.info("success: {}", success);
+            return ResponseEntity.badRequest().body("알림 읽음 처리 실패");
+        }
+    }
+
     // 채팅 알림 목록 조회
     @GetMapping("/notice/chat/list")
     public Map<String, Object> getChatNoticeList(

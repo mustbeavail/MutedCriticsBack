@@ -224,4 +224,20 @@ public class NoticeService {
         }
         return successCount == concentratedItems.size();
     }
+
+    public boolean readAllNotice(String memberId, int roomIdx) {
+        List<Noti> notiList = noticeRepo.findAllByReceiverIdAndRelatedIdx(memberId, roomIdx);
+        boolean success = false;
+        int successCount = 0;
+        for (Noti noti : notiList) {
+            noti.setReadYn(true);
+            success = noticeRepo.save(noti) != null;
+            if (success){
+                successCount++;
+            }else{
+                log.error("알림 읽음 처리 실패: {}", noti.getNotiIdx());
+            }
+        }
+        return successCount == notiList.size();
+    }
 }

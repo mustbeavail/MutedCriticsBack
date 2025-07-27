@@ -23,4 +23,7 @@ public interface NoticeRepository extends JpaRepository<Noti, Integer> {
         @Param("firstDayOfMonth") LocalDateTime firstDayOfMonth,
         @Param("lastDayOfMonth") LocalDateTime lastDayOfMonth);
 
+    @Query("SELECT n FROM Noti n WHERE n.receiver.memberId = :memberId AND n.relatedIdx = :roomIdx AND n.notiType = 'chat' AND n.readYn = false")
+    List<Noti> findAllByReceiverIdAndRelatedIdx(String memberId, int roomIdx);
+
 }

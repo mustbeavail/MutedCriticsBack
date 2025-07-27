@@ -3,8 +3,6 @@ package com.mutedcritics.chat.repository.impl;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Pageable;
-
 import com.mutedcritics.chat.repository.ChatMsgRepositoryCustom;
 import com.mutedcritics.entity.ChatMsg;
 import com.mutedcritics.entity.QChatMsg;
@@ -22,13 +20,11 @@ public class ChatMsgRepositoryImpl implements ChatMsgRepositoryCustom {
 
     // 채팅 메시지 조회
     @Override
-    public List<ChatMsg> findChatMessages(int roomIdx, Pageable pageable) {
+    public List<ChatMsg> findChatMessages(int roomIdx) {
         return factory.selectFrom(chatMsg)
                 .join(chatMsg.sender, member).fetchJoin()
                 .where(chatMsg.chatRoom.roomIdx.eq(roomIdx))
                 .orderBy(chatMsg.sentAt.asc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
                 .fetch();
     }
 
