@@ -27,43 +27,36 @@ public class MemberInfoService {
     // 회원 리스트 조회 (페이징, 검색, 정렬, 상태 필터)
     public Map<String, Object> memberList(
             int page, int size, String keyword, String sortField, String sortDirection,
-            String deptName, String position, Boolean acceptYn) {
+            String deptName, String position, Boolean acceptYn, Boolean withdrawYn) {
 
         Map<String, Object> result = new HashMap<>();
         int pageNumber = Math.max(0, page - 1);
-
-        // 상태 필터 처리
-        Boolean acceptYn2 = null;
-        if ("signUp".equals(acceptYn)) {
-            acceptYn2 = true;
-        } else if ("signUpWait".equals(acceptYn)) {
-            acceptYn2 = false;
-        }
 
         // 필터 적용 여부 판단
         boolean hasFilter = (keyword != null && !keyword.trim().isEmpty()) ||
                 (deptName != null && !"전체".equals(deptName)) ||
                 (position != null && !"전체".equals(position)) ||
-                (acceptYn != null);
+                (acceptYn != null) ||
+                (withdrawYn != null);
 
         long totalCount;
         List<Member> members;
 
         if (!hasFilter) {
-            // 전체 조회
-            if(pageNumber == 0) {
-                List<Member> totalMembers = repo.findAll();
+            // 전체 조회 (탈퇴하지 않은 회원만)
+            if (pageNumber == 0) {
+                List<Member> totalMembers = repo.findByWithdrawDateIsNull();
                 result.put("members", totalMembers);
                 return result;
             }
-            totalCount = repo.countAllMembers();
+            totalCount = repo.countByWithdrawDateIsNull();
             members = repo.findAllWithPagingAndSorting(
-                    null, null, null, pageNumber, size, sortField, sortDirection, acceptYn);
+                    null, null, null, pageNumber, size, sortField, sortDirection, acceptYn, withdrawYn);
         } else {
             // 필터 적용된 조회
             PageRequest pageable = PageRequest.of(pageNumber, size, repo.getSortByField(sortField, sortDirection));
             Page<Member> pageResult = repo.findByKeywordWithPagingAndSortingAndFilter(
-                    keyword, deptName, position, acceptYn, pageable);
+                    keyword, deptName, position, acceptYn, withdrawYn, pageable);
             totalCount = pageResult.getTotalElements();
             members = pageResult.getContent();
         }
@@ -89,7 +82,7 @@ public class MemberInfoService {
 
     // 회원 정보 수정 (관리자만 가능)
     public boolean updateMember(String member_id, String email, String member_name, String office_phone,
-                                String mobile_phone, String position, String dept_name, String requesterId) {
+            String mobile_phone, String position, String dept_name, String requesterId) {
         // 요청자가 관리자인지 확인
         Member requester = repo.findById(requesterId).orElse(null);
         if (requester == null || !requester.isAdminYn()) {

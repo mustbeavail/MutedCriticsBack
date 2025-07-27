@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,20 +26,21 @@ public class MemberInfoController {
     // 회원 리스트 보기 (정렬, 검색 기능 필요)
     @GetMapping("/memberInfo/list/{page}")
     public Map<String, Object> memberList(
-            @PathVariable(required = false) Integer page,
+            @PathVariable(required = true) Integer page,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "memberId") String sortField,
             @RequestParam(defaultValue = "asc") String sortDirection,
             @RequestParam(required = false) String dept_name,
             @RequestParam(required = false) String position,
-            @RequestParam(required = false) Boolean acceptYn) {
+            @RequestParam(required = false) Boolean acceptYn,
+            @RequestParam(required = false) Boolean withdrawYn) {
 
         int pageNumber = page;
         int size = 10;
 
         log.info("회원 리스트 요청: page={}, keyword={}, sortField={}, sortDirection={}, dept_name={}, position={}, acceptYn={}",
                 pageNumber, keyword, sortField, sortDirection, dept_name, position, acceptYn);
-        return service.memberList(pageNumber, size, keyword, sortField, sortDirection, dept_name, position, acceptYn);
+        return service.memberList(pageNumber, size, keyword, sortField, sortDirection, dept_name, position, acceptYn, withdrawYn);
     }
 
     // 회원 정보 수정 (관리자만 가능)

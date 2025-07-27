@@ -1,5 +1,6 @@
 package com.mutedcritics.member.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -30,13 +31,13 @@ public interface MemberInfoRepository extends JpaRepository<Member, String> {
             @Param("acceptYn") Boolean acceptYn);
 
     // 페이징과 정렬을 적용한 전체 회원 조회
-    default List<Member> findAllWithPagingAndSorting(String dept_name, String position, String keyword, int page,
-            int size, String sortField, String sortDirection, Boolean acceptYn) {
+    default List<Member> findAllWithPagingAndSorting(
+            String dept_name, String position, String keyword, int page,
+            int size, String sortField, String sortDirection, Boolean acceptYn, Boolean withdrawYn) {
         Sort sort = getSortByField(sortField, sortDirection);
-        // 페이지 크기를 10으로 고정
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Member> result = findByKeywordWithPagingAndSortingAndFilter(keyword, dept_name, position, acceptYn,
-                pageable);
+        Page<Member> result = findByKeywordWithPagingAndSortingAndFilter(
+                keyword, dept_name, position, acceptYn, withdrawYn, pageable);
         return result.getContent();
     }
 
@@ -60,11 +61,17 @@ public interface MemberInfoRepository extends JpaRepository<Member, String> {
             "(:keyword IS NULL OR m.memberId LIKE %:keyword% OR m.memberName LIKE %:keyword%) AND " +
             "(:deptName IS NULL OR :deptName = '전체' OR m.deptName = :deptName) AND " +
             "(:position IS NULL OR :position = '전체' OR m.position = :position) AND " +
-            "(:acceptYn IS NULL OR m.acceptYn = :acceptYn)")
+            "(:acceptYn IS NULL OR m.acceptYn = :acceptYn) AND " +
+            "(:withdrawYn IS NULL OR ( :withdrawYn = TRUE AND m.withdrawDate IS NOT NULL ) OR ( :withdrawYn = FALSE AND m.withdrawDate IS NULL ))")
     Page<Member> findByKeywordWithPagingAndSortingAndFilter(
             @Param("keyword") String keyword,
             @Param("deptName") String deptName,
             @Param("position") String position,
             @Param("acceptYn") Boolean acceptYn,
+            @Param("withdrawYn") Boolean withdrawYn,
             Pageable pageable);
+
+    List<Member> findByWithdrawDateIsNull();
+
+    long countByWithdrawDateIsNull();
 }
