@@ -20,9 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mutedcritics.chat.service.ChatService;
 import com.mutedcritics.dto.ChatMessageDTO;
 import com.mutedcritics.dto.ChatRoomDTO;
-import com.mutedcritics.dto.MemberSerachDTO;
-import com.mutedcritics.dto.PrivateChatRoomRequestDTO;
 import com.mutedcritics.dto.LeaveChatRoomRequestDTO;
+import com.mutedcritics.dto.MemberSerachDTO;
+import com.mutedcritics.dto.NotiListDTO;
+import com.mutedcritics.dto.PrivateChatRoomRequestDTO;
 import com.mutedcritics.dto.RenameChatRoomRequestDTO;
 import com.mutedcritics.entity.ChatMsg;
 
@@ -48,6 +49,7 @@ public class ChatController {
 
         ChatMsg savedMessage = chatService.saveMessage(chatMessage);
         ChatMessageDTO messageToSend = chatService.convertToDTO(savedMessage);
+        NotiListDTO chatNoti = chatService.convertToNotiListDTO(savedMessage);
 
         if (messageToSend == null) {
             log.error("메시지 DTO 변환 실패: savedMessage={}", savedMessage);
@@ -55,8 +57,11 @@ public class ChatController {
         }
 
         String destination = "/topic/chat/" + roomIdx;
+        String notiDestination = "/topic/noti/" + chatNoti.getReceiverId();
         log.info("메시지 전송 - 목적지: {}, 내용: {}", destination, messageToSend);
+        log.info("알림 전송 - 목적지: {}, 내용: {}", notiDestination, chatNoti);
         messagingTemplate.convertAndSend(destination, messageToSend);
+        messagingTemplate.convertAndSend(notiDestination, chatNoti);
     }
 
     // 1대1 채팅방 생성 또는 기존 방 조회(request : memberId, targetMemberId)

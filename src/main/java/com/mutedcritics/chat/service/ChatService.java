@@ -19,6 +19,7 @@ import com.mutedcritics.dto.ChatMessageDTO;
 import com.mutedcritics.dto.ChatRoomDTO;
 import com.mutedcritics.dto.LeaveChatRoomRequestDTO;
 import com.mutedcritics.dto.MemberSerachDTO;
+import com.mutedcritics.dto.NotiListDTO;
 import com.mutedcritics.dto.PrivateChatRoomRequestDTO;
 import com.mutedcritics.dto.RenameChatRoomRequestDTO;
 import com.mutedcritics.entity.ChatMember;
@@ -42,6 +43,7 @@ public class ChatService {
     private final ChatMemberRepository chatMemberRepository;
     private final MemberRepository memberRepository;
     private final NoticeService notiService;
+    private final ChatRoomRepository chatRoomRepo;
 
     // 메시지 저장
     @Transactional
@@ -191,6 +193,23 @@ public class ChatService {
         dto.setMsgContent(chatMsg.getMsgContent());
         dto.setSentAt(chatMsg.getSentAt());
         dto.setType(ChatMessageDTO.MessageType.CHAT);
+        return dto;
+    }
+
+    public NotiListDTO convertToNotiListDTO(ChatMsg chatMsg) {
+
+        NotiListDTO dto = new NotiListDTO();
+        dto.setNotiIdx(chatMsg.getMsgIdx());
+        dto.setNotiType("chat");
+        dto.setContentPre(chatMsg.getMsgContent());
+        dto.setRelatedIdx(chatMsg.getChatRoom().getRoomIdx());
+        dto.setReadYn(false);
+        dto.setCreatedAt(chatMsg.getSentAt());
+        dto.setMemberId(chatMsg.getSender().getMemberId());
+        String receiverId = chatRoomRepo.findChatMemberByRoomIdx(chatMsg.getChatRoom().getRoomIdx(), chatMsg.getSender().getMemberId())
+        .orElseThrow(() -> new RuntimeException("수신자를 찾을 수 없습니다."));
+        dto.setReceiverId(receiverId);
+        dto.setMemberName(chatMsg.getSender().getMemberName());
         return dto;
     }
 
