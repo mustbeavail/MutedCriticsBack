@@ -26,7 +26,7 @@ public class ChatMsgRepositoryImpl implements ChatMsgRepositoryCustom {
         return factory.selectFrom(chatMsg)
                 .join(chatMsg.sender, member).fetchJoin()
                 .where(chatMsg.chatRoom.roomIdx.eq(roomIdx))
-                .orderBy(chatMsg.sentAt.desc())
+                .orderBy(chatMsg.sentAt.asc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
