@@ -82,6 +82,7 @@ public class ChatController {
             @RequestParam(required = false) String searchKeyword,
             @RequestParam(defaultValue = "dateDESC") String sortBy
     ) {
+        log.info("채팅방 목록 조회 - 회원ID: {}, 페이지: {}, 페이지 크기: {}, 정렬 기준: {}", memberId, page, size, sortBy);
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<ChatRoomDTO> chatRooms = chatService.getMyChatRooms(memberId, searchType, searchKeyword, sortBy, pageable);
         return ResponseEntity.ok(chatRooms);
@@ -90,11 +91,8 @@ public class ChatController {
     // 채팅방 메시지 불러오기
     @GetMapping("/room/{roomIdx}/messages")
     public ResponseEntity<List<ChatMessageDTO>> getChatMessages(
-            @PathVariable int roomIdx,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "50") int size) {
-        Pageable pageable = PageRequest.of(page - 1, size);
-        List<ChatMessageDTO> messages = chatService.getChatMessages(roomIdx, pageable);
+            @PathVariable int roomIdx) {
+        List<ChatMessageDTO> messages = chatService.getChatMessages(roomIdx);
         return ResponseEntity.ok(messages);
     }
 

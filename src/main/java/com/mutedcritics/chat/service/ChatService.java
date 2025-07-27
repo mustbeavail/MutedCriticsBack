@@ -114,8 +114,8 @@ public class ChatService {
 
     // 채팅방 메시지 불러오기
     @Transactional(readOnly = true)
-    public List<ChatMessageDTO> getChatMessages(int roomIdx, Pageable pageable) {
-        List<ChatMsg> messages = chatMsgRepository.findChatMessages(roomIdx, pageable);
+    public List<ChatMessageDTO> getChatMessages(int roomIdx) {
+        List<ChatMsg> messages = chatMsgRepository.findChatMessages(roomIdx);
 
         return messages.stream()
                 .map(this::convertToDTO)
