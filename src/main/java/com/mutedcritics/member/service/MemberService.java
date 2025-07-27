@@ -1,7 +1,9 @@
 package com.mutedcritics.member.service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 
@@ -18,7 +20,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.mutedcritics.entity.Member;
+import com.mutedcritics.entity.MemberToken;
 import com.mutedcritics.member.repository.MemberRepository;
+import com.mutedcritics.member.repository.MemberTokenRepository;
+import com.mutedcritics.utils.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MemberService {
 
     private final MemberRepository repo;
+    private final MemberTokenRepository memberTokenRepository;
     private final PasswordEncoder encoder;
     private Map<String, String> saveAuthCode = new HashMap<>(); // 인증 코드 저장소
 
@@ -262,6 +268,21 @@ public class MemberService {
             log.error("회원 삭제 중 오류 발생: {}", e.getMessage(), e);
             return false;
         }
+    }
+
+    // 토큰 저장 및 업데이트
+    public void saveOrUpdateToken(String member_id, String token) {
+        MemberToken memberToken = MemberToken.builder()
+                .memberId(member_id)
+                .token(token)
+                .issuedAt(LocalDateTime.now())
+                .build();
+        memberTokenRepository.save(memberToken); // 존재하면 덮어쓰기
+    }
+
+    // 로그아웃
+    public void logout(String memberId) {
+        memberTokenRepository.deleteById(memberId);
     }
 
 }

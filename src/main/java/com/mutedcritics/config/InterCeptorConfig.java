@@ -13,16 +13,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InterCeptorConfig implements WebMvcConfigurer {
 
-	private final LoginChecker checker;
+    private final LoginChecker checker;
 
-	@Override
-	public void addInterceptors(@NonNull InterceptorRegistry registry) {
+    @Override
+    public void addInterceptors(@NonNull InterceptorRegistry registry) {
 
-		registry.addInterceptor(checker)
-				.addPathPatterns("/**")
-				.excludePathPatterns("/login*", "/join*", "/error*", "/member/**",
-						"/ai/**", "/ws/**", "/ws-test/**");
-
-	}
-
+        registry.addInterceptor(checker)
+                .addPathPatterns("/**")
+                .excludePathPatterns("/error*",
+                        "/member/login", "/member/join", "/member/overlay_id",
+                        "/member/send_code", "/member/verify_code", "/member/change_password",
+                        "/ai/**", "/ws/**", "/ws-test/**");
+    }
 }

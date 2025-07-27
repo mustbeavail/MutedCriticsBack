@@ -3,7 +3,6 @@ package com.mutedcritics.member.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-// import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.*;
 
 import com.mutedcritics.entity.Member;
@@ -12,8 +11,8 @@ import com.mutedcritics.utils.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import javax.servlet.http.HttpServletRequest;
-
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @Slf4j
@@ -30,7 +29,7 @@ public class MemberController {
 
         log.info("로그인 요청: {}", member_id);
         Map<String, Object> result = new HashMap<String, Object>();
-        
+
         // 회원 정보 확인
         Member member = service.getMemberById(member_id);
         if (member == null) {
@@ -44,11 +43,11 @@ public class MemberController {
         result.put("success", success);
         result.put("adminYn", member.isAdminYn());
         result.put("deptName", member.getDeptName());
-        
+
         if (!success) {
             result.put("message", "비밀번호가 일치하지 않습니다.");
         }
-        
+
         // 계정 승인 여부 확인
         if (!member.isAcceptYn()) {
             result.put("success", false);
@@ -71,9 +70,23 @@ public class MemberController {
                 JwtUtil.setPri_key();
             } // JWT 키가 없으면 생성
             String token = JwtUtil.getToken(tokenData); // 토큰 생성
+            service.saveOrUpdateToken(member_id, token); // 토큰 저장 및 업데이트
             result.put("token", token); // 응답에 토큰 추가
         }
 
+        return result;
+    }
+
+    // 로그아웃
+    @PostMapping("/member/logout")
+    public Map<String, Object> logout(@RequestBody Map<String, String> params) {
+        log.info("로그아웃 요청: {}", params.get("member_id"));
+        String member_id = params.get("member_id");
+        Map<String, Object> result = new HashMap<>();
+
+        service.logout(member_id);
+        result.put("success", true);
+        result.put("message", "로그아웃 완료");
         return result;
     }
 
@@ -95,13 +108,13 @@ public class MemberController {
 
         boolean success = service.join(params);
         result.put("success", success);
-        
+
         if (success) {
             result.put("message", "회원가입 요청을 성공적으로 접수했습니다. 관리자 승인 후 서비스 이용이 가능합니다.");
         } else {
             result.put("message", "회원가입에 실패했습니다.");
         }
-        
+
         return result;
     }
 
@@ -165,7 +178,7 @@ public class MemberController {
         result.put("success", success);
         return result;
     }
-    
+
     // 계정 승인
     @GetMapping("/admin/accept/{member_id}")
     public Map<String, Object> acceptMember(@PathVariable String member_id) {
@@ -178,10 +191,10 @@ public class MemberController {
             result.put("message", "존재하지 않는 계정입니다.");
             return result;
         }
-        
+
         member.setAcceptYn(true);
         boolean success = service.join(member);
-        
+
         result.put("success", success);
         if (success) {
             result.put("message", "계정이 승인되었습니다.");
@@ -190,7 +203,7 @@ public class MemberController {
         }
         return result;
     }
-    
+
     // 계정 승인 거절
     @GetMapping("/admin/reject/{member_id}")
     public Map<String, Object> rejectMember(@PathVariable String member_id) {
@@ -198,7 +211,7 @@ public class MemberController {
 
         // 계정 승인 거절 처리
         boolean success = service.rejectMember(member_id);
-        
+
         result.put("success", success);
         if (success) {
             result.put("message", "계정 승인이 거절되었습니다.");
