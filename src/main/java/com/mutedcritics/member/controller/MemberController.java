@@ -193,7 +193,7 @@ public class MemberController {
         }
 
         member.setAcceptYn(true);
-        boolean success = service.join(member);
+        boolean success = service.acceptMember(member_id);
 
         result.put("success", success);
         if (success) {

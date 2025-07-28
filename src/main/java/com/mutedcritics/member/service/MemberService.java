@@ -251,6 +251,17 @@ public class MemberService {
         return member.isAdminYn();
     }
 
+    // 계정 승인
+    public boolean acceptMember(String member_id) {
+        Member member = repo.findById(member_id).orElse(null);
+        if (member == null) {
+            return false;
+        }
+        member.setAcceptYn(true);
+        repo.save(member);
+        return true;
+    }
+
     // 계정 승인 거절
     public boolean rejectMember(String member_id) {
         try {
