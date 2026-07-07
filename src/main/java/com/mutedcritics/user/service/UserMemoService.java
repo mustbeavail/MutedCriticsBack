@@ -24,8 +24,17 @@ public class UserMemoService {
     private final UserRepository userRepository;
     private final MemberRepository memberRepository;
 
+    // 리뷰용(열람 전용) 계정이면 쓰기 차단
+    private void assertNotReviewer(String memberId) {
+        Member member = memberId == null ? null : memberRepository.findById(memberId).orElse(null);
+        if (member != null && Boolean.TRUE.equals(member.getReviewerYn())) {
+            throw new RuntimeException("리뷰용 계정은 조회만 가능합니다. (메모 작성/수정/삭제 불가)");
+        }
+    }
+
     // 메모 작성
     public void writeMemo(UserMemoRequestDTO request) {
+        assertNotReviewer(request.getMemberId());
         String userId = request.getUserId();
         String memberId = request.getMemberId();
 
@@ -89,6 +98,7 @@ public class UserMemoService {
     // 메모 수정
     @Transactional
     public void updateMemo(int memoIdx, UserMemoRequestDTO request) {
+        assertNotReviewer(request.getMemberId());
         UserMemo memo = userMemoRepository.findById(memoIdx)
                 .orElseThrow(() -> new RuntimeException("메모를 찾을 수 없습니다."));
 
@@ -106,6 +116,7 @@ public class UserMemoService {
     // 메모 삭제
     @Transactional
     public void deleteMemo(int memoIdx, Map<String, Object> request) {
+        assertNotReviewer((String) request.get("memberId"));
         UserMemo memo = userMemoRepository.findById(memoIdx)
                 .orElseThrow(() -> new RuntimeException("메모를 찾을 수 없습니다."));
 

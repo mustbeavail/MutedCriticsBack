@@ -44,6 +44,7 @@ bin/
 CLAUDE.md
 배포_점검사항.md
 배포_수정계획.md
+수정사항.txt
 
 ### 테스트 아티팩트 ###
 .playwright-mcp/

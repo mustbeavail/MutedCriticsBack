@@ -37,7 +37,8 @@ public class NoticeScheduler {
     @Scheduled(cron = "0 0 0 1 * ?")
     public void sendMonthlyNotice() {
         log.info("월간 통계 알림 전송 시작");
-        LocalDate today = LocalDate.now();
+        // 더미데이터가 2025-08까지만 존재하여 매출 급감 알림(6→7→8월 연속 감소) 구간을 잡기 위해 하드코딩
+        LocalDate today = LocalDate.of(2025, 9, 10);
 
         // 매출 급감 알림
         YearMonth YM = YearMonth.of(today.getYear(), today.getMonth()).minusMonths(1);

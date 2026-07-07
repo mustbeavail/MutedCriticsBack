@@ -3,6 +3,8 @@ package com.mutedcritics.member.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.web.bind.annotation.*;
 
 import com.mutedcritics.entity.Member;
@@ -43,6 +45,8 @@ public class MemberController {
         result.put("success", success);
         result.put("adminYn", member.isAdminYn());
         result.put("deptName", member.getDeptName());
+        // 리뷰용 열람 전용 계정 여부(프론트에서 쓰기 액션 차단에 사용)
+        result.put("reviewerYn", member.getReviewerYn() != null && member.getReviewerYn());
 
         if (!success) {
             result.put("message", "비밀번호가 일치하지 않습니다.");
@@ -157,10 +161,35 @@ public class MemberController {
         return result;
     }
 
+    // 요청 헤더의 JWT 토큰에서 요청자 member_id 추출
+    private String getRequesterId(HttpServletRequest request) {
+        String token = request.getHeader("authorization");
+        if (token == null || token.isEmpty()) {
+            return null;
+        }
+        Map<String, Object> payload = JwtUtil.readToken(token);
+        return (String) payload.get("member_id");
+    }
+
+    // 리뷰용 계정이면 result에 차단 메시지를 채우고 true 반환
+    private boolean blockReviewer(String requesterId, Map<String, Object> result) {
+        if (service.isReviewer(requesterId)) {
+            result.put("success", false);
+            result.put("message", "리뷰용 계정은 조회만 가능합니다. (쓰기 기능 제한)");
+            log.warn("리뷰용 계정 쓰기 시도 차단 : {}", requesterId);
+            return true;
+        }
+        return false;
+    }
+
     // 관리자 권한 부여
     @GetMapping("/admin/{member_id}")
-    public Map<String, Object> grant_admin(@PathVariable String member_id) {
+    public Map<String, Object> grant_admin(@PathVariable String member_id, HttpServletRequest httpRequest) {
         Map<String, Object> result = new HashMap<String, Object>();
+
+        if (blockReviewer(getRequesterId(httpRequest), result)) {
+            return result;
+        }
 
         boolean success = service.grant_admin(member_id);
         result.put("success", success);
@@ -174,6 +203,10 @@ public class MemberController {
         Map<String, Object> result = new HashMap<String, Object>();
         log.info("관리자 권한 박탈 요청 : {}, {}", request.get("requesterId"), request.get("memberId"));
 
+        if (blockReviewer(request.get("requesterId"), result)) {
+            return result;
+        }
+
         boolean success = service.revoke_admin(request);
         result.put("success", success);
         return result;
@@ -181,8 +214,12 @@ public class MemberController {
 
     // 계정 승인
     @GetMapping("/admin/accept/{member_id}")
-    public Map<String, Object> acceptMember(@PathVariable String member_id) {
+    public Map<String, Object> acceptMember(@PathVariable String member_id, HttpServletRequest httpRequest) {
         Map<String, Object> result = new HashMap<String, Object>();
+
+        if (blockReviewer(getRequesterId(httpRequest), result)) {
+            return result;
+        }
 
         // 계정 승인 처리
         Member member = service.getMemberById(member_id);
@@ -205,8 +242,12 @@ public class MemberController {
 
     // 계정 승인 거절
     @GetMapping("/admin/reject/{member_id}")
-    public Map<String, Object> rejectMember(@PathVariable String member_id) {
+    public Map<String, Object> rejectMember(@PathVariable String member_id, HttpServletRequest httpRequest) {
         Map<String, Object> result = new HashMap<String, Object>();
+
+        if (blockReviewer(getRequesterId(httpRequest), result)) {
+            return result;
+        }
 
         // 계정 승인 거절 처리
         boolean success = service.rejectMember(member_id);

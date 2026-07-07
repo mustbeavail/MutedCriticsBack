@@ -90,6 +90,12 @@ public class MemberInfoService {
             return false;
         }
 
+        // 리뷰용 계정 차단
+        if (Boolean.TRUE.equals(requester.getReviewerYn())) {
+            log.warn("회원 정보 수정 차단: 리뷰용 계정 - requesterId={}", requesterId);
+            return false;
+        }
+
         // 수정할 회원 정보 조회
         Member member = repo.findById(member_id).orElse(null);
         if (member == null) {
@@ -128,6 +134,11 @@ public class MemberInfoService {
             throw new RuntimeException("관리자 권한이 없습니다.");
         }
 
+        // 리뷰용 계정 차단
+        if (Boolean.TRUE.equals(admin.getReviewerYn())) {
+            throw new RuntimeException("리뷰용 계정은 조회만 가능합니다. (탈퇴 처리 불가)");
+        }
+
         // 자기 자신은 탈퇴 불가능
         if (request.getRequesterId().equals(request.getMemberId())) {
             throw new RuntimeException("자기 자신은 탈퇴할 수 없습니다.");
@@ -149,6 +160,15 @@ public class MemberInfoService {
         result.put("success", true);
         result.put("msg", "정상적으로 탈퇴 처리되었습니다.");
         return result;
+    }
+
+    // 리뷰용(열람 전용) 계정 여부 확인
+    public boolean isReviewer(String member_id) {
+        if (member_id == null) {
+            return false;
+        }
+        Member member = repo.findById(member_id).orElse(null);
+        return member != null && Boolean.TRUE.equals(member.getReviewerYn());
     }
 
     // 회원(본인) 정보 보기

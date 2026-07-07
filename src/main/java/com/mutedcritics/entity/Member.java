@@ -56,4 +56,8 @@ public class Member {
 
     @Column(name = "accept_yn")
     private boolean acceptYn = false;
+
+    // 리뷰용 열람 전용 계정 여부(true면 쓰기 액션 차단). 기존 행은 NULL=미설정(false 취급)
+    @Column(name = "reviewer_yn")
+    private Boolean reviewerYn;
 }

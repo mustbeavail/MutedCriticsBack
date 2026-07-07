@@ -251,6 +251,15 @@ public class MemberService {
         return member.isAdminYn();
     }
 
+    // 리뷰용(열람 전용) 계정 여부 확인
+    public boolean isReviewer(String member_id) {
+        if (member_id == null) {
+            return false;
+        }
+        Member member = repo.findById(member_id).orElse(null);
+        return member != null && Boolean.TRUE.equals(member.getReviewerYn());
+    }
+
     // 계정 승인
     public boolean acceptMember(String member_id) {
         Member member = repo.findById(member_id).orElse(null);

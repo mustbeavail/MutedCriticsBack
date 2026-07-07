@@ -71,6 +71,13 @@ public class MemberInfoController {
             return result;
         }
 
+        // 리뷰용 계정 차단
+        if (service.isReviewer(requesterId)) {
+            result.put("success", false);
+            result.put("message", "리뷰용 계정은 조회만 가능합니다. (수정 불가)");
+            return result;
+        }
+
         log.info("회원 정보 수정 요청 파라미터: {}", params);
         String email = params.get("email");
         String member_name = params.get("member_name");
