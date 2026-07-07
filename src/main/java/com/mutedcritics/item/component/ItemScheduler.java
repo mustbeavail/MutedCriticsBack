@@ -22,7 +22,8 @@ public class ItemScheduler {
     private final ItemService service;
 
     // 일일 아이템 통계 조회 및 저장
-    @Scheduled(cron = "0 0 1 * * *")
+    // [리뷰 환경 비활성] 더미데이터가 2025-08까지라 2026 집계 시 0/빈 값 쓰레기 행이 쌓임 → 스케줄 주석 처리
+    // @Scheduled(cron = "0 0 1 * * *")
     public void itemStats() {
         log.info("일일 아이템 통계 시작");
 

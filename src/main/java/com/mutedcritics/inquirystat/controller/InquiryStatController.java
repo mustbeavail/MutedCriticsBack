@@ -84,7 +84,8 @@ public class InquiryStatController {
     }
 
     // 새벽 1시마다 일일 통계 업데이트
-    @Scheduled(cron = "0 0 1 * * *")
+    // [리뷰 환경 비활성] 더미데이터가 2025-08까지라 2026 집계 시 0/빈 값 쓰레기 행이 쌓임 → 스케줄 주석 처리
+    // @Scheduled(cron = "0 0 1 * * *")
     public void dailyStatsBatchAuto() {
         LocalDate start = LocalDate.now().minusDays(1);
         LocalDate end = LocalDate.now().minusDays(1);

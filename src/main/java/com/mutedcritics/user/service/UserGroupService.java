@@ -53,7 +53,8 @@ public class UserGroupService {
      * 매일 새벽 1시에 전일(어제) 기준으로 분류 스냅샷을 갱신합니다.
      * cron: 초 분 시 일 월 요일 (UTC+9 환경)
      */
-    @Scheduled(cron = "0 0 1 * * *")
+    // [리뷰 환경 비활성] 더미데이터가 2025-08까지라 2026 기준 재분류 시 전 유저가 휴면 처리/VIP 해제되어 리뷰 데이터가 왜곡됨 → 스케줄 주석 처리
+    // @Scheduled(cron = "0 0 1 * * *")
     public void classifyUsersDaily() {
         classifyUsers(LocalDate.now().minusDays(1));   // 어제 날짜
     }

@@ -164,7 +164,8 @@ public class IngameController {
      * 새벽 1시마다 일일 영웅 통계 업데이트
      * 어제 날짜로 업데이트
      */
-    @Scheduled(cron = "0 0 1 * * *")
+    // [리뷰 환경 비활성] 더미데이터가 2025-08까지라 2026 집계 시 0/빈 값 쓰레기 행이 쌓임 → 스케줄 주석 처리
+    // @Scheduled(cron = "0 0 1 * * *")
     public void insertDailyHeroStats() {
         service.insertDailyHeroStats(LocalDate.now().minusDays(1), LocalDate.now().minusDays(1));
     }
