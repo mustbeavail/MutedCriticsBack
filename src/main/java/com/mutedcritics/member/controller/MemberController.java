@@ -149,17 +149,20 @@ public class MemberController {
     }
 
     // 비밀번호 변경
-    @PostMapping("/member/change_password")
-    public Map<String, Object> changePassword(@RequestBody Map<String, String> params) {
-        log.info("비밀번호 변경 요청 파라미터: {}", params);
-        String member_id = params.get("memberId");
-        String new_password = params.get("member_pw");
-
-        Map<String, Object> result = new HashMap<String, Object>();
-        boolean success = service.changePassword(member_id, new_password);
-        result.put("success", success);
-        return result;
-    }
+    // [리뷰 환경 비활성] 본인 인증 없이 아이디+새 비번만으로 아무 계정 비번을 바꿀 수 있는 취약점(A3).
+    //  리뷰 환경에선 비번 변경을 미지원(UI 흐름도 이미 비활성)하므로 엔드포인트 자체를 주석 처리.
+    //  운영 전환 시 재개하려면: verify_code 통과(또는 현재 비번) 검증 + 로그 마스킹 후 활성화.
+    // @PostMapping("/member/change_password")
+    // public Map<String, Object> changePassword(@RequestBody Map<String, String> params) {
+    //     log.info("비밀번호 변경 요청 파라미터: {}", params);
+    //     String member_id = params.get("memberId");
+    //     String new_password = params.get("member_pw");
+    //
+    //     Map<String, Object> result = new HashMap<String, Object>();
+    //     boolean success = service.changePassword(member_id, new_password);
+    //     result.put("success", success);
+    //     return result;
+    // }
 
     // 요청 헤더의 JWT 토큰에서 요청자 member_id 추출
     private String getRequesterId(HttpServletRequest request) {
@@ -182,12 +185,27 @@ public class MemberController {
         return false;
     }
 
+    // 요청자가 관리자가 아니면 result에 차단 메시지를 채우고 true 반환 (A3: 관리자 인가)
+    private boolean blockNonAdmin(String requesterId, Map<String, Object> result) {
+        if (requesterId == null || !service.isAdmin(requesterId)) {
+            result.put("success", false);
+            result.put("message", "관리자만 사용할 수 있는 기능입니다.");
+            log.warn("비관리자 관리자기능 시도 차단 : {}", requesterId);
+            return true;
+        }
+        return false;
+    }
+
     // 관리자 권한 부여
     @GetMapping("/admin/{member_id}")
     public Map<String, Object> grant_admin(@PathVariable String member_id, HttpServletRequest httpRequest) {
         Map<String, Object> result = new HashMap<String, Object>();
 
-        if (blockReviewer(getRequesterId(httpRequest), result)) {
+        String requesterId = getRequesterId(httpRequest);
+        if (blockReviewer(requesterId, result)) {
+            return result;
+        }
+        if (blockNonAdmin(requesterId, result)) {
             return result;
         }
 
@@ -199,11 +217,16 @@ public class MemberController {
 
     // 관리자 권한 박탈
     @PostMapping("/admin/revoke")
-    public Map<String, Object> revoke_admin(@RequestBody Map<String, String> request) {
+    public Map<String, Object> revoke_admin(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
         Map<String, Object> result = new HashMap<String, Object>();
         log.info("관리자 권한 박탈 요청 : {}, {}", request.get("requesterId"), request.get("memberId"));
 
-        if (blockReviewer(request.get("requesterId"), result)) {
+        // 인가는 요청 바디의 requesterId(위조 가능)가 아니라 토큰의 요청자로 판단
+        String requesterId = getRequesterId(httpRequest);
+        if (blockReviewer(requesterId, result)) {
+            return result;
+        }
+        if (blockNonAdmin(requesterId, result)) {
             return result;
         }
 
@@ -217,7 +240,11 @@ public class MemberController {
     public Map<String, Object> acceptMember(@PathVariable String member_id, HttpServletRequest httpRequest) {
         Map<String, Object> result = new HashMap<String, Object>();
 
-        if (blockReviewer(getRequesterId(httpRequest), result)) {
+        String requesterId = getRequesterId(httpRequest);
+        if (blockReviewer(requesterId, result)) {
+            return result;
+        }
+        if (blockNonAdmin(requesterId, result)) {
             return result;
         }
 
@@ -245,7 +272,11 @@ public class MemberController {
     public Map<String, Object> rejectMember(@PathVariable String member_id, HttpServletRequest httpRequest) {
         Map<String, Object> result = new HashMap<String, Object>();
 
-        if (blockReviewer(getRequesterId(httpRequest), result)) {
+        String requesterId = getRequesterId(httpRequest);
+        if (blockReviewer(requesterId, result)) {
+            return result;
+        }
+        if (blockNonAdmin(requesterId, result)) {
             return result;
         }
 

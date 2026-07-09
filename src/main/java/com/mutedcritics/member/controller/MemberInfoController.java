@@ -99,10 +99,45 @@ public class MemberInfoController {
 
     // 관리자가 회원을 탈퇴시키는 기능
     @PostMapping("/memberInfo/withdraw")
-    public ResponseEntity<?> withdrawMember(@RequestBody MemberWithdrawDTO request) {
-        log.info("관리자 ID: {}가 회원 ID: {} 탈퇴를 요청했습니다.", request.getRequesterId(), request.getMemberId());
-        Map<String, Object> result = service.withdrawMember(request);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<?> withdrawMember(@RequestBody MemberWithdrawDTO request, HttpServletRequest httpRequest) {
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        // 토큰 검증 (인가는 요청 바디의 requesterId(위조 가능)가 아니라 토큰의 요청자로 판단)
+        String token = httpRequest.getHeader("authorization");
+        if (token == null || token.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "인증 토큰이 필요합니다.");
+            return ResponseEntity.ok(result);
+        }
+        Map<String, Object> payload = JwtUtil.readToken(token);
+        String requesterId = (String) payload.get("member_id");
+        if (requesterId == null || requesterId.isEmpty()) {
+            result.put("success", false);
+            result.put("message", "유효하지 않은 토큰입니다.");
+            return ResponseEntity.ok(result);
+        }
+
+        // 관리자 권한 확인
+        if (!service.isAdmin(requesterId)) {
+            log.warn("회원 탈퇴 실패: 요청자({})가 관리자가 아닙니다", requesterId);
+            result.put("success", false);
+            result.put("message", "관리자 권한이 필요합니다.");
+            return ResponseEntity.ok(result);
+        }
+
+        // 리뷰용 계정 차단
+        if (service.isReviewer(requesterId)) {
+            result.put("success", false);
+            result.put("message", "리뷰용 계정은 조회만 가능합니다. (탈퇴 처리 불가)");
+            return ResponseEntity.ok(result);
+        }
+
+        // 다운스트림(자기 자신 탈퇴 방지 등)도 토큰의 요청자로 판단하도록 덮어씀
+        request.setRequesterId(requesterId);
+
+        log.info("관리자 ID: {}가 회원 ID: {} 탈퇴를 요청했습니다.", requesterId, request.getMemberId());
+        Map<String, Object> serviceResult = service.withdrawMember(request);
+        return ResponseEntity.ok(serviceResult);
     }
 
     // 회원(본인) 정보 보기

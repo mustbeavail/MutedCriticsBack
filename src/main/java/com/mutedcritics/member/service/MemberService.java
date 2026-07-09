@@ -108,11 +108,11 @@ public class MemberService {
         // 실제 이메일 발송
         try {
             Properties props = new Properties();
-            props.put("mail.smtp.host", "smtp.naver.com"); // 네이버 SMTP 서버
-            props.put("mail.smtp.port", "587"); // 네이버 TLS 포트 사용
+            props.put("mail.smtp.host", "smtp.gmail.com"); // 구글 SMTP 서버
+            props.put("mail.smtp.port", "587"); // 구글 TLS 포트 사용
             props.put("mail.smtp.auth", "true");
             props.put("mail.smtp.starttls.enable", "true"); // TLS 사용
-            props.put("mail.smtp.ssl.trust", "smtp.naver.com");
+            props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
             props.put("mail.debug", "true"); // 디버깅 활성화
 
             // 세션 생성 (발신자 인증 정보 사용)
