@@ -42,13 +42,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // 웹소켓 연결 엔드포인트 설정
+        // 웹소켓 연결 엔드포인트 설정 (운영 도메인 + 로컬 개발만 허용)
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*"); // cors 설정
+                .setAllowedOriginPatterns(
+                        "https://mutedcritics.p-e.kr",
+                        "http://localhost:3000");
 
-        // postman 등 테스트를 위한 엔드포인트 추가
-        registry.addEndpoint("/ws-test")
-                .setAllowedOriginPatterns("*");
+        // 운영 배포 시 /ws-test(테스트용 무제한 엔드포인트)는 제거
     }
 
 }

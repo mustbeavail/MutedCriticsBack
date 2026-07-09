@@ -10,7 +10,9 @@ public class GlobalCorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // 모든 경로에 대해 CORS 적용
-                .allowedOriginPatterns("*") // 모든 도메인 허용 (배포 시엔 특정 도메인으로 제한 권장)
+                .allowedOriginPatterns( // 운영 도메인 + 로컬 개발만 허용
+                        "https://mutedcritics.p-e.kr",
+                        "http://localhost:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // 허용할 HTTP 메서드
                 .allowedHeaders("*") // 모든 헤더 허용
                 .allowCredentials(true) // 쿠키 허용 시 true
